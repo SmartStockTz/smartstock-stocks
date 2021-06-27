@@ -56,9 +56,9 @@ export class TransfersTableActionsComponent implements OnInit {
 
   }
 
-  hotReloadStocks(): void {
-    this.transferState.fetch();
-  }
+  // hotReloadStocks(size: number, skip: number): void {
+  //   this.transferState.fetch(size, skip);
+  // }
 
   exportStock(): void {
     // this.transferState.exportToExcel();
