@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, Inject} from '@angular/core';
 import {MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef} from '@angular/material/bottom-sheet';
 import {MessageService, PrintService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
+
 // @dynamic
 @Component({
   selector: 'app-stock-transfers-export-options',
@@ -56,21 +57,25 @@ export class TransfersExportOptionsComponent {
     let items = '';
     for (let i = 0; i < this.data.transfer.items.length; i++) {
       items += `
-      ${i + 1}. ${this.data.transfer.items[i].product.product} --> Quantity : ${this.data.transfer.items[i].quantity}\n
-      `;
+------------------------------------
+ITEM ${i + 1} : ${this.data.transfer.items[i].product.product}
+QUANTITY : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.items[i].quantity)}, PURCHASE PRICE : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.items[i].product.purchase)}
+`;
     }
     this.isPrinting = true;
+    const data = [
+      'DATE : ' + this.data.transfer.date + '\n',
+      'FROM : ' + this.data.transfer.from_shop.name + '\n',
+      'TO : ' + this.data.transfer.to_shop.name + '\n',
+      'AMOUNT : ' + Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.amount) + '\n',
+      'NOTE : ' + this.data.transfer.note + '\n',
+      '\n',
+      items
+    ].join('');
+    console.log(data);
     this.printService.print({
       printer: 'tm20',
-      data: [
-        'Date : ' + this.data.transfer.date + '\n',
-        'From : ' + this.data.transfer.from_shop + '\n',
-        'To : ' + this.data.transfer.to_shop + '\n',
-        '-----------------------------------------\n',
-        'Items\n',
-        '-----------------------------------------\n',
-        items
-      ].join(''),
+      data,
       id: '',
       qr: ''
     }).then(value => {

@@ -1,23 +1,26 @@
 import {Component, OnInit} from '@angular/core';
-import {DeviceInfoUtil} from '@smartstocktz/core-libs';
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stocks-index',
   template: `
-    <app-layout-sidenav [body]="body"
-                               [leftDrawer]="leftDrawer"
-                               [leftDrawerMode]="enoughWidth()?'side': 'over'"
-                               [leftDrawerOpened]="enoughWidth()"
-                               [heading]="'Transfer'">
+    <app-layout-sidenav
+      [body]="body"
+      [leftDrawer]="leftDrawer"
+      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
+      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      backLink="/stock"
+      [hasBackRoute]="true"
+      [heading]="'Transfer'">
       <ng-template #leftDrawer>
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div class="container col-lg-9 col-xl-9 col-sm-11 col-md-10 col-11"
-             style="padding: 16px 0; z-index: -1">
-          <div style="margin-top: 24px">
+        <div class="container col-lg-9 col-xl-9 col-sm-12 col-md-10 col-12 pt-3"
+             style="min-height: 100vh;">
+          <div style="margin-top: 4px">
             <app-stock-transfers-table-actions></app-stock-transfers-table-actions>
-            <mat-card class="mat-elevation-z2">
+            <mat-card [class]="(deviceState.isSmallScreen | async) === true?'mat-elevation-z0':'mat-elevation-z2'">
               <app-stock-transfers-table></app-stock-transfers-table>
             </mat-card>
           </div>
@@ -27,10 +30,9 @@ import {DeviceInfoUtil} from '@smartstocktz/core-libs';
   `
 })
 
-export class TransferPage extends DeviceInfoUtil implements OnInit {
+export class TransferPage implements OnInit {
 
-  constructor() {
-    super();
+  constructor(public readonly deviceState: DeviceState) {
     document.title = 'SmartStock - Stock Transfers';
   }
 

@@ -2,18 +2,17 @@ import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockModel} from '../models/stock.model';
-import {DeviceInfoUtil} from '@smartstocktz/core-libs';
 import {StockState} from '../states/stock.state';
 
 @Component({
   selector: 'app-stock-edit',
   template: `
     <app-stock-new [isLoadingData]="loadStock" [isUpdateMode]="true"
-                          [initialStock]="stock"></app-stock-new>
+                   [initialStock]="stock"></app-stock-new>
   `,
   styleUrls: ['../styles/edit.style.scss']
 })
-export class EditPageComponent extends DeviceInfoUtil implements OnInit {
+export class EditPageComponent implements OnInit {
 
   stock: StockModel;
   loadStock = false;
@@ -21,7 +20,6 @@ export class EditPageComponent extends DeviceInfoUtil implements OnInit {
   constructor(private readonly stockState: StockState,
               private readonly router: Router,
               private readonly snack: MatSnackBar) {
-    super();
     document.title = 'SmartStock - Product Edit';
   }
 

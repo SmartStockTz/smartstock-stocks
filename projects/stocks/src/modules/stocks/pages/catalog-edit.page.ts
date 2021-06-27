@@ -1,14 +1,18 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {DeviceInfoUtil} from '@smartstocktz/core-libs';
+import {DeviceState} from '@smartstocktz/core-libs';
 import {CatalogState} from '../states/catalog.state';
 import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-stock-catalog-edit',
   template: `
-    <app-layout-sidenav [leftDrawer]="drawer" [body]="body" [leftDrawerMode]="enoughWidth()?'side':'over'"
-                        heading="Edit Catalog"
-                        [leftDrawerOpened]="enoughWidth()">
+    <app-layout-sidenav
+      [leftDrawer]="drawer" [body]="body"
+      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
+      heading="Edit Catalog"
+      backLink="/stock/catalogs"
+      [hasBackRoute]="true"
+      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true">>
       <ng-template #drawer>
         <app-drawer></app-drawer>
       </ng-template>
@@ -23,10 +27,10 @@ import {Router} from '@angular/router';
     </app-layout-sidenav>
   `
 })
-export class CatalogEditPage extends DeviceInfoUtil implements OnDestroy, OnInit {
+export class CatalogEditPage implements OnDestroy, OnInit {
   constructor(public readonly catalogState: CatalogState,
+              public readonly deviceState: DeviceState,
               private readonly router: Router) {
-    super();
     document.title = 'SmartStock - Catalog Edit';
   }
 

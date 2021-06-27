@@ -20,26 +20,6 @@ import {DialogDeleteComponent} from './stock.component';
                               style="display: inline-block">
         </mat-progress-spinner>
       </button>
-      <!--                      <button mat-stroked-button mat-button color="primary" class="stockbtn" (click)="transferStock()">-->
-      <!--                        <mat-icon>cached</mat-icon>-->
-      <!--                        Stock Transfer-->
-      <!--                      </button>-->
-      <!--                      <button mat-stroked-button mat-button color="primary" class="stockbtn" (click)="transferStock()">-->
-      <!--                        <mat-icon>cached</mat-icon>-->
-      <!--                        Stock Transfer-->
-      <!--                      </button>-->
-      <!--                      <button mat-stroked-button mat-button color="primary" class="stockbtn">-->
-      <!--                        <mat-icon>add</mat-icon>-->
-      <!--                        Stock In-->
-      <!--                      </button>-->
-      <!--                      <button mat-stroked-button mat-button color="primary" class="stockbtn">-->
-      <!--                        <mat-icon>remove</mat-icon>-->
-      <!--                        Stock Out-->
-      <!--                      </button>-->
-      <!--                      <button mat-stroked-button mat-button color="primary" class="stockbtn">-->
-      <!--                        <mat-icon>delete_forever</mat-icon>-->
-      <!--                        Dispose Stock-->
-      <!--                      </button>-->
     </mat-card-subtitle>
   `
 })

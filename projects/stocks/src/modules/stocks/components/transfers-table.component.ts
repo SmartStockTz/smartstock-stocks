@@ -8,6 +8,7 @@ import {PageEvent} from '@angular/material/paginator';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {TransfersItemsViewComponent} from './transfers-items-view.component';
 import {TransfersExportOptionsComponent} from './transfers-export-options.component';
+import {DeviceState} from "@smartstocktz/core-libs";
 
 @Component({
   selector: 'app-stock-transfers-table',
@@ -51,16 +52,18 @@ import {TransfersExportOptionsComponent} from './transfers-export-options.compon
 
         </td>
       </ng-container>
-      <tr mat-header-row *cdkHeaderRowDef="transfersTableColumn"></tr>
-      <tr mat-row *matRowDef="let row; columns transfersTableColumn"></tr>
+      <tr mat-header-row
+          *cdkHeaderRowDef="(deviceState.isSmallScreen | async)===true?transfersTableColumnMobile:transfersTableColumn"></tr>
+      <tr mat-row
+          *matRowDef="let row; columns (deviceState.isSmallScreen | async)===true?transfersTableColumnMobile:transfersTableColumn"></tr>
     </table>
     <mat-paginator #paginator
                    [disabled]="(transferState.isFetchTransfers | async ) === true"
                    [showFirstLastButtons]="true"
                    [length]="transferState.totalTransfersItems | async"
-                   [pageSize]="10"
+                   [pageSize]="size"
                    (page)="loadPage($event)"
-                   [pageSizeOptions]="[10]">
+                   [pageSizeOptions]="[size]">
     </mat-paginator>
   `
 })
@@ -68,9 +71,13 @@ import {TransfersExportOptionsComponent} from './transfers-export-options.compon
 export class TransfersTableComponent implements OnInit, OnDestroy {
   onDestroy: Subject<any> = new Subject<any>();
   transfersTableColumn = ['date', 'from', 'to', 'user', 'amount', 'note', 'action'];
+  transfersTableColumnMobile = ['date', 'amount', 'action'];
   transfersDatasource: MatTableDataSource<TransferModel> = new MatTableDataSource<TransferModel>([]);
+  size = 10;
+  skip = 0;
 
   constructor(public readonly transferState: TransferState,
+              public readonly deviceState: DeviceState,
               private readonly bottomSheet: MatBottomSheet) {
     transferState.transfers.pipe(
       takeUntil(this.onDestroy)
@@ -80,7 +87,7 @@ export class TransfersTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.transferState.fetch(10, 0);
+    this.transferState.fetch(this.size, this.skip);
     this.transferState.countAll();
   }
 
@@ -89,9 +96,8 @@ export class TransfersTableComponent implements OnInit, OnDestroy {
   }
 
   loadPage($event: PageEvent): void {
-    const skip = (($event.pageIndex + 1) * $event.pageSize);
-    const size = $event.pageSize;
-    this.transferState.fetch(size, skip);
+    this.skip = (($event.pageIndex + 1) * $event.pageSize);
+    this.transferState.fetch(this.size, this.skip);
   }
 
   viewItems(element: TransferModel): void {

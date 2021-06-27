@@ -5,38 +5,31 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Router} from '@angular/router';
 import {StockModel} from '../models/stock.model';
-import {DeviceInfoUtil, FileBrowserDialogComponent, StorageService} from '@smartstocktz/core-libs';
+import {DeviceState, FileBrowserDialogComponent, StorageService} from '@smartstocktz/core-libs';
 import {StockService} from '../services/stock.service';
 import {MetasModel} from '../models/metas.model';
 
 @Component({
   selector: 'app-stock-new',
   template: `
-    <mat-sidenav-container class="match-parent">
-      <mat-sidenav class="match-parent-side"
-                   [fixedInViewport]="true"
-                   #sidenav
-                   [mode]="enoughWidth()?'side':'over'"
-                   [opened]="enoughWidth()">
+    <app-layout-sidenav
+      [heading]="isUpdateMode?'Update Product':'Create Product'"
+      [leftDrawer]="side"
+      [body]="body"
+      backLink="/stock/products"
+      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
+      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [hasBackRoute]="true"
+      [showProgress]="false">
+      <ng-template #side>
         <app-drawer></app-drawer>
-      </mat-sidenav>
-
-      <mat-sidenav-content>
-
-        <app-toolbar [heading]="isUpdateMode?'Update Product':'Create Product'"
-                            [sidenav]="sidenav"
-                            backLink="/stock/products"
-                            [showProgress]="false">
-        </app-toolbar>
-
+      </ng-template>
+      <ng-template #body>
         <div class="container stock-new-wrapper">
           <form *ngIf="!isLoadingData" [formGroup]="productForm" #formElement="ngForm"
                 (ngSubmit)="isUpdateMode?updateProduct(formElement):addProduct(formElement)">
-
             <div class="row d-flex justify-content-center align-items-center">
-
               <div style="margin-bottom: 16px" class="col-11 col-xl-9 col-lg-9 col-md-10 col-sm-11">
-
                 <h4 style="padding: 0" class="">
                   Image
                 </h4>
@@ -46,7 +39,6 @@ import {MetasModel} from '../models/metas.model';
                     <button mat-button (click)="browserMedia($event,'image')" color="primary">Upload</button>
                   </mat-card-actions>
                 </mat-card>
-
                 <app-product-short-detail-form
                   [isUpdateMode]="isUpdateMode"
                   [initialStock]="initialStock"
@@ -54,7 +46,6 @@ import {MetasModel} from '../models/metas.model';
                   [saleable]="getSaleableFormControl().value === true"
                   [parentForm]="productForm">
                 </app-product-short-detail-form>
-
                 <mat-expansion-panel [expanded]="true" style="margin-top: 8px">
                   <mat-expansion-panel-header>
                     <h4 style="margin: 0">Advance Details</h4>
@@ -94,7 +85,6 @@ import {MetasModel} from '../models/metas.model';
                         <input min="0" matInput type="number" required formControlName="purchase">
                         <mat-error>Purchase price required</mat-error>
                       </mat-form-field>
-
                       <mat-form-field *ngIf="getSaleableFormControl().value === true" appearance="fill"
                                       class="my-input">
                         <mat-label>Wholesale Price / Unit</mat-label>
@@ -102,7 +92,6 @@ import {MetasModel} from '../models/metas.model';
                         <input min="0" matInput type="number" required formControlName="wholesalePrice">
                         <mat-error>Wholesale price required</mat-error>
                       </mat-form-field>
-
                       <mat-form-field *ngIf="getSaleableFormControl().value === true" appearance="fill" class="my-input"
                                       matTooltip="Quantity for this product to be sold as a whole or in bulk">
                         <mat-label>Wholesale Quantity</mat-label>
@@ -111,7 +100,6 @@ import {MetasModel} from '../models/metas.model';
                                required formControlName="wholesaleQuantity">
                         <mat-error>Wholesale Quantity required</mat-error>
                       </mat-form-field>
-
                       <mat-form-field *ngIf="getStockableFormControl().value === true" appearance="fill"
                                       class="my-input"
                                       matTooltip="Total initial unit quantity available">
@@ -120,27 +108,23 @@ import {MetasModel} from '../models/metas.model';
                                formControlName="quantity">
                         <mat-error>Initial Stock Quantity required</mat-error>
                       </mat-form-field>
-
                       <mat-form-field *ngIf="getStockableFormControl().value === true" appearance="fill"
                                       class="my-input">
                         <mat-label>Reorder Level</mat-label>
                         <input min="0" matInput type="number" required formControlName="reorder">
                         <mat-error>Reorder field required</mat-error>
                       </mat-form-field>
-
                       <app-suppliers-form-field [formGroup]="productForm"
-                                                       [purchasable]="getPurchasableFormControl().value===true">
+                                                [purchasable]="getPurchasableFormControl().value===true">
                       </app-suppliers-form-field>
                       <app-units-form-field [stockable]="getStockableFormControl().value === true"
-                                                   [formGroup]="productForm">
+                                            [formGroup]="productForm">
                       </app-units-form-field>
-
                       <mat-checkbox matTooltip="Select if a product can expire" labelPosition="after"
                                     class="my-input"
                                     formControlName="canExpire">
                         Can Expire?
                       </mat-checkbox>
-
                       <mat-form-field *ngIf="getCanExpireFormControl().value === true" appearance="outline"
                                       class="my-input">
                         <mat-label>Expire Date</mat-label>
@@ -148,22 +132,18 @@ import {MetasModel} from '../models/metas.model';
                         <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker [touchUi]="true" #picker></mat-datepicker>
                       </mat-form-field>
-
                     </mat-card-content>
                   </mat-card>
                 </mat-expansion-panel>
-
                 <mat-expansion-panel [expanded]="false" style="margin-top: 8px">
                   <mat-expansion-panel-header>
                     <h4 style="margin: 0">Other Attributes</h4>
                   </mat-expansion-panel-header>
                   <app-stock-metas-form-field [flat]="true" *ngIf="productForm" [formGroup]="productForm"
-                                                     [metas]="metasModel"></app-stock-metas-form-field>
+                                              [metas]="metasModel"></app-stock-metas-form-field>
                   <div style="height: 24px"></div>
                 </mat-expansion-panel>
-
               </div>
-
               <div class="col-11 col-xl-9 col-lg-9 col-md-10 col-sm-11" style="padding-bottom: 100px">
                 <div>
                   <button class="btn-block ft-button" color="primary" mat-raised-button
@@ -173,24 +153,21 @@ import {MetasModel} from '../models/metas.model';
                                           mode="indeterminate"></mat-progress-spinner>
                   </button>
                   <div style="padding: 16px 0">
-                    <button class="btn-block ft-button" routerLink="/stock" color="primary" mat-button>
+                    <button class="btn-block ft-button" routerLink="/stock/products" color="primary" mat-button>
                       Cancel
                     </button>
                   </div>
                 </div>
               </div>
-
             </div>
           </form>
-
         </div>
-      </mat-sidenav-content>
-
-    </mat-sidenav-container>
+      </ng-template>
+    </app-layout-sidenav>
   `,
   styleUrls: ['../styles/create.style.scss']
 })
-export class CreatePageComponent extends DeviceInfoUtil implements OnInit {
+export class CreatePageComponent implements OnInit {
 
   @Input() isUpdateMode = false;
   @Input() initialStock: StockModel;
@@ -210,9 +187,9 @@ export class CreatePageComponent extends DeviceInfoUtil implements OnInit {
               private readonly snack: MatSnackBar,
               private readonly dialog: MatDialog,
               private readonly router: Router,
+              public readonly deviceState: DeviceState,
               private readonly storageService: StorageService,
               private readonly stockService: StockService) {
-    super();
     document.title = 'SmartStock - Product Create';
   }
 

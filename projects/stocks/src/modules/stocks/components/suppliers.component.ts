@@ -8,11 +8,13 @@ import {MatPaginator} from '@angular/material/paginator';
 import {SupplierService} from '../services/supplier.service';
 import {SupplierState} from '../states/supplier.state';
 import {Router} from '@angular/router';
+import {DeviceState} from "@smartstocktz/core-libs";
 
 @Component({
   selector: 'app-suppliers',
   template: `
-    <mat-card-title class="d-flex flex-row">
+    <mat-card-title class="d-flex flex-row"
+                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
       <button routerLink="/stock/suppliers/create" color="primary" class="ft-button" mat-flat-button>
         Add Supplier
       </button>
@@ -24,7 +26,7 @@ import {Router} from '@angular/router';
         <button (click)="getSuppliers()" mat-menu-item>Reload Suppliers</button>
       </mat-menu>
     </mat-card-title>
-    <mat-card class="mat-elevation-z3">
+    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
       <mat-card-content>
         <table style="margin-top: 16px" class="my-input"
                *ngIf="!fetchSuppliersFlag && suppliersArray && suppliersArray.length > 0"
@@ -76,9 +78,10 @@ import {Router} from '@angular/router';
             </td>
           </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="suppliersTableColums"></tr>
+          <tr mat-header-row
+              *matHeaderRowDef="(deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums"></tr>
           <tr mat-row [matMenuTriggerFor]="opts" class="table-data-row"
-              *matRowDef="let element; columns: suppliersTableColums;">
+              *matRowDef="let element; columns: (deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums;">
             <div style="display: flex;">
               <div style="flex-grow: 1"></div>
               <mat-menu #opts [xPosition]="'after'">
@@ -112,6 +115,7 @@ export class SuppliersComponent implements OnInit {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
   suppliersDatasource: MatTableDataSource<SupplierModel> = new MatTableDataSource<SupplierModel>([]);
   suppliersTableColums = ['name', 'email', 'mobile', 'address', 'actions'];
+  suppliersTableColumsMobile = ['name', 'mobile', 'actions'];
   suppliersArray: SupplierModel[] = [];
   fetchSuppliersFlag = false;
 
@@ -119,6 +123,7 @@ export class SuppliersComponent implements OnInit {
               private readonly formBuilder: FormBuilder,
               private readonly dialog: MatDialog,
               private readonly router: Router,
+              public readonly deviceState: DeviceState,
               private readonly supplierState: SupplierState,
               private readonly snack: MatSnackBar) {
   }

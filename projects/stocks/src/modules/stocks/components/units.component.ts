@@ -7,11 +7,13 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {UnitsModel} from '../models/units.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {UnitsService} from '../services/units.service';
+import {DeviceState} from "@smartstocktz/core-libs";
 
 @Component({
   selector: 'app-units',
   template: `
-    <mat-card-title class="d-flex flex-row">
+    <mat-card-title class="d-flex flex-row"
+                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
       <button (click)="openAddUnitDialog()" color="primary" class="ft-button" mat-flat-button>Add Unit</button>
       <span class="toolbar-spacer"></span>
       <button mat-icon-button color="primary" [matMenuTriggerFor]="unitsMenu">
@@ -21,7 +23,7 @@ import {UnitsService} from '../services/units.service';
         <button (click)="getUnits()" mat-menu-item>Reload Units</button>
       </mat-menu>
     </mat-card-title>
-    <mat-card class="mat-elevation-z3">
+    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
       <mat-card-content>
         <table style="margin-top: 16px" class="my-input"
                *ngIf="!fetchUnitsFlag && unitsArray && unitsArray.length > 0"
@@ -144,6 +146,7 @@ export class UnitsComponent implements OnInit {
   constructor(private readonly unitsService: UnitsService,
               private readonly formBuilder: FormBuilder,
               private readonly dialog: MatDialog,
+              public readonly deviceState: DeviceState,
               private readonly snack: MatSnackBar) {
   }
 
@@ -305,7 +308,7 @@ export class DialogUnitDeleteComponent {
 @Component({
   selector: 'app-new-unit',
   template: `
-    <div style="min-width: 300px">
+    <div>
       <div mat-dialog-title>Create Unit</div>
       <div mat-dialog-content>
         <form class="d-flex flex-column" [formGroup]="newUnitForm" (ngSubmit)="createUnit()">

@@ -114,7 +114,7 @@ export class StockState {
 
     this.stockService.exportToExcel().then(value => {
       this.messageService.showMobileInfoMessage(
-        'Stocks sent to your email, visit your email to download it', 1000, 'bottom');
+        'Stocks exported', 1000, 'bottom');
     }).catch(reason => {
       this.messageService.showMobileInfoMessage(
         reason && reason.message ? reason.message : reason, 1000, 'bottom');

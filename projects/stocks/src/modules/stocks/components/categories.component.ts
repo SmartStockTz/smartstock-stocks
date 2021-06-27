@@ -11,11 +11,13 @@ import {DialogCategoryCreateComponent} from './dialog-category-create.component'
 import {CategoryService} from '../services/category.service';
 import {Router} from '@angular/router';
 import {CategoryState} from '../states/category.state';
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-categories',
   template: `
-    <mat-card-title class="d-flex flex-row">
+    <mat-card-title class="d-flex flex-row"
+                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
       <button routerLink="/stock/categories/create" color="primary" class="ft-button" mat-flat-button>
         Add Category
       </button>
@@ -27,7 +29,7 @@ import {CategoryState} from '../states/category.state';
         <button (click)="getCategories()" mat-menu-item>Reload Categories</button>
       </mat-menu>
     </mat-card-title>
-    <mat-card class="mat-elevation-z3">
+    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
       <mat-card-content>
         <table style="margin-top: 16px" class="my-input"
                *ngIf="!fetchCategoriesFlag && categoriesArray && categoriesArray.length > 0"
@@ -35,7 +37,7 @@ import {CategoryState} from '../states/category.state';
                [dataSource]="categoriesDatasource">
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td class="editable"  matRipple mat-cell
+            <td class="editable" matRipple mat-cell
                 *matCellDef="let element">{{element.name}}
             </td>
           </ng-container>
@@ -89,13 +91,12 @@ export class CategoriesComponent implements OnInit {
   categoriesTableColums = ['name', 'description', 'actions'];
   categoriesArray: CategoryModel[] = [];
   fetchCategoriesFlag = false;
-  nameFormControl = new FormControl();
-  descriptionFormControl = new FormControl();
 
   constructor(private readonly stockDatabase: CategoryService,
               private readonly formBuilder: FormBuilder,
               private readonly dialog: MatDialog,
               private readonly categoryState: CategoryState,
+              public readonly deviceState: DeviceState,
               private readonly router: Router,
               private readonly snack: MatSnackBar) {
   }

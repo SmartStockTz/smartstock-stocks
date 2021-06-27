@@ -11,11 +11,13 @@ import {DialogCatalogCreateComponent} from './dialog-catalog-create.component';
 import {CatalogService} from '../services/catalog.service';
 import {CatalogState} from '../states/catalog.state';
 import {Router} from '@angular/router';
+import {DeviceState} from "@smartstocktz/core-libs";
 
 @Component({
   selector: 'app-catalogs',
   template: `
-    <mat-card-title class="d-flex flex-row">
+    <mat-card-title class="d-flex flex-row"
+                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
       <button routerLink="/stock/catalogs/create" color="primary" class="ft-button" mat-flat-button>
         Add Catalog
       </button>
@@ -27,7 +29,7 @@ import {Router} from '@angular/router';
         <button (click)="getCatalogs()" mat-menu-item>Reload Catalogs</button>
       </mat-menu>
     </mat-card-title>
-    <mat-card class="mat-elevation-z3">
+    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
       <mat-card-content>
         <table style="margin-top: 16px" class="my-input"
                *ngIf="!fetchCategoriesFlag && catalogsArray && catalogsArray.length > 0"
@@ -105,6 +107,7 @@ export class CatalogsComponent implements OnInit {
               private readonly dialog: MatDialog,
               private readonly catalogState: CatalogState,
               private readonly router: Router,
+              public readonly deviceState: DeviceState,
               private readonly snack: MatSnackBar) {
   }
 

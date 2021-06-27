@@ -1,87 +1,117 @@
 import {Component, OnInit} from '@angular/core';
-import {DeviceInfoUtil} from '@smartstocktz/core-libs';
-import {StockState} from "../states/stock.state";
+import {DeviceState} from '@smartstocktz/core-libs';
+import {StockState} from '../states/stock.state';
 
 @Component({
   selector: 'app-stocks-index',
   template: `
-    <mat-sidenav-container>
-      <mat-sidenav class="match-parent-side" #sidenav [mode]="enoughWidth()?'side': 'over'" [opened]="enoughWidth()">
+    <app-layout-sidenav
+      searchPlaceholder="Filter product"
+      [heading]="'Stocks'"
+      [leftDrawer]="side"
+      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
+      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [body]="body">
+      <ng-template #side>
         <app-drawer></app-drawer>
-      </mat-sidenav>
-      <mat-sidenav-content style="height: 100vh">
-        <app-toolbar searchPlaceholder="Filter product" [heading]="'Stocks'"
-                            [sidenav]="sidenav"></app-toolbar>
-        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-10" style="">
-          <h1 style="margin-top: 16px">Go To</h1>
-          <div class="d-flex flex-row flex-wrap">
-            <div *ngFor="let page of pages" routerLink="{{page.path}}" style="margin: 5px; cursor: pointer">
-              <mat-card matRipple
-                        style="width: 150px; height: 150px; display: flex; justify-content: center; align-items: center; flex-direction: column">
-                <mat-icon color="primary" style="font-size: 60px; height: 60px; width: 60px">
-                  {{page.icon}}
-                </mat-icon>
-              </mat-card>
-              <p>{{page.name}}</p>
-            </div>
-          </div>
-          <h1>Summary</h1>
-          <div class="d-flex flex-row flex-wrap">
-<!--            <div class="container-fluid row" style="width: 100%">-->
-              <app-total-products-summary style="margin: 5px 0;"
-                                                 class="col-sm-11 col-md-6 col-lg-6 col-xl-6">
-              </app-total-products-summary>
-              <app-products-value-summary style="margin: 5px 0;"
-                                                 class="col-sm-11 col-md-6 col-lg-6 col-xl-6">
-              </app-products-value-summary>
-<!--            </div>-->
+      </ng-template>
+      <ng-template #body>
+        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">
+          <div *ngIf="(deviceState.isSmallScreen | async)===false" class="d-flex flex-row flex-wrap">
+            <app-libs-rbac [groups]="['admin', 'manager']" [pagePath]="page.path" *ngFor="let page of pages">
+              <ng-template>
+                <div routerLink="{{page.path}}" style="margin: 5px; cursor: pointer">
+                  <mat-card matRipple
+                            style="width: 150px; height: 150px; display: flex;
+                            justify-content: center; align-items: center;
+                            flex-direction: column">
+                    <mat-icon color="primary" style="font-size: 60px; height: 60px; width: 60px">
+                      {{page.icon}}
+                    </mat-icon>
+                  </mat-card>
+                  <p>{{page.name}}</p>
+                </div>
+              </ng-template>
+            </app-libs-rbac>
           </div>
         </div>
-      </mat-sidenav-content>
-    </mat-sidenav-container>
+
+        <div *ngIf="(deviceState.isSmallScreen | async)===true">
+          <mat-nav-list>
+            <app-libs-rbac [groups]="['admin', 'manager']" [pagePath]="page.path" *ngFor="let page of pages">
+              <ng-template>
+                <mat-list-item routerLink="{{page.path}}">
+                  <mat-icon color="primary" matListIcon>{{page.icon}}</mat-icon>
+                  <p matLine>{{page.name}}</p>
+                  <mat-card-subtitle matLine>{{page.detail}}</mat-card-subtitle>
+                </mat-list-item>
+                <mat-divider></mat-divider>
+              </ng-template>
+            </app-libs-rbac>
+          </mat-nav-list>
+        </div>
+
+        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">
+          <div class="d-flex flex-row flex-wrap">
+            <app-total-products-summary style="margin: 5px 0;"
+                                        class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12">
+            </app-total-products-summary>
+            <app-products-value-summary style="margin: 5px 0;"
+                                        class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12">
+            </app-products-value-summary>
+          </div>
+        </div>
+      </ng-template>
+    </app-layout-sidenav>
   `
 })
 
-export class IndexPage extends DeviceInfoUtil implements OnInit {
+export class IndexPage implements OnInit {
   pages = [
     {
       name: 'Products',
       path: '/stock/products',
+      detail: 'Manage products',
       icon: 'redeem'
     },
     {
       name: 'Categories',
       path: '/stock/categories',
+      detail: 'Group your products',
       icon: 'list'
     },
     {
       name: 'Catalogs',
       path: '/stock/catalogs',
+      detail: 'Tag your products',
       icon: 'loyalty'
     },
     {
       name: 'Units',
       path: '/stock/units',
+      detail: 'Manage unit measures',
       icon: 'straighten'
     },
     {
       name: 'Suppliers',
       path: '/stock/suppliers',
+      detail: 'Manage product suppliers',
       icon: 'airport_shuttle'
     },
     {
       name: 'Transfers',
       path: '/stock/transfers',
+      detail: 'Move products to other shops',
       icon: 'sync_alt'
     }
   ];
 
-  constructor(private readonly stockState: StockState) {
-    super();
+  constructor(public readonly stockState: StockState,
+              public readonly deviceState: DeviceState) {
     document.title = 'SmartStock - Stocks';
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.stockState.getStocksSummary();
   }
 

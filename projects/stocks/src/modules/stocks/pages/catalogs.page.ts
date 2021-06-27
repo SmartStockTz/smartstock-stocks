@@ -1,44 +1,39 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {DeviceInfoUtil} from '@smartstocktz/core-libs';
+import {DeviceState} from '@smartstocktz/core-libs';
 
 
 @Component({
   selector: 'app-stock-catalogs',
   template: `
-    <mat-sidenav-container class="match-parent">
-      <mat-sidenav class="match-parent-side" [fixedInViewport]="true" #sidenav [mode]="enoughWidth()?'side':'over'"
-                   [opened]="enoughWidth()">
+    <app-layout-sidenav
+      [heading]="'Catalogs'"
+      [showSearch]="false"
+      [searchPlaceholder]="'Type to search'"
+      [leftDrawer]="side"
+      [body]="body"
+      backLink="/stock"
+      [hasBackRoute]="true"
+      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
+      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [showProgress]="false">
+      <ng-template #side>
         <app-drawer></app-drawer>
-      </mat-sidenav>
-
-      <mat-sidenav-content (swiperight)="openDrawer(sidenav)">
-
-        <app-toolbar [heading]="'Catalogs'" [showSearch]="false"
-                     [searchPlaceholder]="'Type to search'"
-                     [sidenav]="sidenav" [showProgress]="false">
-        </app-toolbar>
-
-        <div>
-
-          <div class="container">
-            <div class="" style="margin: 40px 0">
-              <div class="container col-lg-9 col-xl-9 col-sm-11 col-md-10 col-11">
-                <app-catalogs></app-catalogs>
-              </div>
-            </div>
+      </ng-template>
+      <ng-template #body>
+        <div style="min-height: 100vh">
+          <div
+            [class]="(deviceState.isSmallScreen | async)===true?'':'container col-lg-9 col-xl-9 col-sm-12 col-md-10 col-12 pt-3'">
+            <app-catalogs></app-catalogs>
           </div>
         </div>
-
-      </mat-sidenav-content>
-
-    </mat-sidenav-container>
+      </ng-template>
+    </app-layout-sidenav>
   `,
   styleUrls: ['../styles/stock.style.scss']
 })
-export class CatalogsPage extends DeviceInfoUtil implements OnInit, OnDestroy {
+export class CatalogsPage implements OnInit, OnDestroy {
 
-  constructor() {
-    super();
+  constructor(public readonly deviceState: DeviceState) {
     document.title = 'SmartStock - Catalogs';
   }
 

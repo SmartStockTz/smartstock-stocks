@@ -45,8 +45,8 @@ body {
   background: #f3f2ef;
 }
 
-mat-sidenav-content{
-  background: transparent!important;
+mat-sidenav-content {
+  background: transparent !important;
 }
 
 div.mat-list-text {
@@ -100,9 +100,9 @@ button {
 }
 
 .ft-button {
-  height: 48px;
+  height: 36px;
   color: white;
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .table-data-row:hover {
@@ -212,4 +212,12 @@ div {
 
 mat-sidenav-content {
   height: 100vh;
+}
+
+td {
+  padding: 5px !important;
+}
+
+th {
+  padding: 5px !important;
 }

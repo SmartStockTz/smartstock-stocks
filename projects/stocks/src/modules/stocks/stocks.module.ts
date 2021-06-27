@@ -33,7 +33,7 @@ import {DialogUnitDeleteComponent, DialogUnitNewComponent, UnitsComponent} from 
 import {DialogSupplierDeleteComponent, SuppliersComponent} from './components/suppliers.component';
 import {ImportsDialogComponent} from './components/imports.component';
 import {CommonModule} from '@angular/common';
-import {ConfigsService, LibModule} from '@smartstocktz/core-libs';
+import {LibModule} from '@smartstocktz/core-libs';
 import {CategoryFormFieldComponent} from './components/category-form-field.component';
 import {SuppliersFormFieldComponent} from './components/suppliers-form-field.component';
 import {UnitsFormFieldComponent} from './components/units-form-field.component';
@@ -81,9 +81,10 @@ import {CategoryCreateFormBottomSheetComponent} from './components/category-crea
 import {CatalogCreatePage} from './pages/catalog-create.page';
 import {CatalogCreateFormComponent} from './components/catalog-create-form.component';
 import {CatalogEditPage} from './pages/catalog-edit.page';
+import {StockNavigationService} from "./services/stock-navigation.service";
 
 const routes: Routes = [
-  {path: '', component: ProductsPage},
+  {path: '', component: IndexPage},
   {path: 'products', component: ProductsPage},
   {path: 'products/create', component: CreatePageComponent},
   {path: 'products/edit/:id', component: EditPageComponent},
@@ -205,45 +206,8 @@ const routes: Routes = [
   ],
 })
 export class StocksModule {
-  constructor(private readonly configs: ConfigsService) {
-    this.configs.addMenu({
-      name: 'Stock',
-      link: '/stock',
-      icon: 'store',
-      roles: ['admin', 'manager'],
-      pages: [
-        {
-          name: 'products',
-          link: '/stock/products',
-          roles: ['admin', 'manager']
-        },
-        {
-          name: 'categories',
-          link: '/stock/categories',
-          roles: ['admin', 'manager']
-        },
-        {
-          name: 'catalogs',
-          link: '/stock/catalogs',
-          roles: ['admin', 'manager']
-        },
-        {
-          name: 'units',
-          link: '/stock/units',
-          roles: ['admin', 'manager']
-        },
-        {
-          name: 'suppliers',
-          link: '/stock/suppliers',
-          roles: ['admin', 'manager']
-        },
-        {
-          name: 'transfers',
-          link: '/stock/transfers',
-          roles: ['admin', 'manager']
-        }
-      ]
-    });
-    this.configs.selectedModuleName = 'stock';
+  constructor(private readonly stockNav: StockNavigationService) {
+    this.stockNav.init();
+    this.stockNav.selected();
   }
 }

@@ -12,6 +12,11 @@ import {TransferModel} from '../models/transfer.model';
       </button>
     </div>
     <div style="margin-bottom: 50px">
+      <p>FROM : {{data.transfer.from_shop.name}}</p>
+      <p>TO : {{data.transfer.to_shop.name}}</p>
+      <p>AMOUNT : {{data.transfer.amount | currency: ' '}}</p>
+      <p>MESSAGE : {{data.transfer.note}}</p>
+      <p>TRANSFERRED BY : {{data.transfer.transferred_by.username}}</p>
       <h1 style="margin: 0">Products</h1>
       <mat-divider></mat-divider>
       <mat-list>

@@ -1,7 +1,6 @@
-import {BrowserModule, HammerModule} from '@angular/platform-browser';
+import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 import {AppComponent} from './app.component';
-import {StocksModule} from '../../../stocks/src/public-api';
 import {HttpClientModule} from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {BFast} from 'bfastjs';
@@ -17,6 +16,8 @@ import {MatInputModule} from '@angular/material/input';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatDialogModule} from "@angular/material/dialog";
+import {MatBottomSheetModule} from "@angular/material/bottom-sheet";
 
 
 const routes: Routes = [
@@ -41,22 +42,21 @@ const routes: Routes = [
   ],
   imports: [
     BrowserModule,
-    RouterModule.forRoot(routes, { relativeLinkResolution: 'legacy' }),
+    RouterModule.forRoot(routes),
     BrowserAnimationsModule,
     HttpClientModule,
     MatSnackBarModule,
-    StocksModule,
     HttpClientModule,
     MatSnackBarModule,
-    RouterModule,
     MatNativeDateModule,
-    HammerModule,
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
     ReactiveFormsModule,
     MatButtonModule,
     MatProgressSpinnerModule,
+    MatDialogModule,
+    MatBottomSheetModule
   ],
   providers: [],
   bootstrap: [AppComponent]
@@ -65,8 +65,7 @@ export class AppModule {
   constructor() {
     BFast.init({
       applicationId: 'smartstock_lb',
-      projectId: 'smartstock',
-      appPassword: 'ZMUGVn72o3yd8kSbMGhfWpI80N9nA2IHjxWKlAhG'
+      projectId: 'smartstock'
     });
   }
 
