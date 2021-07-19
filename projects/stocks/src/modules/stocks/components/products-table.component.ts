@@ -66,14 +66,18 @@ import {ImportsDialogComponent} from './imports.component';
               <td matRipple mat-cell *matCellDef="let element">
                 {{element.saleable ? (element.retailPrice | number) : 'N/A'}}
               </td>
-              <td mat-footer-cell *matFooterCellDef></td>
+              <td mat-footer-cell *matFooterCellDef="let element">
+                {{salesRetailValue() | number}}
+              </td>
             </ng-container>
             <ng-container matColumnDef="wholesalePrice">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>WholeSale Price</th>
               <td mat-cell *matCellDef="let element">
                 {{element.saleable ? (element.wholesalePrice | number) : 'N/A'}}
               </td>
-              <td mat-footer-cell *matFooterCellDef></td>
+              <td mat-footer-cell *matFooterCellDef="let element">
+                {{salesWholeValue() | number}}
+              </td>
             </ng-container>
             <ng-container matColumnDef="action">
               <th mat-header-cell *matHeaderCellDef>
@@ -258,6 +262,26 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     return this.stockState.stocks.value
       .filter(x => x.stockable === true && x.quantity > 0)
       .map(x => x.purchase * x.quantity)
+      .reduce((a, b) => a + b, 0);
+  }
+
+  salesRetailValue(): number{
+    if (!this.stockDatasource.data) {
+      return 0;
+    }
+    return this.stockState.stocks.value
+      .filter(x => x.saleable === true && x.quantity > 0)
+      .map(x => x.retailPrice * x.quantity)
+      .reduce((a, b) => a + b, 0);
+  }
+
+  salesWholeValue(): number{
+    if (!this.stockDatasource.data) {
+      return 0;
+    }
+    return this.stockState.stocks.value
+      .filter(x => x.saleable === true && x.quantity > 0 && x.wholesaleQuantity>0)
+      .map(x => x.wholesalePrice * x.wholesaleQuantity * x.quantity)
       .reduce((a, b) => a + b, 0);
   }
 
