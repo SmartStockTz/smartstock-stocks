@@ -143,7 +143,7 @@ const routes: Routes = [
     MatSortModule,
     CdkTableModule,
     ScrollingModule,
-    FormsModule
+    FormsModule,
   ],
   declarations: [
     SupplierCreateFormComponent,
