@@ -50,7 +50,9 @@ import {ImportsDialogComponent} from './imports.component';
               <td mat-cell *matCellDef="let element">
                 {{element.stockable ? (element.quantity | number) : 'N/A'}}
               </td>
-              <td mat-footer-cell *matFooterCellDef></td>
+              <td mat-footer-cell *matFooterCellDef>
+                {{totalQuantity() | number}}
+              </td>
             </ng-container>
             <ng-container matColumnDef="purchase">
               <th mat-header-cell *matHeaderCellDef mat-sort-header>Purchase Price</th>
@@ -270,7 +272,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       return 0;
     }
     return this.stockState.stocks.value
-      .filter(x => x.saleable === true && x.quantity > 0)
+      .filter(x => x.stockable === true && x.quantity > 0)
       .map(x => x.retailPrice * x.quantity)
       .reduce((a, b) => a + b, 0);
   }
@@ -280,8 +282,18 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       return 0;
     }
     return this.stockState.stocks.value
-      .filter(x => x.saleable === true && x.quantity > 0 && x.wholesaleQuantity>0)
-      .map(x => x.wholesalePrice * x.wholesaleQuantity * x.quantity)
+      .filter(x => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity>0)
+      .map(x => (x.wholesalePrice / x.wholesaleQuantity) * x.quantity)
+      .reduce((a, b) => a + b, 0);
+  }
+
+  totalQuantity(): number{
+    if (!this.stockDatasource.data) {
+      return 0;
+    }
+    return this.stockState.stocks.value
+      .filter(x => x.stockable === true && x.quantity > 0 )
+      .map(x => x.quantity)
       .reduce((a, b) => a + b, 0);
   }
 
