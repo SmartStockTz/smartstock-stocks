@@ -1,18 +1,42 @@
 import {Injectable} from '@angular/core';
-import {UserService} from './user.service';
-import {StorageService} from '@smartstocktz/core-libs';
+import {UserService} from '@smartstocktz/core-libs';
 import {bfast, BFast} from 'bfastjs';
 import {StockModel} from '../models/stock.model';
+import {StockWorker} from '../workers/stock.worker';
+import {ShopModel} from '../models/shop.model';
+import {wrap} from 'comlink';
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'root'
 })
 export class StockService {
-  constructor(private readonly userService: UserService, private readonly storageService: StorageService) {
+
+  private stockWorker: StockWorker;
+  private stockWorkerNative;
+
+  // private changes;
+
+  constructor(private readonly userService: UserService) {
+  }
+
+  async startWorker(shop: ShopModel): Promise<any> {
+    if (!this.stockWorker) {
+      this.stockWorkerNative = new Worker(new URL('../workers/stock.worker', import .meta.url));
+      const SW = wrap(this.stockWorkerNative) as unknown as any;
+      this.stockWorker = await new SW(shop);
+    }
+  }
+
+  stopWorker(): void {
+    if (this.stockWorkerNative) {
+      this.stockWorkerNative.terminate();
+      this.stockWorker = undefined;
+      this.stockWorkerNative = undefined;
+    }
   }
 
   async exportToExcel(): Promise<any> {
-    const activeShop = await this.storageService.getActiveShop();
+    const activeShop = await this.userService.getCurrentShop();
     const columns = [
       'id',
       'product',
@@ -53,7 +77,7 @@ export class StockService {
   }
 
   async importStocks(stocks: StockModel[]): Promise<any> {
-    const shop = await this.storageService.getActiveShop();
+    const shop = await this.userService.getCurrentShop();
     return BFast
       .database(shop.projectId)
       .transaction()
@@ -62,7 +86,7 @@ export class StockService {
   }
 
   async addStock(stock: StockModel, inUpdateMode = false): Promise<StockModel> {
-    const shop = await this.storageService.getActiveShop();
+    const shop = await this.userService.getCurrentShop();
     if (inUpdateMode) {
       const stockId = stock._id ? stock._id : stock.id;
       delete stock.id;
@@ -80,30 +104,26 @@ export class StockService {
     }
   }
 
-  async deleteAllStock(stocks: StockModel[], callback?: (value: any) => void): Promise<void> {
-  }
-
   async deleteStock(stock: StockModel): Promise<any> {
-    const shop = await this.storageService.getActiveShop();
-    return BFast.database(shop.projectId).collection('stocks').query().byId(stock._id ? stock._id : stock.id).delete();
+    const shop = await this.userService.getCurrentShop();
+    await this.startWorker(shop);
+    return this.stockWorker.deleteProduct(stock, shop);
   }
 
-  async getAllStock(): Promise<StockModel[]> {
-    const shop = await this.storageService.getActiveShop();
-    const total = await bfast.database(shop.projectId).table('stocks').query().count(true).find<number>();
-    const stocks: StockModel[] = await BFast.database(shop.projectId)
-      .collection<StockModel>('stocks')
-      .query()
-      .size(total)
-      .skip(0)
-      .orderBy('product', 1)
-      .find<StockModel[]>();
-    await this.storageService.saveStocks(stocks as any);
-    return stocks;
+  async getProducts(): Promise<StockModel[]> {
+    const shop = await this.userService.getCurrentShop();
+    await this.startWorker(shop);
+    return this.stockWorker.getProducts(shop);
+  }
+
+  async getProductsRemote(): Promise<StockModel[]> {
+    const shop = await this.userService.getCurrentShop();
+    await this.startWorker(shop);
+    return this.stockWorker.getProductsRemote(shop);
   }
 
   async deleteMany(stocksId: string[]): Promise<any> {
-    const activeShop = await this.storageService.getActiveShop();
+    const activeShop = await this.userService.getCurrentShop();
     return BFast.database(activeShop.projectId)
       .transaction()
       .delete('stocks', {
@@ -121,27 +141,5 @@ export class StockService {
       })
       .commit();
   }
-
-  // async updateStock(stock: StockModel, progress: (d) => void): Promise<StockModel> {
-  //   const shop = await this._storage.getActiveShop();
-  //   const stockId = stock._id ? stock._id : stock.id;
-  //   delete stock.id;
-  //   if (stock.image && !stock.image.toString().startsWith('http') && stock.image instanceof File) {
-  //     stock.image = await BFast.storage(shop.projectId).save(stock.image, progress);
-  //   }
-  //   if (stock.downloads && stock.downloads.length > 0) {
-  //     for (const value of stock.downloads) {
-  //       if (value && value.url instanceof File) {
-  //         value.url = await BFast.storage(shop.projectId).save(value.url as any, progress);
-  //       }
-  //     }
-  //   }
-  //   return BFast.database(shop.projectId).collection('stocks')
-  //     .query()
-  //     .byId(stockId.trim())
-  //     .updateBuilder()
-  //     .doc(stock)
-  //     .update();
-  // }
 
 }

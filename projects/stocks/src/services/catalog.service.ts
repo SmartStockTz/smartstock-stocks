@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {UserService} from './user.service';
-import {StorageService} from '@smartstocktz/core-libs';
+import {StorageService, UserService} from '@smartstocktz/core-libs';
 import {CatalogModel} from '../models/catalog.model';
 import {BFast} from 'bfastjs';
 

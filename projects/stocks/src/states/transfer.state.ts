@@ -28,7 +28,7 @@ export class TransferState {
     });
   }
 
-  fetch(size: number, skip: number): void {
+  fetch(size: number = 20, skip: number = 0): void {
     this.isFetchTransfers.next(true);
     this.transferService.fetch({
       skip,

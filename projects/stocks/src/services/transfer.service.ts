@@ -4,7 +4,7 @@ import {StorageService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'root'
 })
 
 export class TransferService {

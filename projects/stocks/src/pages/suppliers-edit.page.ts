@@ -1,5 +1,5 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import {DeviceInfoUtil, DeviceState} from '@smartstocktz/core-libs';
+import {DeviceState} from '@smartstocktz/core-libs';
 import {SupplierState} from '../states/supplier.state';
 import {Router} from '@angular/router';
 

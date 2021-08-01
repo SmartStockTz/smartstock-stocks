@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {TransferState} from "../states/transfer.state";
+import {TransferState} from '../states/transfer.state';
 
 @Component({
   selector: 'app-stock-transfers-table-actions',

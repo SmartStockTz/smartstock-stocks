@@ -35,7 +35,7 @@ export class StockState {
       if (localStocks && Array.isArray(localStocks) && localStocks.length > 0) {
         this.stocks.next(localStocks);
       } else {
-        return this.stockService.getAllStock();
+        return this.stockService.getProducts();
       }
     }).then(remoteStocks => {
       if (remoteStocks && Array.isArray(remoteStocks) && remoteStocks.length > 0) {
@@ -72,7 +72,7 @@ export class StockState {
           }
         }).reduce((a, b) => a + b, 0));
       } else {
-        return this.stockService.getAllStock();
+        return this.stockService.getProducts();
       }
     }).then(remoteStocks => {
       if (remoteStocks && Array.isArray(remoteStocks) && remoteStocks.length > 0) {
@@ -97,7 +97,7 @@ export class StockState {
 
   getStocksFromRemote(): void {
     this.isFetchStocks.next(true);
-    this.stockService.getAllStock().then(remoteStocks => {
+    this.stockService.getProducts().then(remoteStocks => {
       this.stocks.next(remoteStocks);
       return this.storageService.saveStock(remoteStocks as any);
     }).catch(reason => {

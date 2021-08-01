@@ -54,10 +54,10 @@ import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
           <!--                                       [formGroup]="newCatalogForm">-->
           <!--          </app-units-form-field>-->
           <app-catalog-form-field *ngIf="getIsParentFormControl().value === true"
-                                         [name]="'parents'"
-                                         [label]="'Select Parents'"
-                                         [onlyParent]="true"
-                                         [formGroup]="newCatalogForm"></app-catalog-form-field>
+                                  [name]="'parents'"
+                                  [label]="'Select Parents'"
+                                  [onlyParent]="true"
+                                  [formGroup]="newCatalogForm"></app-catalog-form-field>
 
         </mat-card>
 
@@ -65,7 +65,7 @@ import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
           Other Attributes
         </h2>
         <app-stock-metas-form-field [formGroup]="newCatalogForm"
-                                           [metas]="metasModel"></app-stock-metas-form-field>
+                                    [metas]="metasModel"></app-stock-metas-form-field>
 
         <div style="height: 24px"></div>
 

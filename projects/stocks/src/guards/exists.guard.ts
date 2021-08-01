@@ -2,9 +2,8 @@ import {Injectable} from '@angular/core';
 import {ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree} from '@angular/router';
 import {Observable} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {StorageService} from '@smartstocktz/core-libs';
+import {StorageService, UserService} from '@smartstocktz/core-libs';
 import {NoStockDialogComponent} from '@smartstocktz/core-libs';
-import {UserService} from '../services/user.service';
 
 @Injectable({
   providedIn: 'root'

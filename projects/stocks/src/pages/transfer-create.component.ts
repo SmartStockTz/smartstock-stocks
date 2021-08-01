@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {DeviceInfoUtil, DeviceState} from '@smartstocktz/core-libs';
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-transfer-create',
