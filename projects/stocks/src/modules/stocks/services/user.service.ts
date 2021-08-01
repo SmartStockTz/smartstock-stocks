@@ -54,7 +54,8 @@ export class UserService {
   async getCurrentShop(): Promise<ShopModel> {
     try {
       const activeShop = await this.storageService.getActiveShop();
-      if (activeShop && activeShop.projectId && activeShop.applicationId && activeShop.projectUrlId) {
+      if (activeShop && activeShop.projectId && activeShop.applicationId) {
+        // @ts-ignore
         return activeShop;
       } else {
         throw new Error('No active shop in records');
@@ -67,6 +68,7 @@ export class UserService {
   async saveCurrentShop(shop: ShopModel): Promise<ShopModel> {
     try {
       await this.storageService.saveCurrentProjectId(shop.projectId);
+      // @ts-ignore
       return await this.storageService.saveActiveShop(shop);
     } catch (e) {
       throw e;

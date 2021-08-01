@@ -5,7 +5,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Router} from '@angular/router';
 import {StockModel} from '../models/stock.model';
-import {DeviceState, FileBrowserDialogComponent, StorageService} from '@smartstocktz/core-libs';
+import {DeviceState, FileBrowserDialogComponent, FilesService, StorageService} from '@smartstocktz/core-libs';
 import {StockService} from '../services/stock.service';
 import {MetasModel} from '../models/metas.model';
 
@@ -189,6 +189,7 @@ export class CreatePageComponent implements OnInit {
               private readonly router: Router,
               public readonly deviceState: DeviceState,
               private readonly storageService: StorageService,
+              private readonly filesService: FilesService,
               private readonly stockService: StockService) {
     document.title = 'SmartStock - Product Create';
   }
@@ -342,17 +343,23 @@ export class CreatePageComponent implements OnInit {
   async browserMedia($event: MouseEvent, control: string): Promise<void> {
     $event.preventDefault();
     const shop = await this.storageService.getActiveShop();
-    this.dialog.open(FileBrowserDialogComponent, {
-      closeOnNavigation: false,
-      disableClose: true,
-      data: {
-        shop
-      }
-    }).afterClosed().subscribe(value => {
-      if (value && value.url) {
-        this.productForm.get(control).setValue(value.url);
+    this.filesService.browse().then(f=>{
+        if (f && f.url) {
+        this.productForm.get(control).setValue(f.url);
       } else {
       }
-    });
+    })
+    // this.dialog.open(FileBrowserDialogComponent, {
+    //   closeOnNavigation: false,
+    //   disableClose: true,
+    //   data: {
+    //     shop
+    //   }
+    // }).afterClosed().subscribe(value => {
+    //   if (value && value.url) {
+    //     this.productForm.get(control).setValue(value.url);
+    //   } else {
+    //   }
+    // });
   }
 }

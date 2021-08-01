@@ -137,6 +137,7 @@ export class TransferCreateFormComponent implements OnInit {
       const cShop = await this.userService.getCurrentShop();
       const user = await this.userService.currentUser();
       const allShops = await this.userService.getShops(user);
+      // @ts-ignore
       this.shops = allShops.filter(x => x.projectId !== cShop.projectId);
     } catch (e) {
       this.shops = [];

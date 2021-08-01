@@ -18,6 +18,8 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from "@angular/material/dialog";
 import {MatBottomSheetModule} from "@angular/material/bottom-sheet";
+import { MatMenuModule } from '@angular/material/menu';
+import { LibModule } from '@smartstocktz/core-libs';
 
 
 const routes: Routes = [
@@ -56,7 +58,9 @@ const routes: Routes = [
     MatButtonModule,
     MatProgressSpinnerModule,
     MatDialogModule,
-    MatBottomSheetModule
+    MatBottomSheetModule,
+    MatMenuModule,
+    LibModule
   ],
   providers: [],
   bootstrap: [AppComponent]
