@@ -7,7 +7,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve stocks-mock",
-    "build": "ng build",
+    "build": "ng build -c production stocks && node copy-worker.js",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -27,6 +27,7 @@
     "@smartstocktz/core-libs": "^0.2.13",
     "bfastjs": "^4.2.5",
     "bootstrap": "^4.5.3",
+    "comlink": "^4.3.1",
     "fontsource-roboto": "^3.0.3",
     "material-design-icons": "^3.0.1",
     "ngx-bottom-nav": "^11.0.0",

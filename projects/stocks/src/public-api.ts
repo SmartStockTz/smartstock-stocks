@@ -2,6 +2,6 @@
  * Public API Surface of stocks
  */
 
-export * from './modules/stocks/stocks.module';
-export * from './modules/stocks/services/stock-navigation.service';
+export * from './stocks.module';
+export * from './services/stock-navigation.service';
 
