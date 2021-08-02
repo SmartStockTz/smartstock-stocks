@@ -21,7 +21,7 @@ import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
       <div [class]="(deviceState.isSmallScreen  | async) ===false?'container-fluid':''">
 
         <div class="product-table-options">
-          <app-stock-products-table-sub-actions></app-stock-products-table-sub-actions>
+          <app-stock-products-table-sub-actions (done)="doneInSubMenu()"></app-stock-products-table-sub-actions>
           <mat-paginator [style]="(deviceState.isSmallScreen  | async) ===false?{display:''}:{display:'none'}"
                          #paginator pageSize="50"
                          *ngIf="(deviceState.isSmallScreen  | async) ===false"
@@ -148,9 +148,8 @@ import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
 
 export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly onDestroy = new Subject<void>();
-  // destroyer = Subject<any>();
   totalPurchase: Observable<number> = of(0);
-  stockDatasource: MatTableDataSource<StockModel> = new MatTableDataSource<StockModel>([]);
+  stockDatasource = new MatTableDataSource<StockModel>([]);
   stockColumns = ['select', 'product', 'quantity', 'purchase', 'retailPrice', 'wholesalePrice', 'action'];
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild(MatPaginator) paginator: MatPaginator;
@@ -164,23 +163,14 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
               private readonly dialog: MatDialog,
               public readonly deviceState: DeviceState,
               public readonly stockState: StockState) {
-    this.stockState.stocks.pipe(takeUntil(this.onDestroy)).subscribe(stocks => {
-      this.stockDatasource.data = stocks;
-      this._getTotalPurchaseOfStock(stocks);
-    });
   }
 
   ngOnInit(): void {
     this.stockState.getStocks();
-    // this.deviceState.isSmallScreen
-    //   .pipe(takeUntil(this.onDestroy))
-    //   .subscribe(value => {
-    //     if (value) {
-    //       this.stockDatasource.paginator = null;
-    //     } else {
-    //       this.stockDatasource.paginator = this.paginator;
-    //     }
-    //   });
+    this.stockState.stocks.pipe(takeUntil(this.onDestroy)).subscribe(stocks => {
+      this.stockDatasource.data = stocks;
+      this._getTotalPurchaseOfStock(stocks);
+    });
   }
 
 
@@ -256,4 +246,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     this.stockDatasource.sort = this.matSort;
   }
 
+  doneInSubMenu(): void {
+    this.stockState.getStocks();
+  }
 }

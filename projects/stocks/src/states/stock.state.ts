@@ -81,11 +81,11 @@ export class StockState {
     });
   }
 
-  importProducts(stocks: StockModel[], dialog: MatDialogRef<any>): void {
+  importProducts(csv: string, dialog: MatDialogRef<any>): void {
     this.isImportProducts.next(true);
-    this.stockService.importStocks(stocks).then(_ => {
-      this.getStocksFromRemote();
+    this.stockService.importStocks(csv).then(_ => {
       dialog.close(true);
+      // this.getStocks();
       this.message('Products imported');
     }).catch(this.message).finally(() => {
       this.isImportProducts.next(false);
@@ -117,7 +117,7 @@ export class StockState {
     this.isDeleteStocks.next(true);
     this.stockService.deleteMany(selectionModel.selected.map(x => x.id)).then(_ => {
       this.message('Products deleted');
-      this.stocks.next(this.stocks.value.filter(x => selectionModel.selected.findIndex(y => y.id === x.id) === -1));
+      this.stocks.next(_);
       selectionModel.clear();
     }).catch(reason => {
       this.message(reason);

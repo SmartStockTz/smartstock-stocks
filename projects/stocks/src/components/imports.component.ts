@@ -10,7 +10,7 @@ import {DomSanitizer} from '@angular/platform-browser';
   template: `
     <div>
       <div class="d-flex flex-row flex-wrap align-items-center">
-<!--        <span style="flex-grow: 1"></span>-->
+        <!--        <span style="flex-grow: 1"></span>-->
         <a download="stock.csv" style="margin: 5px; flex-grow: 1" [href]="stocksBlob">Download sample</a>
         <button (click)="fileU.click()"
                 style="margin: 5px"
@@ -104,22 +104,10 @@ export class ImportsDialogComponent implements OnInit {
               public readonly stockState: StockState) {
   }
 
-  stocksBlob = this.domSanitizer.bypassSecurityTrustUrl(`data:text/csv,product,saleable,downloadable,downloads,stockable,purchasable,description,purchase,retailPrice,wholesalePrice,wholesaleQuantity,quantity,reorder,unit,expire,category,supplier
-tshirt,TRUE,FALSE,[],TRUE,TRUE,form six,8000,12000,10000,10,41,10,Pieces ,,male,gervas`);
+  stocksBlob = this.domSanitizer.bypassSecurityTrustUrl(
+    `data:text/csv,product,saleable,stockable,purchasable,description,purchase,retailPrice,wholesalePrice,wholesaleQuantity,quantity,reorder,unit,category,supplier
+tshirt,TRUE,TRUE,TRUE,form six,8000,12000,100000,10,41,10,Pieces,male,gervas`);
 
-  private static _sanitizeField(value: string): any {
-    value = value.replace(new RegExp('[-,]', 'ig'), '').trim();
-    if (!isNaN(Number(value))) {
-      return Number(value);
-    }
-    if (value.trim().startsWith('[', 0)) {
-      return JSON.parse(value);
-    }
-    if (value.trim().startsWith('{', 0)) {
-      return JSON.parse(value);
-    }
-    return value;
-  }
 
   ngOnInit(): void {
   }
@@ -130,24 +118,7 @@ tshirt,TRUE,FALSE,[],TRUE,TRUE,form six,8000,12000,10000,10,41,10,Pieces ,,male,
     if (file) {
       const fileReader = new FileReader();
       fileReader.onload = (evt) => {
-        this.stockState.importProducts(this.csvToJSON(evt.target.result).map((x) => {
-          if (x.canExpire && typeof x.canExpire !== 'boolean') {
-            x.canExpire = (x.canExpire.toString().toLowerCase() === 'true');
-          }
-          if (x.downloadable && typeof x.downloadable !== 'boolean') {
-            x.downloadable = (x.downloadable.toString().toLowerCase() === 'true');
-          }
-          if (x.saleable && typeof x.saleable !== 'boolean') {
-            x.saleable = (x.saleable.toString().toLowerCase() === 'true');
-          }
-          if (x.purchasable && typeof x.purchasable !== 'boolean') {
-            x.purchasable = (x.purchasable.toString().toLowerCase() === 'true');
-          }
-          if (x.stockable && typeof x.stockable !== 'boolean') {
-            x.stockable = (x.stockable.toString() !== 'true');
-          }
-          return x;
-        }), this.dialogRef);
+        this.stockState.importProducts(evt.target.result.toString(), this.dialogRef);
       };
       fileReader.readAsText(file, 'UTF-8');
     } else {
@@ -155,33 +126,5 @@ tshirt,TRUE,FALSE,[],TRUE,TRUE,form six,8000,12000,10000,10,41,10,Pieces ,,male,
         duration: 3000
       });
     }
-  }
-
-  csvToJSON(csv): any[] {
-    const lines = csv.split('\n');
-    const result = [];
-    const headers = lines[0].split(',');
-    for (let i = 1; i < lines.length; i++) {
-      const obj = {};
-      const currentline = lines[i].split(',');
-      if (currentline && Array.isArray(currentline) && currentline.length === headers.length) {
-        for (let j = 0; j < headers.length; j++) {
-          const originalValue: string = currentline[j];
-          let value = originalValue.split('').map((value1, index, array) => {
-            if (index === 0 && value1 === '"') {
-              return '';
-            }
-            if (index === array.length - 1 && value1 === '"') {
-              return '';
-            }
-            return value1;
-          }).join('');
-          value = ImportsDialogComponent._sanitizeField(value);
-          obj[headers[j].toString().trim().split('"').join('')] = value;
-        }
-        result.push(obj);
-      }
-    }
-    return result;
   }
 }

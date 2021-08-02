@@ -1,9 +1,10 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
 import {DeviceState, MessageService} from '@smartstocktz/core-libs';
 import {MatDialog} from '@angular/material/dialog';
 import {StockState} from '../states/stock.state';
 import {DialogDeleteComponent} from './stock.component';
 import {ImportsDialogComponent} from './imports.component';
+import {Subject} from 'rxjs';
 
 @Component({
   selector: 'app-stock-products-table-sub-actions',
@@ -36,7 +37,10 @@ import {ImportsDialogComponent} from './imports.component';
   styleUrls: ['../styles/products-options.style.scss']
 })
 
-export class ProductsTableSubActionsComponent implements OnInit {
+export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
+
+  @Output() done = new EventEmitter();
+  // private destroyer = new Subject<any>();
 
   constructor(private readonly dialog: MatDialog,
               private readonly messageService: MessageService,
@@ -76,10 +80,16 @@ export class ProductsTableSubActionsComponent implements OnInit {
   importProducts(): void {
     this.dialog.open(ImportsDialogComponent, {
       closeOnNavigation: true,
+    }).afterClosed().subscribe(value => {
+      this.done.emit();
     });
   }
 
   exportProducts(): void {
     this.stockState.exportToExcel();
+  }
+
+  ngOnDestroy(): void {
+    // this.destroyer.next('done');
   }
 }

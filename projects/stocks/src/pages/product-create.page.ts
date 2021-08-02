@@ -5,7 +5,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Router} from '@angular/router';
 import {StockModel} from '../models/stock.model';
-import {DeviceState, FileBrowserDialogComponent, StorageService} from '@smartstocktz/core-libs';
+import {DeviceState, FileBrowserDialogComponent, StorageService, UserService} from '@smartstocktz/core-libs';
 import {StockService} from '../services/stock.service';
 import {MetasModel} from '../models/metas.model';
 
@@ -188,7 +188,7 @@ export class CreatePageComponent implements OnInit {
               private readonly dialog: MatDialog,
               private readonly router: Router,
               public readonly deviceState: DeviceState,
-              private readonly storageService: StorageService,
+              public userService: UserService,
               private readonly stockService: StockService) {
     document.title = 'SmartStock - Product Create';
   }
@@ -299,22 +299,22 @@ export class CreatePageComponent implements OnInit {
     if (inUpdateMode) {
       this.productForm.value.id = this.initialStock.id;
     }
-    this.stockService.addStock(this.productForm.value, inUpdateMode).then(_ => {
-      this.storageService.getStocks().then(value => {
-        if (inUpdateMode) {
-          value = value.map(value1 => {
-            if (value1.id === _.id) {
-              return Object.assign(value1, _);
-            } else {
-              return value1;
-            }
-          });
-        } else {
-          value.unshift(_ as any);
-        }
-        return this.storageService.saveStocks(value);
-      }).catch(reason => {
-      }).finally(() => {
+    this.stockService.addStock(this.productForm.value).then(_ => {
+      // this.storageService.getStocks().then(value => {
+      //   if (inUpdateMode) {
+      //     value = value.map(value1 => {
+      //       if (value1.id === _.id) {
+      //         return Object.assign(value1, _);
+      //       } else {
+      //         return value1;
+      //       }
+      //     });
+      //   } else {
+      //     value.unshift(_ as any);
+      //   }
+      //   return this.storageService.saveStocks(value);
+      // }).catch(reason => {
+      // }).finally(() => {
         this.mainProgress = false;
         this.snack.open('Product added', 'Ok', {
           duration: 3000
@@ -322,7 +322,7 @@ export class CreatePageComponent implements OnInit {
         this.productForm.reset();
         formElement.resetForm();
         this.router.navigateByUrl('/stock/products').catch(console.log);
-      });
+      // });
     }).catch(reason => {
       this.mainProgress = false;
       this.snack.open(reason.message ? reason.message : 'Unknown', 'Ok', {
@@ -341,7 +341,7 @@ export class CreatePageComponent implements OnInit {
 
   async browserMedia($event: MouseEvent, control: string): Promise<void> {
     $event.preventDefault();
-    const shop = await this.storageService.getActiveShop();
+    const shop = await this.userService.getCurrentShop();
     this.dialog.open(FileBrowserDialogComponent, {
       closeOnNavigation: false,
       disableClose: true,

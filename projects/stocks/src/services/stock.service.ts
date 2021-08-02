@@ -35,35 +35,8 @@ export class StockService {
 
   async exportToExcel(): Promise<any> {
     const activeShop = await this.userService.getCurrentShop();
-    const columns = [
-      'id',
-      'product',
-      'category',
-      'unit',
-      'quantity',
-      'retailPrice',
-      'wholesalePrice',
-      'wholesaleQuantity',
-      'purchase',
-      'expire',
-      'supplier'
-    ];
-    const total = await bfast.database(activeShop.projectId).table('stocks').query().count(true).find<number>();
-    const stocks = await bfast.database(activeShop.projectId).table('stocks').query()
-      .skip(0)
-      .size(total)
-      .orderBy('product', 1)
-      .find<StockModel[]>({
-        returnFields: columns
-      });
-    let csv = '';
-    csv = csv.concat(columns.join(',')).concat(',\n');
-    stocks.forEach(stock => {
-      columns.forEach(column => {
-        csv = csv.concat(stock[column] ? stock[column].toString().replace(new RegExp('[,-]', 'ig'), '') : '').concat(', ');
-      });
-      csv = csv.concat('\n');
-    });
+    await this.startWorker(activeShop);
+    const csv = await this.stockWorker.export(activeShop);
     const csvContent = 'data:text/csv;charset=utf-8,' + csv;
     const url = encodeURI(csvContent);
     const anchor = document.createElement('a');
@@ -74,32 +47,31 @@ export class StockService {
     return csv;
   }
 
-  async importStocks(stocks: StockModel[]): Promise<any> {
+  async importStocks(csv: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return BFast
-      .database(shop.projectId)
-      .transaction()
-      .create('stocks', stocks)
-      .commit();
+    await this.startWorker(shop);
+    return this.stockWorker.import(csv, shop);
   }
 
-  async addStock(stock: StockModel, inUpdateMode = false): Promise<StockModel> {
+  async addStock(stock: StockModel): Promise<StockModel> {
     const shop = await this.userService.getCurrentShop();
-    if (inUpdateMode) {
-      const stockId = stock._id ? stock._id : stock.id;
-      delete stock.id;
-      delete stock._id;
-      delete stock.updatedAt;
-      delete stock.createdAt;
-      return BFast.database(shop.projectId).collection('stocks')
-        .query()
-        .byId(stockId)
-        .updateBuilder()
-        .doc(stock)
-        .update();
-    } else {
-      return BFast.database(shop.projectId).collection('stocks').save(stock);
-    }
+    await this.startWorker(shop);
+    return this.stockWorker.saveProduct(stock, shop);
+    // if (inUpdateMode) {
+    //   const stockId = stock._id ? stock._id : stock.id;
+    //   delete stock.id;
+    //   delete stock._id;
+    //   delete stock.updatedAt;
+    //   delete stock.createdAt;
+    //   return BFast.database(shop.projectId).collection('stocks')
+    //     .query()
+    //     .byId(stockId)
+    //     .updateBuilder()
+    //     .doc(stock)
+    //     .update();
+    // } else {
+    //   return BFast.database(shop.projectId).collection('stocks').save(stock);
+    // }
   }
 
   async deleteStock(stock: StockModel): Promise<any> {
@@ -122,22 +94,8 @@ export class StockService {
 
   async deleteMany(stocksId: string[]): Promise<any> {
     const activeShop = await this.userService.getCurrentShop();
-    return BFast.database(activeShop.projectId)
-      .transaction()
-      .delete('stocks', {
-        query: {
-          filter: {
-            $or: stocksId.map(x => {
-              return {
-                _id: x
-              };
-            })
-          },
-          size: stocksId.length,
-          skip: 0
-        }
-      })
-      .commit();
+    await this.startWorker(activeShop);
+    return this.stockWorker.deleteMany(stocksId, activeShop);
   }
 
   async search(query: string): Promise<any> {
