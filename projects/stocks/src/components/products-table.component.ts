@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/c
 import {MatTableDataSource} from '@angular/material/table';
 import {Observable, of, Subject} from 'rxjs';
 import {Router} from '@angular/router';
-import {DeviceState, LogService, MessageService, StorageService} from '@smartstocktz/core-libs';
+import {DeviceState, LogService, StorageService} from '@smartstocktz/core-libs';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
@@ -13,15 +13,25 @@ import {MatSidenav} from '@angular/material/sidenav';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
-import {ImportsDialogComponent} from './imports.component';
 
 @Component({
   selector: 'app-stock-products-table',
   template: `
-    <div *ngIf="(deviceState.isSmallScreen  | async) ===false">
-      <div class="container col-lg-9 col-xl-9 col-sm-11 col-md-10 col-12">
-        <mat-card class="mat-elevation-z3">
+    <div>
+      <div [class]="(deviceState.isSmallScreen  | async) ===false?'container-fluid':''">
+
+        <div class="product-table-options">
           <app-stock-products-table-sub-actions></app-stock-products-table-sub-actions>
+          <mat-paginator [style]="(deviceState.isSmallScreen  | async) ===false?{display:''}:{display:'none'}"
+                         #paginator pageSize="50"
+                         *ngIf="(deviceState.isSmallScreen  | async) ===false"
+                         showFirstLastButtons>
+          </mat-paginator>
+        </div>
+
+        <mat-progress-bar *ngIf="stockState.isFetchStocks | async" mode="indeterminate"></mat-progress-bar>
+
+        <div *ngIf="(deviceState.isSmallScreen  | async) ===false">
           <table mat-table matSort [dataSource]="stockDatasource">
             <ng-container matColumnDef="select">
               <th mat-header-cell *matHeaderCellDef>
@@ -84,7 +94,7 @@ import {ImportsDialogComponent} from './imports.component';
               <td mat-cell *matCellDef="let element">
                 <div class="d-flex flex-row flex-nowrap justify-content-end align-items-end">
                   <button [matMenuTriggerFor]="menu" mat-icon-button>
-                    <mat-icon color="primary">more_vert</mat-icon>
+                    <mat-icon color="primary">more_horiz</mat-icon>
                   </button>
                   <mat-menu #menu>
                     <button mat-menu-item [matTooltip]="'change product information'"
@@ -105,9 +115,7 @@ import {ImportsDialogComponent} from './imports.component';
             <tr class="table-data-row" mat-row *matRowDef="let row; columns: stockColumns;"></tr>
             <tr mat-footer-row style="font-size: 36px" *matFooterRowDef="stockColumns"></tr>
           </table>
-          <mat-paginator #paginator pageSize="10" [pageSizeOptions]="[5,10, 20, 100]"
-                         showFirstLastButtons></mat-paginator>
-        </mat-card>
+        </div>
       </div>
     </div>
 
@@ -117,9 +125,6 @@ import {ImportsDialogComponent} from './imports.component';
           <div *cdkVirtualFor="let element of stockDatasource.connect() | async">
             <mat-list-item [matMenuTriggerFor]="menu">
               <h1 matLine>{{element.product}}</h1>
-              <!--              <button matSuffix [matMenuTriggerFor]="menu" mat-icon-button>-->
-              <!--                <mat-icon color="primary">more_vert</mat-icon>-->
-              <!--              </button>-->
               <mat-menu #menu>
                 <button mat-menu-item [matTooltip]="'change product information'"
                         (click)="viewProduct(element)">View
@@ -137,11 +142,19 @@ import {ImportsDialogComponent} from './imports.component';
         </mat-nav-list>
       </cdk-virtual-scroll-viewport>
     </div>
-  `
+  `,
+  styleUrls: ['../styles/products.style.scss']
 })
 
 export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly onDestroy = new Subject<void>();
+  // destroyer = Subject<any>();
+  totalPurchase: Observable<number> = of(0);
+  stockDatasource: MatTableDataSource<StockModel> = new MatTableDataSource<StockModel>([]);
+  stockColumns = ['select', 'product', 'quantity', 'purchase', 'retailPrice', 'wholesalePrice', 'action'];
+  @ViewChild('sidenav') sidenav: MatSidenav;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) matSort: MatSort;
 
   constructor(private readonly router: Router,
               private readonly indexDb: StorageService,
@@ -157,15 +170,17 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     });
   }
 
-  totalPurchase: Observable<number> = of(0);
-  stockDatasource: MatTableDataSource<StockModel> = new MatTableDataSource<StockModel>([]);
-  stockColumns = ['select', 'product', 'quantity', 'purchase', 'retailPrice', 'wholesalePrice', 'action'];
-  @ViewChild('sidenav') sidenav: MatSidenav;
-  @ViewChild(MatPaginator) paginator: MatPaginator;
-  @ViewChild(MatSort) matSort: MatSort;
-
   ngOnInit(): void {
     this.stockState.getStocks();
+    // this.deviceState.isSmallScreen
+    //   .pipe(takeUntil(this.onDestroy))
+    //   .subscribe(value => {
+    //     if (value) {
+    //       this.stockDatasource.paginator = null;
+    //     } else {
+    //       this.stockDatasource.paginator = this.paginator;
+    //     }
+    //   });
   }
 
 
@@ -182,17 +197,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     this.isAllSelected() ?
       this.stockState.selection.clear() :
       this.stockDatasource.data.forEach(row => this.stockState.selection.select(row));
-  }
-
-  checkboxLabel(row?): string {
-    if (!row) {
-      return `${this.isAllSelected() ? 'select' : 'deselect'} all`;
-    }
-    return `${this.stockState.selection.isSelected(row) ? 'deselect' : 'select'} row ${row.position + 1}`;
-  }
-
-  hotReloadStocks(): void {
-    this.stockState.getStocks();
   }
 
   editStock(element: StockModel): void {
@@ -218,10 +222,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     });
   }
 
-  handleSearch(query: string): void {
-    this.stockState.filter(query);
-  }
-
   private _getTotalPurchaseOfStock(stocks: StockModel[] = []): void {
     const sum = stocks.map(x => {
       if (x.purchase && x.quantity && x.quantity >= 0 && x.purchasable === true) {
@@ -231,16 +231,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       }
     }).reduce((a, b) => a + b, 0);
     this.totalPurchase = of(sum);
-  }
-
-  exportStock(): void {
-    this.stockState.exportToExcel();
-  }
-
-  importStocks(): void {
-    this.dialog.open(ImportsDialogComponent, {
-      closeOnNavigation: true,
-    });
   }
 
   ngOnDestroy(): void {

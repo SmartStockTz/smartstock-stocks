@@ -1,33 +1,46 @@
 import {Component, OnInit} from '@angular/core';
-import {MessageService} from '@smartstocktz/core-libs';
+import {DeviceState, MessageService} from '@smartstocktz/core-libs';
 import {MatDialog} from '@angular/material/dialog';
 import {StockState} from '../states/stock.state';
 import {DialogDeleteComponent} from './stock.component';
+import {ImportsDialogComponent} from './imports.component';
 
 @Component({
   selector: 'app-stock-products-table-sub-actions',
   template: `
-    <mat-card-subtitle>
-      <button [disabled]="(stockState.isDeleteStocks | async)===true" mat-stroked-button mat-button
-              color="primary" class="stockbtn"
-              (click)="deleteMany()">
-        <mat-icon>cached</mat-icon>
-        Delete
-        <mat-progress-spinner *ngIf="(stockState.isDeleteStocks | async)===true"
-                              mode="indeterminate"
-                              color="primary"
-                              diameter="20px"
-                              style="display: inline-block">
-        </mat-progress-spinner>
+    <div [class]="(deviceState.isSmallScreen  | async) ===false?'product-options-container':'product-options-container-mobile'">
+      <button routerLink="/stock/products/create" color="primary" mat-button>
+        <mat-icon>add</mat-icon>
+        Create
       </button>
-    </mat-card-subtitle>
-  `
+      <button [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary" mat-button>
+        <mat-icon>refresh</mat-icon>
+        Reload
+      </button>
+      <button [disabled]="stockState.isImportProducts | async" (click)="importProducts()" color="primary" mat-button>
+        <mat-icon>file_upload</mat-icon>
+        Import
+      </button>
+      <button [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()" color="primary" mat-button>
+        <mat-icon>file_download</mat-icon>
+        Export
+      </button>
+      <button *ngIf="stockState.selection.hasValue()" [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
+              color="primary"
+              (click)="deleteMany()">
+        <mat-icon>delete</mat-icon>
+        Delete
+      </button>
+    </div>
+  `,
+  styleUrls: ['../styles/products-options.style.scss']
 })
 
 export class ProductsTableSubActionsComponent implements OnInit {
 
   constructor(private readonly dialog: MatDialog,
               private readonly messageService: MessageService,
+              public readonly deviceState: DeviceState,
               public readonly stockState: StockState) {
   }
 
@@ -56,4 +69,17 @@ export class ProductsTableSubActionsComponent implements OnInit {
     }
   }
 
+  reload(): void {
+    this.stockState.getStocksFromRemote();
+  }
+
+  importProducts(): void {
+    this.dialog.open(ImportsDialogComponent, {
+      closeOnNavigation: true,
+    });
+  }
+
+  exportProducts(): void {
+    this.stockState.exportToExcel();
+  }
 }

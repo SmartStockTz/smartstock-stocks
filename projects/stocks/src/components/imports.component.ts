@@ -9,16 +9,19 @@ import {DomSanitizer} from '@angular/platform-browser';
   selector: 'app-upload-products',
   template: `
     <div>
-      <div class="d-flex flex-row align-items-center" mat-dialog-title>
-        Import Products
-        <span style="flex-grow: 1"></span>
-        <a download="stock.csv" [href]="stocksBlob">Download Sample</a>
-        <button (click)="fileU.click()" [disabled]="(stockState.isImportProducts | async)===true" class="ft-button"
+      <div class="d-flex flex-row flex-wrap align-items-center">
+<!--        <span style="flex-grow: 1"></span>-->
+        <a download="stock.csv" style="margin: 5px; flex-grow: 1" [href]="stocksBlob">Download sample</a>
+        <button (click)="fileU.click()"
+                style="margin: 5px"
+                [disabled]="(stockState.isImportProducts | async)===true"
                 color="primary" mat-flat-button>
-          Upload Csv
-          <mat-progress-spinner *ngIf="(stockState.isImportProducts | async)===true" style="display: inline-block"
+          Upload CSV
+          <mat-progress-spinner *ngIf="(stockState.isImportProducts | async)===true"
+                                style="display: inline-block"
                                 diameter="30"
-                                mode="indeterminate"></mat-progress-spinner>
+                                mode="indeterminate">
+          </mat-progress-spinner>
         </button>
       </div>
       <mat-divider></mat-divider>
@@ -161,7 +164,7 @@ tshirt,TRUE,FALSE,[],TRUE,TRUE,form six,8000,12000,10000,10,41,10,Pieces ,,male,
     for (let i = 1; i < lines.length; i++) {
       const obj = {};
       const currentline = lines[i].split(',');
-      if (currentline && Array.isArray(currentline) && currentline.length === headers.length){
+      if (currentline && Array.isArray(currentline) && currentline.length === headers.length) {
         for (let j = 0; j < headers.length; j++) {
           const originalValue: string = currentline[j];
           let value = originalValue.split('').map((value1, index, array) => {

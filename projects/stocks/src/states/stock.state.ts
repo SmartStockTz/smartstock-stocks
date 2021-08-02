@@ -2,9 +2,9 @@ import {Injectable} from '@angular/core';
 import {BehaviorSubject} from 'rxjs';
 import {StockModel} from '../models/stock.model';
 import {StockService} from '../services/stock.service';
-import {MessageService, StorageService} from '@smartstocktz/core-libs';
 import {MatDialogRef} from '@angular/material/dialog';
 import {SelectionModel} from '@angular/cdk/collections';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Injectable({
   providedIn: 'any'
@@ -12,41 +12,27 @@ import {SelectionModel} from '@angular/cdk/collections';
 export class StockState {
 
   stocks: BehaviorSubject<StockModel[]> = new BehaviorSubject<StockModel[]>([]);
-  // stocksDatasource: BehaviorSubject<MatTableDataSource<StockModel[]>>
-  //   = new BehaviorSubject(new MatTableDataSource<StockModel[]>([]));
   selectedStock: BehaviorSubject<StockModel> = new BehaviorSubject<StockModel>(null);
   isFetchStocks: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isExportToExcel: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isImportProducts: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isDeleteStocks: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   totalValidStocks: BehaviorSubject<number> = new BehaviorSubject<number>(0);
+  isSearchProducts = new BehaviorSubject(false);
   totalValueOfStocks: BehaviorSubject<number> = new BehaviorSubject<number>(0);
-
   selection = new SelectionModel(true, []);
 
   constructor(private readonly stockService: StockService,
-              private readonly messageService: MessageService,
-              private readonly storageService: StorageService) {
+              private readonly snack: MatSnackBar) {
   }
 
   getStocks(): void {
     this.isFetchStocks.next(true);
-    this.storageService.getStocks().then(localStocks => {
+    this.stockService.getProducts().then(localStocks => {
       if (localStocks && Array.isArray(localStocks) && localStocks.length > 0) {
         this.stocks.next(localStocks);
-      } else {
-        return this.stockService.getProducts();
       }
-    }).then(remoteStocks => {
-      if (remoteStocks && Array.isArray(remoteStocks) && remoteStocks.length > 0) {
-        this.stocks.next(remoteStocks);
-        return this.storageService.saveStock(remoteStocks as any);
-      }
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message
-          ? reason.message : reason, 2000, 'bottom');
-    }).finally(() => {
+    }).catch(this.message).finally(() => {
       this.isFetchStocks.next(false);
     });
   }
@@ -61,7 +47,7 @@ export class StockState {
 
   getStocksSummary(): void {
     this.isFetchStocks.next(true);
-    this.storageService.getStocks().then(localStocks => {
+    this.stockService.getProducts().then(localStocks => {
       if (localStocks && Array.isArray(localStocks) && localStocks.length > 0) {
         this._updateTotalAvailableStocks(localStocks.length);
         this._updateStocksValue(localStocks.map(x => {
@@ -71,54 +57,26 @@ export class StockState {
             return 0;
           }
         }).reduce((a, b) => a + b, 0));
-      } else {
-        return this.stockService.getProducts();
       }
-    }).then(remoteStocks => {
-      if (remoteStocks && Array.isArray(remoteStocks) && remoteStocks.length > 0) {
-        this._updateTotalAvailableStocks(remoteStocks.length);
-        this._updateStocksValue(remoteStocks.map(x => {
-          if (x.quantity > 0) {
-            return x.quantity * x.purchase;
-          } else {
-            return 0;
-          }
-        }).reduce((a, b) => a + b, 0));
-        return this.storageService.saveStock(remoteStocks as any);
-      }
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message
-          ? reason.message : reason, 2000, 'bottom');
-    }).finally(() => {
+    }).catch(this.message).finally(() => {
       this.isFetchStocks.next(false);
     });
   }
 
   getStocksFromRemote(): void {
     this.isFetchStocks.next(true);
-    this.stockService.getProducts().then(remoteStocks => {
+    this.stockService.getProductsRemote().then(remoteStocks => {
       this.stocks.next(remoteStocks);
-      return this.storageService.saveStock(remoteStocks as any);
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message
-          ? reason.message : reason, 2000, 'bottom');
-    }).finally(() => {
+    }).catch(this.message).finally(() => {
       this.isFetchStocks.next(false);
     });
   }
 
   exportToExcel(): void {
     this.isExportToExcel.next(true);
-
-    this.stockService.exportToExcel().then(value => {
-      this.messageService.showMobileInfoMessage(
-        'Stocks exported', 1000, 'bottom');
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message ? reason.message : reason, 1000, 'bottom');
-    }).finally(() => {
+    this.stockService.exportToExcel().then(_ => {
+      this.message('Stocks exported');
+    }).catch(this.message).finally(() => {
       this.isExportToExcel.next(false);
     });
   }
@@ -128,11 +86,8 @@ export class StockState {
     this.stockService.importStocks(stocks).then(_ => {
       this.getStocksFromRemote();
       dialog.close(true);
-      this.messageService.showMobileInfoMessage('Products imported', 2000, 'bottom');
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message ? reason.message : 'Stocks not imported try again', 2000, 'bottom');
-    }).finally(() => {
+      this.message('Products imported');
+    }).catch(this.message).finally(() => {
       this.isImportProducts.next(false);
     });
   }
@@ -140,44 +95,40 @@ export class StockState {
   deleteStock(stock: StockModel): void {
     this.isFetchStocks.next(true);
     this.stockService.deleteStock(stock).then(_ => {
-      return this.storageService.getStocks();
-    }).then(async stocks => {
-      await this.storageService.saveStock(stocks.filter(x => x.id !== stock.id) as any);
-      return stocks;
+      return this.stockService.getProducts();
     }).then(stocks => {
-      this.stocks.next(stocks.filter(x => x.id !== stock.id));
-      this.messageService.showMobileInfoMessage('Stocks updated', 1000, 'bottom');
-    }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message ? reason.message : reason, 1000, 'bottom');
-    }).finally(() => {
+      this.stocks.next(stocks);
+      this.message('Product deleted');
+    }).catch(this.message).finally(() => {
       this.isFetchStocks.next(false);
     });
   }
 
   filter(query: string): void {
-    this.storageService.getStocks().then(stocks => {
-      if (query) {
-        const results = stocks
-          .filter(x => JSON.stringify(x).toLowerCase().includes(query.toString().toLowerCase()));
-        this.stocks.next(results);
-      } else {
-        this.getStocks();
-      }
+    this.isSearchProducts.next(true);
+    this.stockService.search(query).then(stocks => {
+      this.stocks.next(stocks);
+    }).catch(this.message).finally(() => {
+      this.isSearchProducts.next(false);
     });
   }
 
   deleteManyStocks(selectionModel: SelectionModel<StockModel>): void {
     this.isDeleteStocks.next(true);
     this.stockService.deleteMany(selectionModel.selected.map(x => x.id)).then(_ => {
-      this.messageService.showMobileInfoMessage('Products deleted', 2000, 'bottom');
+      this.message('Products deleted');
       this.stocks.next(this.stocks.value.filter(x => selectionModel.selected.findIndex(y => y.id === x.id) === -1));
       selectionModel.clear();
     }).catch(reason => {
-      this.messageService.showMobileInfoMessage(
-        reason && reason.message ? reason.message : reason, 2000, 'bottom');
+      this.message(reason);
     }).finally(() => {
       this.isDeleteStocks.next(false);
+    });
+  }
+
+  private message(reason): void {
+    this.snack.open(reason && reason.message ? reason.message : reason.toString(), 'Ok', {
+      duration: 2000
     });
   }
 }

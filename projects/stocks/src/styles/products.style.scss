@@ -1,0 +1,18 @@
+table {
+  background: transparent !important;
+}
+
+mat-paginator {
+  background: transparent !important;
+}
+
+.product-table-options {
+  padding-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+app-stock-products-table-sub-actions{
+  flex-grow: 1;
+}

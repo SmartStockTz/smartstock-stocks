@@ -121,7 +121,12 @@ export class StockWorker {
   }
 
   async getProducts(shop: ShopModel): Promise<StockModel[]> {
-    return await this.getProductsLocal(shop);
+    const products = await this.getProductsLocal(shop);
+    if (Array.isArray(products) && products.length > 0) {
+      return products;
+    } else {
+      return this.getProductsRemote(shop);
+    }
   }
 
   async saveProduct(product: StockModel[], shop: ShopModel): Promise<any> {
@@ -189,7 +194,7 @@ export class StockWorker {
       products = localProducts;
     }
     await this.setProductsLocal(products, shop);
-    return products.filter(x => x.saleable);
+    return products;
   }
 
   async search(query: string, shop: ShopModel): Promise<StockModel[]> {

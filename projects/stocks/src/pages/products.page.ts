@@ -16,15 +16,13 @@ import {StockState} from '../states/stock.state';
       [body]="body"
       [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
       [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [searchProgressFlag]="stockState.isSearchProducts | async"
       (searchCallback)="handleSearch($event)">
       <ng-template #side>
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div style="margin: 4px 0">
-          <app-stock-products-table-actions></app-stock-products-table-actions>
-          <app-stock-products-table></app-stock-products-table>
-        </div>
+        <app-stock-products-table></app-stock-products-table>
       </ng-template>
     </app-layout-sidenav>
   `,

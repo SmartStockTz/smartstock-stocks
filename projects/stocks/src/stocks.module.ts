@@ -55,7 +55,6 @@ import {TransferPage} from './pages/transfer.page';
 import {MatSortModule} from '@angular/material/sort';
 import {CdkTableModule} from '@angular/cdk/table';
 import {ProductsTableComponent} from './components/products-table.component';
-import {ProductsTableActionsComponent} from './components/products-table-actions.component';
 import {ProductsTableSubActionsComponent} from './components/products-table-sub-actions.component';
 import {TransfersTableComponent} from './components/transfers-table.component';
 import {TransfersTableActionsComponent} from './components/transfers-table-actions.component';
@@ -81,7 +80,8 @@ import {CategoryCreateFormBottomSheetComponent} from './components/category-crea
 import {CatalogCreatePage} from './pages/catalog-create.page';
 import {CatalogCreateFormComponent} from './components/catalog-create-form.component';
 import {CatalogEditPage} from './pages/catalog-edit.page';
-import {StockNavigationService} from "./services/stock-navigation.service";
+import {StockNavigationService} from './services/stock-navigation.service';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 
 const routes: Routes = [
   {path: '', component: IndexPage},
@@ -143,7 +143,8 @@ const routes: Routes = [
     MatSortModule,
     CdkTableModule,
     ScrollingModule,
-    FormsModule
+    FormsModule,
+    MatProgressBarModule
   ],
   declarations: [
     SupplierCreateFormComponent,
@@ -165,7 +166,6 @@ const routes: Routes = [
     TransferCreateFormComponent,
     TransfersTableComponent,
     TransfersTableActionsComponent,
-    ProductsTableActionsComponent,
     ProductsTableComponent,
     DialogDeleteComponent,
     CatalogFormFieldComponent,

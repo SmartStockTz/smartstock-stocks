@@ -14,8 +14,6 @@ export class StockService {
   private stockWorker: StockWorker;
   private stockWorkerNative;
 
-  // private changes;
-
   constructor(private readonly userService: UserService) {
   }
 
@@ -142,4 +140,9 @@ export class StockService {
       .commit();
   }
 
+  async search(query: string): Promise<any> {
+    const shop = await this.userService.getCurrentShop();
+    await this.startWorker(shop);
+    return this.stockWorker.search(query, shop);
+  }
 }
