@@ -104,6 +104,7 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.categoryState.startChanges();
     this.categoryState.categories.pipe(
       takeUntil(this.destroyer)
     ).subscribe(value => {
@@ -140,6 +141,7 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngOnDestroy(): void {
+    this.categoryState.stopChanges();
     this.destroyer.next('done');
   }
 

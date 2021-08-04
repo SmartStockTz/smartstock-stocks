@@ -4,6 +4,7 @@ import {CategoryModel} from '../models/category.model';
 import {CategoryWorker} from '../workers/category.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
+import {bfast} from 'bfastjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ import {wrap} from 'comlink';
 export class CategoryService {
   private categoryWorker: CategoryWorker;
   private categoryWorkerNative;
+  private changes;
 
   constructor(private readonly userService: UserService) {
   }
@@ -28,6 +30,45 @@ export class CategoryService {
       this.categoryWorkerNative.terminate();
       this.categoryWorker = undefined;
       this.categoryWorkerNative = undefined;
+    }
+  }
+
+  async startChanges(): Promise<void> {
+    if (!this.changes) {
+      const shop = await this.userService.getCurrentShop();
+      this.changes = bfast.database(shop.projectId)
+        .table('categories')
+        .query()
+        .changes(() => {
+          console.log('categories changes connected');
+          // if (this.remoteAllProductsRunning === true) {
+          //   console.log('another remote fetch is running');
+          //   return;
+          // }
+          this.getAllCategoryRemote().catch(console.log);
+        }, () => {
+          console.log('categories changes disconnected');
+        });
+      this.changes.addListener(async response => {
+        if (response && response.body && response.body.change) {
+          // console.log(response.body.change);
+          if (response.body.change.name === 'create') {
+            this.categoryWorker.setCategoryLocal(response.body.change.snapshot, shop).catch(console.log);
+          } else if (response.body.change.name === 'update') {
+            this.categoryWorker.setCategoryLocal(response.body.change.snapshot, shop).catch(console.log);
+          } else if (response.body.change.name === 'delete') {
+            await this.categoryWorker.removeCategoryLocal(response.body.change.snapshot, shop);
+          } else {
+          }
+        }
+      });
+    }
+  }
+
+  stopChanges(): void {
+    if (this.changes) {
+      this.changes.close();
+      this.changes = undefined;
     }
   }
 

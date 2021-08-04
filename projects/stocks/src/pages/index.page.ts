@@ -80,12 +80,12 @@ export class IndexPage implements OnInit {
       detail: 'Group your products',
       icon: 'list'
     },
-    {
-      name: 'Catalogs',
-      path: '/stock/catalogs',
-      detail: 'Tag your products',
-      icon: 'loyalty'
-    },
+    // {
+    //   name: 'Catalogs',
+    //   path: '/stock/catalogs',
+    //   detail: 'Tag your products',
+    //   icon: 'loyalty'
+    // },
     {
       name: 'Units',
       path: '/stock/units',

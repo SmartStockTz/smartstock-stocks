@@ -18,6 +18,14 @@ export class CategoryState {
               private readonly snack: MatSnackBar) {
   }
 
+  startChanges(): void {
+    this.categoryService.startChanges().catch(console.log);
+  }
+
+  stopChanges(): void {
+    this.categoryService.stopChanges();
+  }
+
   search(q: string): void {
     this.isSearchCategories.next(true);
     this.categoryService.search(q).then(value => {

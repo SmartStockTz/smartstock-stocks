@@ -25,11 +25,11 @@ export class StockNavigationService {
           link: '/stock/categories',
           roles: ['admin', 'manager']
         },
-        {
-          name: 'catalogs',
-          link: '/stock/catalogs',
-          roles: ['admin', 'manager']
-        },
+        // {
+        //   name: 'catalogs',
+        //   link: '/stock/catalogs',
+        //   roles: ['admin', 'manager']
+        // },
         {
           name: 'units',
           link: '/stock/units',
