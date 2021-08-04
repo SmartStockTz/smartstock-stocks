@@ -5,7 +5,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {Router} from '@angular/router';
 import {StockModel} from '../models/stock.model';
-import {DeviceState, FileBrowserDialogComponent, StorageService, UserService} from '@smartstocktz/core-libs';
+import {DeviceState, FilesService, UserService} from '@smartstocktz/core-libs';
 import {StockService} from '../services/stock.service';
 import {MetasModel} from '../models/metas.model';
 
@@ -25,20 +25,63 @@ import {MetasModel} from '../models/metas.model';
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div class="container stock-new-wrapper">
+        <div class="container-fluid stock-new-wrapper">
           <form *ngIf="!isLoadingData" [formGroup]="productForm" #formElement="ngForm"
                 (ngSubmit)="isUpdateMode?updateProduct(formElement):addProduct(formElement)">
             <div class="row d-flex justify-content-center align-items-center">
-              <div style="margin-bottom: 16px" class="col-11 col-xl-9 col-lg-9 col-md-10 col-sm-11">
-                <h4 style="padding: 0" class="">
-                  Image
-                </h4>
-                <mat-card>
+              <div style="margin-bottom: 16px" class="col-12 col-xl-9 col-lg-9 col-md-10 col-sm-12">
+                <div class="status-container">
+                  <div class="status-item">
+                    <div class="status-checker">
+                      <mat-checkbox formControlName="saleable" matListIcon></mat-checkbox>
+                    </div>
+                    <div class="status-text text-wrap">
+                      Is this product for sale?
+                    </div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-checker">
+                      <mat-checkbox formControlName="stockable"></mat-checkbox>
+                    </div>
+                    <div class="status-text">
+                      Do you track quantity in stock for this product
+                    </div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-checker">
+                      <mat-checkbox formControlName="purchasable"></mat-checkbox>
+                    </div>
+                    <div class="status-text">
+                      Do you buy this product from external supplier?
+                    </div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-checker">
+                      <mat-checkbox formControlName="canExpire"></mat-checkbox>
+                    </div>
+                    <div class="status-text">
+                      Can this product expire?
+                    </div>
+                  </div>
+                  <div class="status-item">
+                    <div class="status-checker">
+                      <mat-checkbox formControlName="downloadable"></mat-checkbox>
+                    </div>
+                    <div class="status-text">
+                      Is this a digital product that someone might download it?
+                    </div>
+                  </div>
+                </div>
+
+                <mat-card class="card-wrapper">
                   <img mat-card-image [src]="productForm.value.image" alt="Product Image">
                   <mat-card-actions>
-                    <button mat-button (click)="browserMedia($event,'image')" color="primary">Upload</button>
+                    <button mat-button (click)="browserMedia($event,'image')" color="primary">
+                      Upload image ( optional )
+                    </button>
                   </mat-card-actions>
                 </mat-card>
+
                 <app-product-short-detail-form
                   [isUpdateMode]="isUpdateMode"
                   [initialStock]="initialStock"
@@ -46,98 +89,10 @@ import {MetasModel} from '../models/metas.model';
                   [saleable]="getSaleableFormControl().value === true"
                   [parentForm]="productForm">
                 </app-product-short-detail-form>
-                <mat-expansion-panel [expanded]="true" style="margin-top: 8px">
-                  <mat-expansion-panel-header>
-                    <h4 style="margin: 0">Advance Details</h4>
-                  </mat-expansion-panel-header>
-                  <h4>
-                    Status
-                  </h4>
-                  <mat-card class="card-wrapper mat-elevation-z0">
-                    <mat-list>
-                      <mat-list-item>
-                        <p matLine>Can be sold</p>
-                        <mat-checkbox formControlName="saleable" matSuffix></mat-checkbox>
-                      </mat-list-item>
-                      <mat-list-item>
-                        <p matLine>Can be stocked</p>
-                        <mat-checkbox formControlName="stockable" matSuffix></mat-checkbox>
-                      </mat-list-item>
-                      <mat-list-item>
-                        <p matLine>Can be purchased</p>
-                        <mat-checkbox formControlName="purchasable" matSuffix></mat-checkbox>
-                      </mat-list-item>
-                    </mat-list>
-                  </mat-card>
-                  <mat-form-field appearance="fill" class="my-input">
-                    <mat-label>Description</mat-label>
-                    <textarea placeholder="optional" matInput type="text" formControlName="description"></textarea>
-                  </mat-form-field>
-                  <h4>
-                    Inventory
-                  </h4>
-                  <mat-card class="card-wrapper mat-elevation-z0">
-                    <mat-card-content class="card-content">
-                      <mat-form-field *ngIf="getPurchasableFormControl().value === true" appearance="fill"
-                                      class="my-input">
-                        <mat-label>Purchase Price / Unit</mat-label>
-                        <span matSuffix>TZS</span>
-                        <input min="0" matInput type="number" required formControlName="purchase">
-                        <mat-error>Purchase price required</mat-error>
-                      </mat-form-field>
-                      <mat-form-field *ngIf="getSaleableFormControl().value === true" appearance="fill"
-                                      class="my-input">
-                        <mat-label>Wholesale Price / Unit</mat-label>
-                        <span matSuffix>TZS</span>
-                        <input min="0" matInput type="number" required formControlName="wholesalePrice">
-                        <mat-error>Wholesale price required</mat-error>
-                      </mat-form-field>
-                      <mat-form-field *ngIf="getSaleableFormControl().value === true" appearance="fill" class="my-input"
-                                      matTooltip="Quantity for this product to be sold as a whole or in bulk">
-                        <mat-label>Wholesale Quantity</mat-label>
-                        <input min="0" matInput
-                               type="number"
-                               required formControlName="wholesaleQuantity">
-                        <mat-error>Wholesale Quantity required</mat-error>
-                      </mat-form-field>
-                      <mat-form-field *ngIf="getStockableFormControl().value === true" appearance="fill"
-                                      class="my-input"
-                                      matTooltip="Total initial unit quantity available">
-                        <mat-label>Initial Stock Quantity</mat-label>
-                        <input min="0" matInput type="number" required
-                               formControlName="quantity">
-                        <mat-error>Initial Stock Quantity required</mat-error>
-                      </mat-form-field>
-                      <mat-form-field *ngIf="getStockableFormControl().value === true" appearance="fill"
-                                      class="my-input">
-                        <mat-label>Reorder Level</mat-label>
-                        <input min="0" matInput type="number" required formControlName="reorder">
-                        <mat-error>Reorder field required</mat-error>
-                      </mat-form-field>
-                      <app-suppliers-form-field [formGroup]="productForm"
-                                                [purchasable]="getPurchasableFormControl().value===true">
-                      </app-suppliers-form-field>
-                      <app-units-form-field [stockable]="getStockableFormControl().value === true"
-                                            [formGroup]="productForm">
-                      </app-units-form-field>
-                      <mat-checkbox matTooltip="Select if a product can expire" labelPosition="after"
-                                    class="my-input"
-                                    formControlName="canExpire">
-                        Can Expire?
-                      </mat-checkbox>
-                      <mat-form-field *ngIf="getCanExpireFormControl().value === true" appearance="outline"
-                                      class="my-input">
-                        <mat-label>Expire Date</mat-label>
-                        <input matInput [matDatepicker]="picker" formControlName="expire">
-                        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-datepicker [touchUi]="true" #picker></mat-datepicker>
-                      </mat-form-field>
-                    </mat-card-content>
-                  </mat-card>
-                </mat-expansion-panel>
+
                 <mat-expansion-panel [expanded]="false" style="margin-top: 8px">
                   <mat-expansion-panel-header>
-                    <h4 style="margin: 0">Other Attributes</h4>
+                    <h4 style="margin: 0">Other attributes ( optional ) </h4>
                   </mat-expansion-panel-header>
                   <app-stock-metas-form-field [flat]="true" *ngIf="productForm" [formGroup]="productForm"
                                               [metas]="metasModel"></app-stock-metas-form-field>
@@ -180,7 +135,6 @@ export class CreatePageComponent implements OnInit {
     controlName: string;
   }[]>;
   mainProgress = false;
-  uploadPercentage = 0;
   uploadTag = '';
 
   constructor(private readonly formBuilder: FormBuilder,
@@ -188,7 +142,8 @@ export class CreatePageComponent implements OnInit {
               private readonly dialog: MatDialog,
               private readonly router: Router,
               public readonly deviceState: DeviceState,
-              public userService: UserService,
+              public readonly userService: UserService,
+              private readonly fileService: FilesService,
               private readonly stockService: StockService) {
     document.title = 'SmartStock - Product Create';
   }
@@ -215,13 +170,13 @@ export class CreatePageComponent implements OnInit {
       saleable: [stock && stock.saleable !== undefined ? stock.saleable : true],
       downloadable: [stock && stock.downloadable !== undefined ? stock.downloadable : false],
       downloads: [stock && stock.downloads ? stock.downloads : []],
-      stockable: [stock && stock.stockable !== undefined ? stock.stockable : false],
-      purchasable: [stock && stock.purchasable !== undefined ? stock.purchasable : false],
+      stockable: [stock && stock.stockable !== undefined ? stock.stockable : true],
+      purchasable: [stock && stock.purchasable !== undefined ? stock.purchasable : true],
       description: [stock && stock.description ? stock.description : ''],
       purchase: [stock && stock.purchase ? stock.purchase : 0, [Validators.nullValidator, Validators.required]],
       retailPrice: [stock && stock.retailPrice ? stock.retailPrice : 0, [Validators.nullValidator, Validators.required]],
       wholesalePrice: [stock && stock.wholesalePrice ? stock.wholesalePrice : 0, [Validators.nullValidator, Validators.required]],
-      wholesaleQuantity: [stock && stock.wholesaleQuantity ? stock.wholesaleQuantity : 0, [Validators.nullValidator, Validators.required]],
+      wholesaleQuantity: [stock && stock.wholesaleQuantity ? stock.wholesaleQuantity : 1, [Validators.nullValidator, Validators.required]],
       quantity: [stock && stock.quantity ? stock.quantity : 0, [Validators.nullValidator, Validators.required]],
       reorder: [stock && stock.reorder ? stock.reorder : 0, [Validators.nullValidator, Validators.required]],
       unit: [stock && stock.unit ? stock.unit : 'general', [Validators.nullValidator, Validators.required]],
@@ -254,20 +209,8 @@ export class CreatePageComponent implements OnInit {
     return this.productForm.get('purchasable') as FormControl;
   }
 
-  getStockableFormControl(): FormControl {
-    return this.productForm.get('stockable') as FormControl;
-  }
-
   getDownloadAbleFormControl(): FormControl {
     return this.productForm.get('downloadable') as FormControl;
-  }
-
-  getDownloadsFormControl(): FormControl {
-    return this.productForm.get('downloads') as FormControl;
-  }
-
-  getCanExpireFormControl(): FormControl {
-    return this.productForm.get('canExpire') as FormControl;
   }
 
   addProduct(formElement: FormGroupDirective, inUpdateMode = false): void {
@@ -300,28 +243,13 @@ export class CreatePageComponent implements OnInit {
       this.productForm.value.id = this.initialStock.id;
     }
     this.stockService.addStock(this.productForm.value).then(_ => {
-      // this.storageService.getStocks().then(value => {
-      //   if (inUpdateMode) {
-      //     value = value.map(value1 => {
-      //       if (value1.id === _.id) {
-      //         return Object.assign(value1, _);
-      //       } else {
-      //         return value1;
-      //       }
-      //     });
-      //   } else {
-      //     value.unshift(_ as any);
-      //   }
-      //   return this.storageService.saveStocks(value);
-      // }).catch(reason => {
-      // }).finally(() => {
-        this.mainProgress = false;
-        this.snack.open('Product added', 'Ok', {
-          duration: 3000
-        });
-        this.productForm.reset();
-        formElement.resetForm();
-        this.router.navigateByUrl('/stock/products').catch(console.log);
+      this.mainProgress = false;
+      this.snack.open('Product added', 'Ok', {
+        duration: 3000
+      });
+      this.productForm.reset();
+      formElement.resetForm();
+      this.router.navigateByUrl('/stock/products').catch(console.log);
       // });
     }).catch(reason => {
       this.mainProgress = false;
@@ -341,14 +269,7 @@ export class CreatePageComponent implements OnInit {
 
   async browserMedia($event: MouseEvent, control: string): Promise<void> {
     $event.preventDefault();
-    const shop = await this.userService.getCurrentShop();
-    this.dialog.open(FileBrowserDialogComponent, {
-      closeOnNavigation: false,
-      disableClose: true,
-      data: {
-        shop
-      }
-    }).afterClosed().subscribe(value => {
+    this.fileService.browse().then(value => {
       if (value && value.url) {
         this.productForm.get(control).setValue(value.url);
       } else {

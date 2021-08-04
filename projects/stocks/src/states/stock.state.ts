@@ -131,4 +131,8 @@ export class StockState {
       duration: 2000
     });
   }
+
+  async getStock(id: string): Promise<StockModel> {
+    return this.stockService.getProduct(id);
+  }
 }

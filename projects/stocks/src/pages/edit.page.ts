@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
+import {ActivatedRoute, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockModel} from '../models/stock.model';
 import {StockState} from '../states/stock.state';
@@ -7,7 +7,7 @@ import {StockState} from '../states/stock.state';
 @Component({
   selector: 'app-stock-edit',
   template: `
-    <app-stock-new [isLoadingData]="loadStock" [isUpdateMode]="true"
+    <app-stock-new *ngIf="stock" [isLoadingData]="loadStock" [isUpdateMode]="true"
                    [initialStock]="stock"></app-stock-new>
   `,
   styleUrls: ['../styles/edit.style.scss']
@@ -19,6 +19,7 @@ export class EditPageComponent implements OnInit {
 
   constructor(private readonly stockState: StockState,
               private readonly router: Router,
+              private readonly activatedRouter: ActivatedRoute,
               private readonly snack: MatSnackBar) {
     document.title = 'SmartStock - Product Edit';
   }
@@ -29,14 +30,42 @@ export class EditPageComponent implements OnInit {
 
   getStock(): void {
     this.loadStock = true;
-    if (this.stockState.selectedStock.value) {
-      this.stock = this.stockState.selectedStock.value;
-    } else {
-      this.snack.open('Fails to get stock for update', 'Ok', {
+    this.activatedRouter.params.subscribe(async value => {
+      // console.log(value);
+      if (value && value.id) {
+        return this.stockState
+          .getStock(value.id)
+          .then(value1 => {
+            if (value1) {
+              this.stock = value1;
+            } else {
+              throw new Error('no product');
+            }
+          }).catch(_ => {
+            this.snack.open('Fails to get stock for update, try again', 'Ok', {
+              duration: 3000
+            });
+            this.router.navigateByUrl('/stock/products').catch();
+          }).finally(() => {
+            this.loadStock = false;
+          });
+      } else {
+        throw new Error('no id');
+      }
+    }, error => {
+      this.snack.open('Fails to get stock for update, try again', 'Ok', {
         duration: 3000
       });
-      this.router.navigateByUrl('/stock').catch();
-    }
-    this.loadStock = false;
+      this.router.navigateByUrl('/stock/products').catch();
+    });
+    // if (this.stockState.selectedStock.value) {
+    //   this.stock = this.stockState.selectedStock.value;
+    // } else {
+    //   this.snack.open('Fails to get stock for update, try again', 'Ok', {
+    //     duration: 3000
+    //   });
+    //   this.router.navigateByUrl('/stock/products').catch();
+    // }
+    // this.loadStock = false;
   }
 }

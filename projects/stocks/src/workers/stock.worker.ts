@@ -63,6 +63,11 @@ export class StockWorker {
     }
   }
 
+  async getProductLocal(id: string, shop: ShopModel): Promise<StockModel> {
+    const productsMap = await this.productsLocalMap(shop);
+    return productsMap[id];
+  }
+
   async getProductsLocal(shop: ShopModel): Promise<StockModel[]> {
     const productsMap = await this.productsLocalMap(shop);
     // const productsSyncMap = await this.productsLocalSyncMap(shop);
@@ -315,7 +320,7 @@ export class StockWorker {
                 })
               });
             if (r && r.updatestocks) {
-              console.log(r.updatestocks);
+              // console.log(r.updatestocks);
             } else {
               throw r;
             }
@@ -505,6 +510,7 @@ export class StockWorker {
     }
     return x;
   }
+
 }
 
 expose(StockWorker);

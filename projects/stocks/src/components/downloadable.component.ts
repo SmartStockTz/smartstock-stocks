@@ -1,12 +1,12 @@
 import {Component, Input, OnInit} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, UserService} from '@smartstocktz/core-libs';
+import {FileBrowserDialogComponent, FilesService, UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-downloadable',
   template: `
-    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 8px">
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 8px 0; margin-bottom: 16px">
       <div *ngFor="let file of files; let i =index"
            style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center">
         <mat-card style="height: 50px; margin: 5px; display: flex; flex-direction: row; align-items: center">
@@ -19,19 +19,19 @@ import {FileBrowserDialogComponent, UserService} from '@smartstocktz/core-libs';
           </button>
         </mat-card>
       </div>
-      <mat-card (click)="chooseFile($event)" matRipple style="width: 120px; height: 50px; margin: 5px">
+      <mat-card (click)="chooseFile($event)" matRipple style="width: auto; height: 50px; margin: 5px 0">
         <mat-icon>attachment</mat-icon>
-        <span>Add File</span>
+        <span>Add digital file</span>
       </mat-card>
     </div>
   `,
 })
 export class DownloadableComponent implements OnInit {
-  @Input() files: { name: string, type: string, url: File }[] = [];
+  @Input() files: { name: string, type: string, url: string }[] = [];
   @Input() uploadFileFormControl: FormControl = new FormControl([]);
 
   constructor(private readonly dialog: MatDialog,
-              private readonly userService: UserService) {
+              private readonly fileService: FilesService) {
   }
 
   ngOnInit(): void {
@@ -44,13 +44,7 @@ export class DownloadableComponent implements OnInit {
 
   async chooseFile($event: MouseEvent): Promise<void> {
     $event.preventDefault();
-    this.dialog.open(FileBrowserDialogComponent, {
-      closeOnNavigation: false,
-      disableClose: false,
-      data: {
-        shop: await this.userService.getCurrentShop()
-      }
-    }).afterClosed().subscribe(file => {
+    this.fileService.browse().then(file => {
       if (file && file.url) {
         if (this.files.length === 0) {
           this.files.push({

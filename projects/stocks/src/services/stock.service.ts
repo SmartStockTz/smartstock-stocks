@@ -103,4 +103,10 @@ export class StockService {
     await this.startWorker(shop);
     return this.stockWorker.search(query, shop);
   }
+
+  async getProduct(id: string): Promise<StockModel> {
+    const shop = await this.userService.getCurrentShop();
+    await this.startWorker(shop);
+    return this.stockWorker.getProductLocal(id, shop);
+  }
 }

@@ -195,7 +195,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   editStock(element: StockModel): void {
-    this.stockState.selectedStock.next(element);
+    // this.stockState.selectedStock.next(element);
     this.router.navigateByUrl('/stock/products/edit/' + element.id).catch(reason => this.logger.e(reason));
   }
 
