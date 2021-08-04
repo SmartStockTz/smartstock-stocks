@@ -1,4 +1,4 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {DeviceState} from '@smartstocktz/core-libs';
 import {StockState} from '../states/stock.state';
 
@@ -28,7 +28,7 @@ import {StockState} from '../states/stock.state';
   `,
   styleUrls: ['../styles/stock.style.scss']
 })
-export class ProductsPage implements OnInit {
+export class ProductsPage implements OnInit, OnDestroy {
 
   constructor(public readonly stockState: StockState,
               public readonly deviceState: DeviceState) {
@@ -36,11 +36,16 @@ export class ProductsPage implements OnInit {
   }
 
   ngOnInit(): void {
+    this.stockState.startChanges();
   }
 
 
   handleSearch(query: string): void {
     this.stockState.filter(query);
+  }
+
+  ngOnDestroy(): void {
+    this.stockState.stopChanges();
   }
 
 }

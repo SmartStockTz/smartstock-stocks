@@ -26,6 +26,14 @@ export class StockState {
               private readonly snack: MatSnackBar) {
   }
 
+  startChanges(): void{
+    this.stockService.stocksListening().catch(console.log);
+  }
+
+  stopChanges(): void{
+    this.stockService.stocksListeningStop();
+  }
+
   getStocks(): void {
     this.isFetchStocks.next(true);
     this.stockService.getProducts().then(localStocks => {

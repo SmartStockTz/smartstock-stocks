@@ -27,7 +27,7 @@ export class StockWorker {
   constructor(shop: ShopModel) {
     init(shop);
     this.syncStocks(shop);
-    this.stocksListening(shop);
+    // this.stocksListening(shop);
   }
 
   async productsLocalHashMap(products: StockModel[]): Promise<{ [key: string]: any }> {
@@ -43,6 +43,7 @@ export class StockWorker {
   // ******local cache********* //
 
   private async productsLocalMap(shop: ShopModel): Promise<{ [key: string]: StockModel }> {
+    init(shop);
     const productsSyncMap = await this.productsLocalSyncMap(shop);
     const productsMap: { [key: string]: StockModel } = await bfast
       .cache({database: 'stocks', collection: 'stocks'}, shop.projectId)
@@ -64,11 +65,13 @@ export class StockWorker {
   }
 
   async getProductLocal(id: string, shop: ShopModel): Promise<StockModel> {
+    init(shop);
     const productsMap = await this.productsLocalMap(shop);
     return productsMap[id];
   }
 
   async getProductsLocal(shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const productsMap = await this.productsLocalMap(shop);
     // const productsSyncMap = await this.productsLocalSyncMap(shop);
     // console.log(ps);
@@ -79,6 +82,7 @@ export class StockWorker {
   }
 
   async removeProductLocal(product: StockModel, shop: ShopModel): Promise<string> {
+    init(shop);
     const productsMap = await this.productsLocalMap(shop);
     delete productsMap[product.id];
     await bfast
@@ -88,6 +92,7 @@ export class StockWorker {
   }
 
   async removeProductsLocal(products: StockModel[], shop: ShopModel): Promise<string[]> {
+    init(shop);
     const productsMap = await this.productsLocalMap(shop);
     products.forEach(x => {
       delete productsMap[x.id];
@@ -99,6 +104,7 @@ export class StockWorker {
   }
 
   async setProductLocal(product: StockModel, shop: ShopModel): Promise<StockModel> {
+    init(shop);
     const productsMap = await this.productsLocalMap(shop);
     productsMap[product.id] = product;
     await bfast
@@ -108,6 +114,7 @@ export class StockWorker {
   }
 
   async setProductsLocal(products: StockModel[], shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     let productsMap = await this.productsLocalMap(shop);
     productsMap = products.reduce((a, b) => {
       a[b.id] = b;
@@ -120,6 +127,7 @@ export class StockWorker {
   }
 
   async setProductsLocalFromRemote(products: StockModel[], shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const productsSyncMap = await this.productsLocalSyncMap(shop);
     Object.keys(productsSyncMap).forEach(k => {
       if (productsSyncMap[k].action === 'upsert') {
@@ -139,6 +147,7 @@ export class StockWorker {
   // ******local sync cache********* //
 
   private async productsLocalSyncMap(shop: ShopModel): Promise<{ [key: string]: StockSyncModel }> {
+    init(shop);
     const productsMap: { [key: string]: StockSyncModel } = await bfast
       .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
       .get('all');
@@ -154,6 +163,7 @@ export class StockWorker {
   }
 
   async setProductsLocalSync(productsLocalSync: StockSyncModel[], shop: ShopModel): Promise<StockSyncModel[]> {
+    init(shop);
     let productsMap = await this.productsLocalSyncMap(shop);
     productsMap = productsLocalSync.reduce((a, b) => {
       a[b.product.id] = b;
@@ -166,6 +176,7 @@ export class StockWorker {
   }
 
   async setProductLocalSync(productSync: StockSyncModel, shop: ShopModel): Promise<StockSyncModel> {
+    init(shop);
     const productsMap = await this.productsLocalSyncMap(shop);
     productsMap[productSync.product.id] = productSync;
     await bfast
@@ -175,11 +186,13 @@ export class StockWorker {
   }
 
   async getProductsLocalSync(shop: ShopModel): Promise<StockSyncModel[]> {
+    init(shop);
     const productsMap = await this.productsLocalSyncMap(shop);
     return Object.values(productsMap);
   }
 
   async removeProductLocalSync(id: string, shop: ShopModel): Promise<string> {
+    init(shop);
     const productsMap = await this.productsLocalSyncMap(shop);
     delete productsMap[id];
     await bfast
@@ -189,6 +202,7 @@ export class StockWorker {
   }
 
   async removeProductsLocalSync(ids: string[], shop: ShopModel): Promise<string[]> {
+    init(shop);
     const productsMap = await this.productsLocalSyncMap(shop);
     ids.forEach(id => {
       delete productsMap[id];
@@ -202,6 +216,7 @@ export class StockWorker {
   // ******local sync cache********* //
 
   private async remoteAllProducts(shop: ShopModel, hashes: any[] = []): Promise<StockModel[]> {
+    init(shop);
     this.remoteAllProductsRunning = true;
     return bfast.database(shop.projectId)
       .collection('stocks')
@@ -225,36 +240,8 @@ export class StockWorker {
     return products;
   }
 
-  stocksListening(shop: ShopModel): void {
-    const changes = bfast.database(shop.projectId)
-      .table('stocks')
-      .query()
-      .changes(() => {
-        console.log('stocks changes connected');
-        if (this.remoteAllProductsRunning === true) {
-          console.log('another remote fetch is running');
-          return;
-        }
-        this.getProductsRemote(shop).catch(console.log);
-      }, () => {
-        console.log('stocks changes disconnected');
-      });
-    changes.addListener(async response => {
-      if (response && response.body && response.body.change) {
-        // console.log(response.body.change);
-        if (response.body.change.name === 'create') {
-          this.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
-        } else if (response.body.change.name === 'update') {
-          this.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
-        } else if (response.body.change.name === 'delete') {
-          await this.removeProductLocal(response.body.change.snapshot, shop);
-        } else {
-        }
-      }
-    });
-  }
-
   async getProducts(shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const products = await this.getProductsLocal(shop);
     if (Array.isArray(products) && products.length > 0) {
       return products;
@@ -264,6 +251,7 @@ export class StockWorker {
   }
 
   async saveProduct(product: StockModel, shop: ShopModel): Promise<any> {
+    init(shop);
     product = await this.sanitizeProduct(product);
     await this.setProductLocalSync({
       product,
@@ -275,6 +263,7 @@ export class StockWorker {
   }
 
   private syncStocks(shop: ShopModel): void {
+    init(shop);
     let isRunn = false;
     if (this.syncInterval) {
       // console.log('order sync running');
@@ -388,6 +377,7 @@ export class StockWorker {
   }
 
   async import(csv: string, shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const stocks = this.csvToJSON(csv).map((x) => {
       if (x && x.hasOwnProperty('canExpire')) {
         x.canExpire = (x.canExpire.toString().toLowerCase().trim() === 'true');
@@ -420,6 +410,7 @@ export class StockWorker {
   }
 
   async getProductsRemote(shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const localProducts = await this.getProductsLocal(shop);
     const hashesMap = await this.productsLocalHashMap(localProducts);
     let products: StockModel[];
@@ -435,6 +426,7 @@ export class StockWorker {
   }
 
   async search(query: string, shop: ShopModel): Promise<StockModel[]> {
+    init(shop);
     const stocks = await this.getProductsLocal(shop);
     return stocks.filter(x => {
       return x.saleable && x?.product?.toLowerCase().includes(query.toLowerCase());
@@ -442,6 +434,7 @@ export class StockWorker {
   }
 
   async deleteProduct(stock: StockModel, shop: ShopModel): Promise<any> {
+    init(shop);
     await this.setProductLocalSync({
       product: stock,
       action: 'delete'
@@ -450,6 +443,7 @@ export class StockWorker {
   }
 
   async deleteMany(stocksId: string[], activeShop: ShopModel): Promise<any> {
+    init(activeShop);
     // console.log(stocksId.length);
     // @ts-ignore
     await this.removeProductsLocal(stocksId.map(x => {
@@ -468,6 +462,7 @@ export class StockWorker {
   }
 
   async export(activeShop: ShopModel): Promise<string> {
+    init(activeShop);
     const columns = [
       'product',
       'category',

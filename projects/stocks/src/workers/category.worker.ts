@@ -40,6 +40,7 @@ export class CategoryWorker {
   // ******local cache********* //
 
   private async categoriesLocalMap(shop: ShopModel): Promise<{ [key: string]: CategoryModel }> {
+    init(shop);
     const categoriesSyncMap = await this.categoriesLocalSyncMap(shop);
     const categoriesMap: { [key: string]: CategoryModel } = await bfast
       .cache({database: 'categories', collection: 'categories'}, shop.projectId)
@@ -61,11 +62,13 @@ export class CategoryWorker {
   }
 
   async getCategoryLocal(id: string, shop: ShopModel): Promise<CategoryModel> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalMap(shop);
     return categoriesMap[id];
   }
 
   async getCategoriesLocal(shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalMap(shop);
     // const categoriesSyncMap = await this.categoriesLocalSyncMap(shop);
     // console.log(ps);
@@ -76,6 +79,7 @@ export class CategoryWorker {
   }
 
   async removeCategoryLocal(category: CategoryModel, shop: ShopModel): Promise<string> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalMap(shop);
     delete categoriesMap[category.id];
     await bfast
@@ -85,6 +89,7 @@ export class CategoryWorker {
   }
 
   async removeCategoriesLocal(categories: CategoryModel[], shop: ShopModel): Promise<string[]> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalMap(shop);
     categories.forEach(x => {
       delete categoriesMap[x.id];
@@ -96,6 +101,7 @@ export class CategoryWorker {
   }
 
   async setCategoryLocal(category: CategoryModel, shop: ShopModel): Promise<CategoryModel> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalMap(shop);
     categoriesMap[category.id] = category;
     await bfast
@@ -105,6 +111,7 @@ export class CategoryWorker {
   }
 
   async setCategoriesLocal(categories: CategoryModel[], shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     let categoriesMap = await this.categoriesLocalMap(shop);
     categoriesMap = categories.reduce((a, b) => {
       a[b.id] = b;
@@ -117,6 +124,7 @@ export class CategoryWorker {
   }
 
   async setCategoriesLocalFromRemote(categories: CategoryModel[], shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     const categoriesSyncMap = await this.categoriesLocalSyncMap(shop);
     Object.keys(categoriesSyncMap).forEach(k => {
       if (categoriesSyncMap[k].action === 'upsert') {
@@ -136,6 +144,7 @@ export class CategoryWorker {
   // ******local sync cache********* //
 
   private async categoriesLocalSyncMap(shop: ShopModel): Promise<{ [key: string]: CategorySyncModel }> {
+    init(shop);
     const categoriesMap: { [key: string]: CategorySyncModel } = await bfast
       .cache({database: 'categories', collection: 'categories_sync'}, shop.projectId)
       .get('all');
@@ -151,6 +160,7 @@ export class CategoryWorker {
   }
 
   async setCategoriesLocalSync(categoriesLocalSync: CategorySyncModel[], shop: ShopModel): Promise<CategorySyncModel[]> {
+    init(shop);
     let categoriesMap = await this.categoriesLocalSyncMap(shop);
     categoriesMap = categoriesLocalSync.reduce((a, b) => {
       a[b.category.id] = b;
@@ -163,6 +173,7 @@ export class CategoryWorker {
   }
 
   async setCategoryLocalSync(categorySync: CategorySyncModel, shop: ShopModel): Promise<CategorySyncModel> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalSyncMap(shop);
     categoriesMap[categorySync.category.id] = categorySync;
     await bfast
@@ -172,11 +183,13 @@ export class CategoryWorker {
   }
 
   async getCategoriesLocalSync(shop: ShopModel): Promise<CategorySyncModel[]> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalSyncMap(shop);
     return Object.values(categoriesMap);
   }
 
   async removeCategoryLocalSync(id: string, shop: ShopModel): Promise<string> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalSyncMap(shop);
     delete categoriesMap[id];
     await bfast
@@ -186,6 +199,7 @@ export class CategoryWorker {
   }
 
   async removeCategoriesLocalSync(ids: string[], shop: ShopModel): Promise<string[]> {
+    init(shop);
     const categoriesMap = await this.categoriesLocalSyncMap(shop);
     ids.forEach(id => {
       delete categoriesMap[id];
@@ -199,6 +213,7 @@ export class CategoryWorker {
   // ************ local cache end ******* //
 
   private async remoteAllCategories(shop: ShopModel, hashes: any[] = []): Promise<CategoryModel[]> {
+    init(shop);
     this.remoteAllProductsRunning = true;
     return bfast.database(shop.projectId)
       .collection('categories')
@@ -223,6 +238,7 @@ export class CategoryWorker {
   }
 
   private syncCategories(shop: ShopModel): void {
+    init(shop);
     let isRunn = false;
     if (this.syncInterval) {
       return;
@@ -286,6 +302,7 @@ export class CategoryWorker {
   }
 
   async deleteCategory(category: CategoryModel, shop): Promise<any> {
+    init(shop);
     await this.setCategoryLocalSync({
       category,
       action: 'delete'
@@ -294,6 +311,7 @@ export class CategoryWorker {
   }
 
   async getCategories(shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     const products = await this.getCategoriesLocal(shop);
     if (Array.isArray(products) && products.length > 0) {
       return products;
@@ -303,6 +321,7 @@ export class CategoryWorker {
   }
 
   async getCategoriesRemote(shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     const localCategories = await this.getCategoriesLocal(shop);
     const hashesMap = await this.categoriesLocalHashMap(localCategories);
     let categoryModels: CategoryModel[];
@@ -318,6 +337,7 @@ export class CategoryWorker {
   }
 
   async saveCategory(category: CategoryModel, shop: ShopModel): Promise<CategoryModel> {
+    init(shop);
     category = await this.sanitizeCategory(category);
     await this.setCategoryLocalSync({
       category,
@@ -329,6 +349,7 @@ export class CategoryWorker {
   }
 
   async search(query: string, shop: ShopModel): Promise<CategoryModel[]> {
+    init(shop);
     const stocks = await this.getCategoriesLocal(shop);
     return stocks.filter(x => {
       return x?.name?.toLowerCase().includes(query.toLowerCase());

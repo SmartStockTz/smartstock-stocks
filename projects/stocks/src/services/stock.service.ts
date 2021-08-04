@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {UserService} from '@smartstocktz/core-libs';
-import {bfast, BFast} from 'bfastjs';
+import {bfast} from 'bfastjs';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
 import {ShopModel} from '../models/shop.model';
@@ -13,8 +13,49 @@ export class StockService {
 
   private stockWorker: StockWorker;
   private stockWorkerNative;
+  private changes;
 
   constructor(private readonly userService: UserService) {
+  }
+
+  stocksListeningStop(): void {
+    if (this.changes) {
+      this.changes.close();
+      this.changes = undefined;
+    }
+  }
+
+  async stocksListening(): Promise<void> {
+    if (this.changes) {
+      return;
+    }
+    const shop = await this.userService.getCurrentShop();
+    this.changes = bfast.database(shop.projectId)
+      .table('stocks')
+      .query()
+      .changes(() => {
+        console.log('stocks changes connected');
+        // if (this.remoteAllProductsRunning === true) {
+        //   console.log('another remote fetch is running');
+        //   return;
+        // }
+        this.getProductsRemote().catch(console.log);
+      }, () => {
+        console.log('stocks changes disconnected');
+      });
+    this.changes.addListener(async response => {
+      if (response && response.body && response.body.change) {
+        // console.log(response.body.change);
+        if (response.body.change.name === 'create') {
+          this.stockWorker.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
+        } else if (response.body.change.name === 'update') {
+          this.stockWorker.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
+        } else if (response.body.change.name === 'delete') {
+          await this.stockWorker.removeProductLocal(response.body.change.snapshot, shop);
+        } else {
+        }
+      }
+    });
   }
 
   async startWorker(shop: ShopModel): Promise<any> {
@@ -57,21 +98,6 @@ export class StockService {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
     return this.stockWorker.saveProduct(stock, shop);
-    // if (inUpdateMode) {
-    //   const stockId = stock._id ? stock._id : stock.id;
-    //   delete stock.id;
-    //   delete stock._id;
-    //   delete stock.updatedAt;
-    //   delete stock.createdAt;
-    //   return BFast.database(shop.projectId).collection('stocks')
-    //     .query()
-    //     .byId(stockId)
-    //     .updateBuilder()
-    //     .doc(stock)
-    //     .update();
-    // } else {
-    //   return BFast.database(shop.projectId).collection('stocks').save(stock);
-    // }
   }
 
   async deleteStock(stock: StockModel): Promise<any> {
