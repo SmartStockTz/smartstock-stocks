@@ -52,8 +52,8 @@ export class TransferService {
       .collection(this.COLLECTION)
       .query()
       .orderBy('_created_at', -1)
-      .size(pagination.size)
-      .skip(pagination.skip)
+      .size(pagination?.size)
+      .skip(pagination?.skip)
       .find();
   }
 

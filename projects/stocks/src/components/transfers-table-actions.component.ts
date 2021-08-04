@@ -10,7 +10,7 @@ import {TransferState} from '../states/transfer.state';
       </button>
       <span class="toolbar-spacer"></span>
       <span style="width: 8px; height: 8px"></span>
-      <button (click)="transferState.fetch()"
+      <button (click)="transferState.fetch(null,null)"
               [disabled]="(transferState.isFetchTransfers | async) === true"
               matTooltip="Reload from server"
               color="primary"
