@@ -1,5 +1,6 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {DeviceState} from '@smartstocktz/core-libs';
+import {CategoryState} from '../states/category.state';
 
 
 @Component({
@@ -7,7 +8,7 @@ import {DeviceState} from '@smartstocktz/core-libs';
   template: `
     <app-layout-sidenav
       [heading]="'Categories'"
-      [showSearch]="false"
+      [showSearch]="true"
       [searchPlaceholder]="'Type to search'"
       [leftDrawer]="side"
       [body]="body"
@@ -15,25 +16,28 @@ import {DeviceState} from '@smartstocktz/core-libs';
       backLink="/stock"
       [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
       [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
-      [showProgress]="false">
+      (searchCallback)="search($event)"
+      [searchProgressFlag]="categoryState.isSearchCategories | async"
+      [showProgress]="categoryState.isSearchCategories | async">
       <ng-template #side>
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div style="min-height: 100vh">
+        <div>
           <div
-            [class]="(deviceState.isSmallScreen | async)===true?'':'container col-lg-9 col-xl-9 col-sm-12 col-md-10 col-12 pt-3'">
+            class="container-fluid categories-container">
             <app-categories></app-categories>
           </div>
         </div>
       </ng-template>
     </app-layout-sidenav>
   `,
-  styleUrls: ['../styles/stock.style.scss']
+  styleUrls: ['../styles/categories.style.scss']
 })
 export class CategoriesPage implements OnInit, OnDestroy {
 
-  constructor(public readonly deviceState: DeviceState) {
+  constructor(public readonly deviceState: DeviceState,
+              public readonly categoryState: CategoryState) {
     document.title = 'SmartStock - Categories';
   }
 
@@ -41,6 +45,10 @@ export class CategoriesPage implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+  }
+
+  search(q: string): void {
+    this.categoryState.search(q);
   }
 }
 

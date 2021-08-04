@@ -2,11 +2,9 @@ import {Component, Input, OnInit} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {Observable, of} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
-import {DialogCategoryCreateComponent} from './dialog-category-create.component';
 import {CategoryService} from '../services/category.service';
-import {SupplierCreateFormBottomSheetComponent} from "./supplier-create-form-bottom-sheet.component";
-import {CategoryCreateFormBottomSheetComponent} from "./category-create-form-bottom-sheet.component";
-import {MatBottomSheet} from "@angular/material/bottom-sheet";
+import {CategoryCreateFormBottomSheetComponent} from './category-create-form-bottom-sheet.component';
+import {MatBottomSheet} from '@angular/material/bottom-sheet';
 
 @Component({
   selector: 'app-category-form-field',
@@ -54,7 +52,7 @@ export class CategoryFormFieldComponent implements OnInit {
 
   getCategories(): void {
     this.categoriesFetching = true;
-    this.categoryService.getAllCategory({size: 10000}).then(categoryObject => {
+    this.categoryService.getAllCategory().then(categoryObject => {
       categoryObject.push({name: 'general'});
       this.categories = of(categoryObject);
       this.categoriesFetching = false;

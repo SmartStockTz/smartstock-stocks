@@ -1,141 +1,117 @@
-import {Component, OnInit, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {MatMenuTrigger} from '@angular/material/menu';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatTableDataSource} from '@angular/material/table';
-import {FormBuilder, FormControl} from '@angular/forms';
+import {FormBuilder} from '@angular/forms';
 import {CategoryModel} from '../models/category.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {DialogCategoryDeleteComponent} from './dialog-category-delete.component';
-import {DialogCategoryCreateComponent} from './dialog-category-create.component';
 import {CategoryService} from '../services/category.service';
 import {Router} from '@angular/router';
 import {CategoryState} from '../states/category.state';
 import {DeviceState} from '@smartstocktz/core-libs';
+import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 
 @Component({
   selector: 'app-categories',
   template: `
-    <mat-card-title class="d-flex flex-row"
-                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
-      <button routerLink="/stock/categories/create" color="primary" class="ft-button" mat-flat-button>
-        Add Category
+    <div class="d-flex flex-row flex-wrap">
+      <button routerLink="/stock/categories/create" color="primary" mat-button>
+        <mat-icon>add</mat-icon>
+        Create
       </button>
-      <span class="toolbar-spacer"></span>
-      <button [matMenuTriggerFor]="menuCategories" mat-icon-button>
-        <mat-icon>more_vert</mat-icon>
+      <button [disabled]="categoryState.isFetchCategories | async" (click)="reload()" color="primary" mat-button>
+        <mat-icon>refresh</mat-icon>
+        Reload
       </button>
-      <mat-menu #menuCategories>
-        <button (click)="getCategories()" mat-menu-item>Reload Categories</button>
-      </mat-menu>
-    </mat-card-title>
-    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
-      <mat-card-content>
-        <table style="margin-top: 16px" class="my-input"
-               *ngIf="!fetchCategoriesFlag && categoriesArray && categoriesArray.length > 0"
-               mat-table
-               [dataSource]="categoriesDatasource">
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td class="editable" matRipple mat-cell
-                *matCellDef="let element">{{element.name}}
-            </td>
-          </ng-container>
+      <span style="flex: 1 1 auto"></span>
+      <mat-paginator #matPaginator [pageSize]="50" showFirstLastButtons></mat-paginator>
+    </div>
 
-          <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef>Description</th>
-            <td class="editable" matRipple mat-cell
-                *matCellDef="let element">{{element.description}}
-            </td>
-          </ng-container>
+    <div>
+      <div *ngIf="categoryState.isFetchCategories | async">
+        <mat-progress-bar matTooltip="fetch categories" mode="indeterminate" color="primary"></mat-progress-bar>
+      </div>
+      <table class="my-input" mat-table [dataSource]="categoriesDatasource.connect() | async">
+        <ng-container matColumnDef="check">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox></mat-checkbox>
+          </th>
+          <td class="editable" matRipple mat-cell
+              *matCellDef="let element">
+            <mat-checkbox></mat-checkbox>
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>
-              <div class="d-flex justify-content-end align-items-end">
-                Actions
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let element">
-              <div class="d-flex justify-content-end align-items-end">
-                <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
-                  <mat-icon>more_vert</mat-icon>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td class="editable" matRipple mat-cell
+              *matCellDef="let element">{{element.name}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td class="editable" matRipple mat-cell
+              *matCellDef="let element">{{element.description}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="d-flex justify-content-end align-items-end">
+              Actions
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex justify-content-end align-items-end">
+              <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
+                <mat-icon>more_horiz</mat-icon>
+              </button>
+              <mat-menu #opts>
+                <button (click)="editCategory(element)" mat-menu-item>
+                  Edit
                 </button>
-                <mat-menu #opts>
-                  <button (click)="editCategory(element)" mat-menu-item>
-                    Edit
-                  </button>
-                  <button (click)="deleteCategory(element)" mat-menu-item>
-                    Delete
-                  </button>
-                </mat-menu>
-              </div>
-            </td>
-          </ng-container>
+                <button (click)="deleteCategory(element)" mat-menu-item>
+                  Delete
+                </button>
+              </mat-menu>
+            </div>
+          </td>
+        </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="categoriesTableColums"></tr>
-          <tr mat-row class="table-data-row" *matRowDef="let row; columns: categoriesTableColums;"></tr>
-        </table>
-        <div *ngIf="fetchCategoriesFlag">
-          <mat-progress-spinner matTooltip="fetch categories" [diameter]="30" mode="indeterminate"
-                                color="primary"></mat-progress-spinner>
-        </div>
-        <mat-paginator #matPaginator [pageSize]="10" [pageSizeOptions]="[5,10,50]" showFirstLastButtons></mat-paginator>
-      </mat-card-content>
-    </mat-card>
+        <tr mat-header-row *matHeaderRowDef="categoriesTableColums"></tr>
+        <tr mat-row class="table-data-row" *matRowDef="let row; columns: categoriesTableColums;"></tr>
+      </table>
+    </div>
   `,
   styleUrls: ['../styles/categories.style.scss']
 })
-export class CategoriesComponent implements OnInit {
+export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
-  categoriesDatasource: MatTableDataSource<CategoryModel> = new MatTableDataSource<CategoryModel>([]);
-  categoriesTableColums = ['name', 'description', 'actions'];
-  categoriesArray: CategoryModel[] = [];
-  fetchCategoriesFlag = false;
+  categoriesDatasource = new MatTableDataSource<CategoryModel>([]);
+  categoriesTableColums = ['check', 'name', 'description', 'actions'];
+  destroyer = new Subject<any>();
 
   constructor(private readonly stockDatabase: CategoryService,
               private readonly formBuilder: FormBuilder,
               private readonly dialog: MatDialog,
-              private readonly categoryState: CategoryState,
               public readonly deviceState: DeviceState,
+              public readonly categoryState: CategoryState,
               private readonly router: Router,
               private readonly snack: MatSnackBar) {
   }
 
   ngOnInit(): void {
-    this.getCategories();
-  }
-
-  searchCategory(query: string): void {
-    // if ($event && $event.query) {
-    //   this.fetchCategoriesFlag = true;
-    //   this.stockDatabase.searchCategory($event.query, {size: 20}).then(data => {
-    //     this.catalogsArray = JSON.parse(JSON.stringify(data));
-    //     // this.skip +=this.productsArray.length;
-    //     this.categoriesDatasource = new MatTableDataSource(this.catalogsArray);
-    //     this.fetchCategoriesFlag = false;
-    //     // this.size = 0;
-    //   }).catch(reason => {
-    //     this.snack.open(reason, 'Ok', {
-    //       duration: 3000
-    //     });
-    //     this.fetchCategoriesFlag = false;
-    //   });
-    // } else {
-    //   this.getCatalogs();
-    // }
-  }
-
-  getCategories(): void {
-    this.fetchCategoriesFlag = true;
-    this.stockDatabase.getAllCategory({size: 100}).then(data => {
-      this.categoriesArray = JSON.parse(JSON.stringify(data));
-      this.categoriesDatasource = new MatTableDataSource<CategoryModel>(this.categoriesArray);
-      this.categoriesDatasource.paginator = this.matPaginator;
-      this.fetchCategoriesFlag = false;
-    }).catch(reason => {
-      console.log(reason);
-      this.fetchCategoriesFlag = false;
+    this.categoryState.categories.pipe(
+      takeUntil(this.destroyer)
+    ).subscribe(value => {
+      if (Array.isArray(value)) {
+        this.categoriesDatasource.data = value;
+      }
     });
+    this.getCategories();
   }
 
   editCategory(element: CategoryModel): void {
@@ -150,11 +126,7 @@ export class CategoriesComponent implements OnInit {
       disableClose: true
     }).afterClosed().subscribe(_ => {
       if (_) {
-        this.categoriesArray = this.categoriesArray.filter(value => value.id !== element.id);
-        this.categoriesDatasource = new MatTableDataSource<CategoryModel>(this.categoriesArray);
-        this.snack.open('Category deleted', 'Ok', {
-          duration: 2000
-        });
+        this.categoryState.getCategories();
       } else {
         this.snack.open('Category not deleted', 'Ok', {
           duration: 2000
@@ -163,54 +135,20 @@ export class CategoriesComponent implements OnInit {
     });
   }
 
-  updateCategoryName(category, matMenu: MatMenuTrigger): void {
-    matMenu.toggleMenu();
-    if (category && category.value) {
-      category.field = 'name';
-      this.updateCategory(category);
-    }
+  ngAfterViewInit(): void {
+    this.categoriesDatasource.paginator = this.matPaginator;
   }
 
-  updateCategory(category: { id: string, value: string, field: string }): void {
-    this.snack.open('Update in progress..', 'Ok');
-    this.stockDatabase.updateCategory(category).then(data => {
-      const editedObjectIndex = this.categoriesArray.findIndex(value => value.id === data.id);
-      this.categoriesArray = this.categoriesArray.filter(value => value.id !== category.id);
-      if (editedObjectIndex !== -1) {
-        const updatedObject = this.categoriesArray[editedObjectIndex];
-        updatedObject[category.field] = category.value;
-        this.categoriesDatasource.data[editedObjectIndex] = updatedObject;
-      } else {
-        console.warn('fails to update category table');
-      }
-      this.snack.open('Category updated', 'Ok', {
-        duration: 3000
-      });
-    }).catch(reason => {
-      this.snack.open(reason && reason.message ? reason.message : 'Fail to update category', 'Ok', {
-        duration: 3000
-      });
-    });
+  ngOnDestroy(): void {
+    this.destroyer.next('done');
   }
 
-  updateCategoryDescription(category, matMenu: MatMenuTrigger): void {
-    matMenu.toggleMenu();
-    if (category && category.value) {
-      category.field = 'description';
-      this.updateCategory(category);
-    }
+  getCategories(): void {
+    this.categoryState.getCategories();
   }
 
-  openAddCategoryDialog(): void {
-    this.dialog.open(DialogCategoryCreateComponent, {
-      closeOnNavigation: true,
-      hasBackdrop: true
-    }).afterClosed().subscribe(value => {
-      if (value) {
-        this.categoriesArray.push(value);
-        this.categoriesDatasource.data = this.categoriesArray;
-      }
-    });
+  reload(): void {
+    this.categoryState.getCategoriesRemote();
   }
 }
 
