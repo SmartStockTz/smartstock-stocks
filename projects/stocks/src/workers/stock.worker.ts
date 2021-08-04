@@ -27,6 +27,7 @@ export class StockWorker {
   constructor(shop: ShopModel) {
     init(shop);
     this.syncStocks(shop);
+    this.stocksListening(shop);
   }
 
   async productsLocalHashMap(products: StockModel[]): Promise<{ [key: string]: any }> {
@@ -41,8 +42,9 @@ export class StockWorker {
 
   // ******local cache********* //
 
-  private async productsLocalMap(shop: ShopModel): Promise<{[key: string]: StockModel}> {
-    const productsMap: {[key: string]: StockModel} = await bfast
+  private async productsLocalMap(shop: ShopModel): Promise<{ [key: string]: StockModel }> {
+    const productsSyncMap = await this.productsLocalSyncMap(shop);
+    const productsMap: { [key: string]: StockModel } = await bfast
       .cache({database: 'stocks', collection: 'stocks'}, shop.projectId)
       .get('all');
     if (
@@ -50,6 +52,11 @@ export class StockWorker {
       !Array.isArray(productsMap) &&
       Array.isArray(Object.values(productsMap))
     ) {
+      Object.keys(productsMap).forEach(k => {
+        if (productsSyncMap[k]?.action === 'delete') {
+          delete productsMap[k];
+        }
+      });
       return productsMap;
     } else {
       return {};
@@ -58,7 +65,12 @@ export class StockWorker {
 
   async getProductsLocal(shop: ShopModel): Promise<StockModel[]> {
     const productsMap = await this.productsLocalMap(shop);
+    // const productsSyncMap = await this.productsLocalSyncMap(shop);
+    // console.log(ps);
     return Object.values(productsMap);
+    // .filter(x => {
+    //   return (!productsSyncMap[x.id] || productsSyncMap[x.id].action !== 'delete');
+    // });
   }
 
   async removeProductLocal(product: StockModel, shop: ShopModel): Promise<string> {
@@ -68,6 +80,17 @@ export class StockWorker {
       .cache({database: 'stocks', collection: 'stocks'}, shop.projectId)
       .set('all', productsMap);
     return product.id;
+  }
+
+  async removeProductsLocal(products: StockModel[], shop: ShopModel): Promise<string[]> {
+    const productsMap = await this.productsLocalMap(shop);
+    products.forEach(x => {
+      delete productsMap[x.id];
+    });
+    await bfast
+      .cache({database: 'stocks', collection: 'stocks'}, shop.projectId)
+      .set('all', productsMap);
+    return products.map(x => x.id);
   }
 
   async setProductLocal(product: StockModel, shop: ShopModel): Promise<StockModel> {
@@ -91,10 +114,27 @@ export class StockWorker {
     return products;
   }
 
+  async setProductsLocalFromRemote(products: StockModel[], shop: ShopModel): Promise<StockModel[]> {
+    const productsSyncMap = await this.productsLocalSyncMap(shop);
+    Object.keys(productsSyncMap).forEach(k => {
+      if (productsSyncMap[k].action === 'upsert') {
+        products.push(productsSyncMap[k].product);
+      }
+    });
+    const productsMap = products.reduce((a, b) => {
+      a[b.id] = b;
+      return a;
+    }, {});
+    await bfast
+      .cache({database: 'stocks', collection: 'stocks'}, shop.projectId)
+      .set('all', productsMap);
+    return products;
+  }
+
   // ******local sync cache********* //
 
   private async productsLocalSyncMap(shop: ShopModel): Promise<{ [key: string]: StockSyncModel }> {
-    const productsMap: {[key: string]: StockSyncModel} = await bfast
+    const productsMap: { [key: string]: StockSyncModel } = await bfast
       .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
       .get('all');
     if (
@@ -134,13 +174,24 @@ export class StockWorker {
     return Object.values(productsMap);
   }
 
-  async removeProductLocalSync(id: string, shop: ShopModel): Promise<any> {
+  async removeProductLocalSync(id: string, shop: ShopModel): Promise<string> {
     const productsMap = await this.productsLocalSyncMap(shop);
     delete productsMap[id];
     await bfast
       .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
       .set('all', productsMap);
     return id;
+  }
+
+  async removeProductsLocalSync(ids: string[], shop: ShopModel): Promise<string[]> {
+    const productsMap = await this.productsLocalSyncMap(shop);
+    ids.forEach(id => {
+      delete productsMap[id];
+    });
+    await bfast
+      .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
+      .set('all', productsMap);
+    return ids;
   }
 
   // ******local sync cache********* //
@@ -169,7 +220,33 @@ export class StockWorker {
     return products;
   }
 
-  stocksListeningStop(shop: ShopModel): void {
+  stocksListening(shop: ShopModel): void {
+    const changes = bfast.database(shop.projectId)
+      .table('stocks')
+      .query()
+      .changes(() => {
+        console.log('stocks changes connected');
+        if (this.remoteAllProductsRunning === true) {
+          console.log('another remote fetch is running');
+          return;
+        }
+        this.getProductsRemote(shop).catch(console.log);
+      }, () => {
+        console.log('stocks changes disconnected');
+      });
+    changes.addListener(async response => {
+      if (response && response.body && response.body.change) {
+        // console.log(response.body.change);
+        if (response.body.change.name === 'create') {
+          this.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
+        } else if (response.body.change.name === 'update') {
+          this.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
+        } else if (response.body.change.name === 'delete') {
+          await this.removeProductLocal(response.body.change.snapshot, shop);
+        } else {
+        }
+      }
+    });
   }
 
   async getProducts(shop: ShopModel): Promise<StockModel[]> {
@@ -205,36 +282,60 @@ export class StockWorker {
       }
       isRunn = true;
       const stockSyncModels: StockSyncModel[] = await this.getProductsLocalSync(shop);
-      // console.log(orders, '*****');
       if (Array.isArray(stockSyncModels) && stockSyncModels.length === 0) {
         isRunn = false;
         clearInterval(this.syncInterval);
         this.syncInterval = undefined;
         console.log('products sync stop');
       } else {
-        for (const stockSyncModel of stockSyncModels) {
-          try {
-            if (stockSyncModel.action === 'upsert') {
-              await bfast.database(shop.projectId)
-                .table('stocks')
-                .query()
-                .byId(stockSyncModel.product.id)
-                .updateBuilder()
-                .doc(stockSyncModel.product)
-                .upsert(true)
-                .update();
-            } else if (stockSyncModel.action === 'delete') {
-              await bfast.database(shop.projectId)
-                .table('stocks')
-                .query()
-                .byId(stockSyncModel.product.id)
-                .delete();
+        const upserts = stockSyncModels.filter(x => x.action === 'upsert');
+        // if (upserts.length > 50) {
+        //   upserts = upserts.slice(0, 50);
+        // }
+        const deletes = stockSyncModels.filter(x => x.action === 'delete');
+        // if (deletes.length > 1000) {
+        //   deletes = deletes.slice(0, 1000);
+        // }
+        try {
+          if (upserts?.length > 0) {
+            const daasUrl = `https://${shop.projectId}-daas.bfast.fahamutech.com/v2`;
+            const r: any = await bfast.functions(shop.projectId)
+              .request(daasUrl)
+              .post({
+                applicationId: shop.applicationId,
+                updatestocks: upserts.map(u => {
+                  return {
+                    id: u.product.id,
+                    update: {
+                      $set: u.product
+                    },
+                    upsert: true,
+                    return: ['id']
+                  };
+                })
+              });
+            if (r && r.updatestocks) {
+              console.log(r.updatestocks);
+            } else {
+              throw r;
             }
-            // console.log(order);
-            await this.removeProductLocalSync(stockSyncModel?.product?.id, shop);
-          } catch (e) {
-            console.log(e);
+            // await bfast.database(shop.projectId)
+            //   .table('stocks')
+            //   .save(upserts.map(x => x.product));
+            await this.removeProductsLocalSync(upserts.map(k => k.product.id), shop);
           }
+          if (deletes?.length > 0) {
+            await bfast.database(shop.projectId)
+              .table('stocks')
+              .query()
+              .size(deletes.length)
+              .skip(0)
+              .includesIn('id', deletes.map(d => d.product.id))
+              .delete();
+            await this.removeProductsLocalSync(deletes.map(d => d.product.id), shop);
+          }
+        } catch (e) {
+          console.log(e);
         }
         isRunn = false;
       }
@@ -324,8 +425,8 @@ export class StockWorker {
       console.log(e);
       products = localProducts;
     }
-    await this.setProductsLocal(products, shop);
-    return products;
+    await this.setProductsLocalFromRemote(products, shop);
+    return await this.getProductsLocal(shop);
   }
 
   async search(query: string, shop: ShopModel): Promise<StockModel[]> {
@@ -344,16 +445,20 @@ export class StockWorker {
   }
 
   async deleteMany(stocksId: string[], activeShop: ShopModel): Promise<any> {
-    for (const stockId of stocksId) {
-      // @ts-ignore
-      await this.removeProductLocal({id: stockId}, activeShop);
-      await this.setProductLocalSync({
-        // @ts-ignore
-        product: {id: stockId},
+    // console.log(stocksId.length);
+    // @ts-ignore
+    await this.removeProductsLocal(stocksId.map(x => {
+      return {id: x};
+    }), activeShop);
+    // @ts-ignore
+    await this.setProductsLocalSync(stocksId.map(x => {
+      return {
+        product: {id: x},
         action: 'delete'
-      }, activeShop);
-      this.syncStocks(activeShop);
-    }
+      };
+    }), activeShop);
+    this.syncStocks(activeShop);
+    // }
     return this.getProductsLocal(activeShop);
   }
 
