@@ -1,0 +1,24 @@
+.product-options-container{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  height: 100%;
+  align-items: center;
+}
+
+.product-options-container-mobile{
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  //overflow-x: scroll;
+  //width: 98vw;
+  align-content: center;
+  height: 100%;
+  align-items: center;
+}
+
+//.container-fluid{
+//  padding: 0px;
+//  margin: 0;
+//}
