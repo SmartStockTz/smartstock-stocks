@@ -44,7 +44,7 @@ export class DialogCategoryDeleteComponent {
   deleteCategory(category: any): void {
     this.errorCategoryMessage = undefined;
     this.deleteProgress = true;
-    this.categoryService.deleteCategory(category).then(value => {
+    this.categoryService.deleteCategory(category).then(_ => {
       this.dialogRef.close(category);
       this.deleteProgress = false;
     }).catch(reason => {
