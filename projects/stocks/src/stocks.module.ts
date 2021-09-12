@@ -42,13 +42,8 @@ import {IndexPage} from './pages/index.page';
 import {UnitsPage} from './pages/units.page';
 import {SuppliersPage} from './pages/suppliers.page';
 import {CategoriesPage} from './pages/categories.page';
-import {CatalogFormFieldComponent} from './components/catalog-form-field.component';
 import {DialogCategoryDeleteComponent} from './components/dialog-category-delete.component';
 import {DialogCategoryCreateComponent} from './components/dialog-category-create.component';
-import {DialogCatalogCreateComponent} from './components/dialog-catalog-create.component';
-import {CatalogsComponent} from './components/catalogs.component';
-import {DialogCatalogDeleteComponent} from './components/dialog-catalog-delete.component';
-import {CatalogsPage} from './pages/catalogs.page';
 import {TotalProductsSummaryComponent} from './components/total-products-summary.component';
 import {ProductsValueSummaryComponent} from './components/products-value-summary.component';
 import {TransferPage} from './pages/transfer.page';
@@ -77,9 +72,6 @@ import {CategoryCreatePage} from './pages/category-create.page';
 import {CategoryCreateFormComponent} from './components/category-create-form.component';
 import {CategoriesEditPage} from './pages/categories-edit.page';
 import {CategoryCreateFormBottomSheetComponent} from './components/category-create-form-bottom-sheet.component';
-import {CatalogCreatePage} from './pages/catalog-create.page';
-import {CatalogCreateFormComponent} from './components/catalog-create-form.component';
-import {CatalogEditPage} from './pages/catalog-edit.page';
 import {StockNavigationService} from './services/stock-navigation.service';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 
@@ -91,9 +83,6 @@ const routes: Routes = [
   {path: 'categories', component: CategoriesPage},
   {path: 'categories/create', component: CategoryCreatePage},
   {path: 'categories/edit/:id', component: CategoriesEditPage},
-  {path: 'catalogs', component: CatalogsPage},
-  {path: 'catalogs/create', component: CatalogCreatePage},
-  {path: 'catalogs/edit/:id', component: CatalogEditPage},
   {path: 'units', component: UnitsPage},
   {path: 'suppliers', component: SuppliersPage},
   {path: 'suppliers/create', component: SuppliersCreatePage},
@@ -148,8 +137,6 @@ const routes: Routes = [
   ],
   declarations: [
     SupplierCreateFormComponent,
-    CatalogCreateFormComponent,
-    CatalogEditPage,
     CategoriesEditPage,
     CategoryCreateFormBottomSheetComponent,
     CategoryCreatePage,
@@ -168,7 +155,6 @@ const routes: Routes = [
     TransfersTableActionsComponent,
     ProductsTableComponent,
     DialogDeleteComponent,
-    CatalogFormFieldComponent,
     IndexPage,
     CreatePageComponent,
     EditPageComponent,
@@ -178,7 +164,6 @@ const routes: Routes = [
     StockDetailsComponent,
     DialogCategoryDeleteComponent,
     DialogCategoryCreateComponent,
-    DialogCatalogCreateComponent,
     DialogUnitDeleteComponent,
     DialogUnitNewComponent,
     DialogSupplierDeleteComponent,
@@ -192,9 +177,6 @@ const routes: Routes = [
     SuppliersPage,
     CategoriesPage,
     ProductsPage,
-    CatalogsComponent,
-    DialogCatalogDeleteComponent,
-    CatalogsPage,
     TotalProductsSummaryComponent,
     ProductsValueSummaryComponent,
     TransferPage,
@@ -202,7 +184,6 @@ const routes: Routes = [
     TransferCreateComponent,
     ProductSearchDialogComponent,
     CategoryCreateFormComponent,
-    CatalogCreatePage
   ],
 })
 export class StocksModule {

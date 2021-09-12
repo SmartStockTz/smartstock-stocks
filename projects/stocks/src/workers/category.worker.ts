@@ -1,9 +1,9 @@
 import {expose} from 'comlink';
 import {ShopModel} from '../models/shop.model';
-import {bfast} from 'bfastjs';
+import * as bfast from 'bfast';
 import {CategoryModel} from '../models/category.model';
 import {CategorySyncModel} from '../models/category-sync.model';
-import {sha256} from 'crypto-hash';
+import {sha256} from "crypto-hash";
 
 function init(shop: ShopModel): void {
   bfast.init({
@@ -21,20 +21,9 @@ function init(shop: ShopModel): void {
 
 export class CategoryWorker {
   private syncInterval;
-  remoteAllProductsRunning = false;
 
   constructor(shop: ShopModel) {
     init(shop);
-  }
-
-  async categoriesLocalHashMap(categories: CategoryModel[]): Promise<{ [key: string]: any }> {
-    const hashesMap = {};
-    if (Array.isArray(categories)) {
-      for (const localC of categories) {
-        hashesMap[await sha256(JSON.stringify(localC))] = localC;
-      }
-    }
-    return hashesMap;
   }
 
   // ******local cache********* //
@@ -210,19 +199,6 @@ export class CategoryWorker {
     return ids;
   }
 
-  // ************ local cache end ******* //
-
-  private async remoteAllCategories(shop: ShopModel, hashes: any[] = []): Promise<CategoryModel[]> {
-    init(shop);
-    this.remoteAllProductsRunning = true;
-    return bfast.database(shop.projectId)
-      .collection('categories')
-      .getAll<CategoryModel>({
-        hashes
-      }).finally(() => {
-        this.remoteAllProductsRunning = false;
-      });
-  }
 
   private remoteCategoriesMapping(categories: CategoryModel[], hashesMap): CategoryModel[] {
     if (Array.isArray(categories)) {
@@ -316,23 +292,17 @@ export class CategoryWorker {
     if (Array.isArray(products) && products.length > 0) {
       return products;
     } else {
-      return this.getCategoriesRemote(shop);
+      return [];
     }
   }
 
-  async getCategoriesRemote(shop: ShopModel): Promise<CategoryModel[]> {
+  async getCategoriesRemote(shop: ShopModel, rCategories): Promise<CategoryModel[]> {
     init(shop);
     const localCategories = await this.getCategoriesLocal(shop);
-    const hashesMap = await this.categoriesLocalHashMap(localCategories);
-    let categoryModels: CategoryModel[];
-    try {
-      categoryModels = await this.remoteAllCategories(shop, Object.keys(hashesMap));
-      categoryModels = this.remoteCategoriesMapping(categoryModels, hashesMap);
-    } catch (e) {
-      console.log(e);
-      categoryModels = localCategories;
+    if (!rCategories) {
+      rCategories = localCategories;
     }
-    await this.setCategoriesLocalFromRemote(categoryModels, shop);
+    await this.setCategoriesLocalFromRemote(rCategories, shop);
     return await this.getCategoriesLocal(shop);
   }
 

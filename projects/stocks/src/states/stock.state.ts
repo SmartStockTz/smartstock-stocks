@@ -7,7 +7,7 @@ import {SelectionModel} from '@angular/cdk/collections';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'root'
 })
 export class StockState {
 

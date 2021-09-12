@@ -8,6 +8,7 @@
     "ng": "ng",
     "start": "ng serve stocks-mock",
     "build": "ng build -c production stocks && node copy-worker.js",
+    "publish": "npm run build && cd dist/stocks && npm publish --ignore-script",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -24,8 +25,8 @@
     "@angular/platform-browser": "~12.1.4",
     "@angular/platform-browser-dynamic": "~12.1.4",
     "@angular/router": "~12.1.4",
-    "@smartstocktz/core-libs": "^0.2.15",
-    "bfastjs": "~4.5.2",
+    "@smartstocktz/core-libs": "^0.2.25",
+    "bfast": "^5.0.1",
     "bootstrap": "^4.5.3",
     "comlink": "^4.3.1",
     "crypto-hash": "^1.3.0",

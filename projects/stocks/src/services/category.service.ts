@@ -1,10 +1,10 @@
 import {Injectable} from '@angular/core';
-import {UserService} from '@smartstocktz/core-libs';
+import {IpfsService, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
 import {CategoryWorker} from '../workers/category.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
-import {bfast} from 'bfastjs';
+import {database} from 'bfast';
 
 @Injectable({
   providedIn: 'root'
@@ -36,7 +36,7 @@ export class CategoryService {
   async startChanges(): Promise<void> {
     if (!this.changes) {
       const shop = await this.userService.getCurrentShop();
-      this.changes = bfast.database(shop.projectId)
+      this.changes = database(shop.projectId)
         .table('categories')
         .query()
         .changes(() => {
@@ -45,7 +45,7 @@ export class CategoryService {
           //   console.log('another remote fetch is running');
           //   return;
           // }
-          this.getAllCategoryRemote().catch(console.log);
+          // this.getAllCategoryRemote().catch(console.log);
         }, () => {
           console.log('categories changes disconnected');
         });
@@ -93,10 +93,28 @@ export class CategoryService {
     return this.categoryWorker.getCategories(shop);
   }
 
+  private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
+    // this.remoteAllProductsRunning = true;
+    const cids = await database(shop.projectId)
+      .collection('categories')
+      .getAll<string>({
+        cids: true
+      }).finally(() => {
+        // this.remoteAllProductsRunning = false;
+      });
+    return await Promise.all(
+      cids.map(c => {
+        return IpfsService.getDataFromCid(c);
+      })
+    ) as any[];
+  }
+
+
   async getAllCategoryRemote(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.categoryWorker.getCategoriesRemote(shop);
+    const categories = await this.remoteAllCategories(shop);
+    return this.categoryWorker.getCategoriesRemote(shop, categories);
   }
 
   async getCategory(id: string): Promise<CategoryModel> {

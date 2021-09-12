@@ -1,5 +1,5 @@
 import {expose} from 'comlink';
-import {bfast} from 'bfastjs';
+import * as bfast from 'bfast';
 import {ShopModel} from '@smartstocktz/core-libs/models/shop.model';
 import {StockModel} from '../models/stock.model';
 import {sha256} from 'crypto-hash';
@@ -22,25 +22,11 @@ function init(shop: ShopModel): void {
 export class StockWorker {
 
   private syncInterval;
-  remoteAllProductsRunning = false;
 
   constructor(shop: ShopModel) {
     init(shop);
     this.syncStocks(shop);
-    // this.stocksListening(shop);
   }
-
-  async productsLocalHashMap(products: StockModel[]): Promise<{ [key: string]: any }> {
-    const hashesMap = {};
-    if (Array.isArray(products)) {
-      for (const localC of products) {
-        hashesMap[await sha256(JSON.stringify(localC))] = localC;
-      }
-    }
-    return hashesMap;
-  }
-
-  // ******local cache********* //
 
   private async productsLocalMap(shop: ShopModel): Promise<{ [key: string]: StockModel }> {
     init(shop);
@@ -215,18 +201,6 @@ export class StockWorker {
 
   // ******local sync cache********* //
 
-  private async remoteAllProducts(shop: ShopModel, hashes: any[] = []): Promise<StockModel[]> {
-    init(shop);
-    this.remoteAllProductsRunning = true;
-    return bfast.database(shop.projectId)
-      .collection('stocks')
-      .getAll<StockModel>({
-        hashes
-      }).finally(() => {
-        this.remoteAllProductsRunning = false;
-      });
-  }
-
   private remoteProductsMapping(products: StockModel[], hashesMap): StockModel[] {
     if (Array.isArray(products)) {
       products = products.map(x => {
@@ -246,7 +220,7 @@ export class StockWorker {
     if (Array.isArray(products) && products.length > 0) {
       return products;
     } else {
-      return this.getProductsRemote(shop);
+      return [];
     }
   }
 
@@ -409,19 +383,13 @@ export class StockWorker {
     return stocks;
   }
 
-  async getProductsRemote(shop: ShopModel): Promise<StockModel[]> {
+  async getProductsRemote(shop: ShopModel, rProducts: StockModel[]): Promise<StockModel[]> {
     init(shop);
     const localProducts = await this.getProductsLocal(shop);
-    const hashesMap = await this.productsLocalHashMap(localProducts);
-    let products: StockModel[];
-    try {
-      products = await this.remoteAllProducts(shop, Object.keys(hashesMap));
-      products = this.remoteProductsMapping(products, hashesMap);
-    } catch (e) {
-      console.log(e);
-      products = localProducts;
+    if (!rProducts){
+      rProducts = localProducts;
     }
-    await this.setProductsLocalFromRemote(products, shop);
+    await this.setProductsLocalFromRemote(rProducts, shop);
     return await this.getProductsLocal(shop);
   }
 

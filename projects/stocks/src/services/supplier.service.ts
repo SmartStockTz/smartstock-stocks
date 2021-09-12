@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {UserService} from '@smartstocktz/core-libs';
+import {IpfsService, UserService} from '@smartstocktz/core-libs';
 import {StorageService} from '@smartstocktz/core-libs';
 import {SupplierModel} from '../models/supplier.model';
-import {BFast} from 'bfastjs';
+import {database} from 'bfast';
 
 @Injectable({
   providedIn: 'root'
@@ -11,14 +11,13 @@ import {BFast} from 'bfastjs';
 
 export class SupplierService {
   constructor(private readonly httpClient: HttpClient,
-              private readonly userService: UserService,
-              private readonly storageService: StorageService) {
+              private readonly userService: UserService) {
   }
 
   async addSupplier(supplier: SupplierModel, id: string): Promise<any> {
-    const shop = await this.storageService.getActiveShop();
+    const shop = await this.userService.getCurrentShop();
     if (id) {
-      return BFast.database(shop.projectId)
+      return database(shop.projectId)
         .collection('suppliers')
         .query()
         .byId(id)
@@ -26,36 +25,38 @@ export class SupplierService {
         .doc(supplier)
         .update();
     } else {
-      return BFast.database(shop.projectId)
+      return database(shop.projectId)
         .collection('suppliers')
         .save(supplier);
     }
   }
 
   async deleteSupplier(id: string): Promise<any> {
-    const shop = await this.storageService.getActiveShop();
-    return BFast.database(shop.projectId).collection('suppliers').query().byId(id).delete();
+    const shop = await this.userService.getCurrentShop();
+    return database(shop.projectId).collection('suppliers').query().byId(id).delete();
   }
 
-  async getAllSupplier(pagination: { size?: number, skip?: number }): Promise<SupplierModel[]> {
-    const shop = await this.storageService.getActiveShop();
-    const suppliers: SupplierModel[] = await BFast.database(shop.projectId).collection<SupplierModel>('suppliers').getAll<SupplierModel>();
-    suppliers.sort((a, b) => {
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
-    return suppliers;
-  }
-
-  updateAllSupplier(callback?: (value: any) => void): void {
+  async getAllSupplier(): Promise<SupplierModel[]> {
+    const shop = await this.userService.getCurrentShop();
+    const cids = await database(shop.projectId)
+      .collection<SupplierModel>('suppliers')
+      .getAll<string>({
+        cids: true
+      });
+    return await Promise.all(
+      cids.map(c => {
+        return IpfsService.getDataFromCid(c);
+      })
+    );
   }
 
   async updateSupplier(value: { id: string, field: string, value: string }): Promise<any> {
-    const shop = await this.storageService.getActiveShop();
+    const shop = await this.userService.getCurrentShop();
     const supplierId = value.id;
     const data = {};
     data[value.field] = value.value;
     delete value.id;
-    const response = await BFast.database(shop.projectId).collection('suppliers')
+    const response = await database(shop.projectId).collection('suppliers')
       .query()
       .byId(supplierId)
       .updateBuilder()

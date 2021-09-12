@@ -1,10 +1,11 @@
 import {Injectable} from '@angular/core';
-import {UserService} from '@smartstocktz/core-libs';
-import {bfast} from 'bfastjs';
+import {IpfsService, UserService} from '@smartstocktz/core-libs';
+import {database} from 'bfast';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
+import * as bfast from 'bfast';
 
 @Injectable({
   providedIn: 'root'
@@ -30,7 +31,7 @@ export class StockService {
       return;
     }
     const shop = await this.userService.getCurrentShop();
-    this.changes = bfast.database(shop.projectId)
+    this.changes = database(shop.projectId)
       .table('stocks')
       .query()
       .changes(() => {
@@ -39,7 +40,7 @@ export class StockService {
         //   console.log('another remote fetch is running');
         //   return;
         // }
-        this.getProductsRemote().catch(console.log);
+        // this.getProductsRemote().catch(console.log);
       }, () => {
         console.log('stocks changes disconnected');
       });
@@ -112,10 +113,27 @@ export class StockService {
     return this.stockWorker.getProducts(shop);
   }
 
+  private async remoteAllProducts(shop: ShopModel): Promise<StockModel[]> {
+    // this.remoteAllProductsRunning = true;
+    const cids = await bfast.database(shop.projectId)
+      .collection('stocks')
+      .getAll<string>({
+        cids: true
+      }).finally(() => {
+        // this.remoteAllProductsRunning = false;
+      });
+    return await Promise.all(
+      cids.map(c => {
+        return IpfsService.getDataFromCid(c);
+      })
+    ) as any[];
+  }
+
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.stockWorker.getProductsRemote(shop);
+    const products = await this.remoteAllProducts(shop);
+    return this.stockWorker.getProductsRemote(shop, products);
   }
 
   async deleteMany(stocksId: string[]): Promise<any> {

@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {BFast} from 'bfastjs';
+import {auth, init} from 'bfast';
 import {Router} from '@angular/router';
-import {StorageService} from '@smartstocktz/core-libs';
+import {StorageService, UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +23,8 @@ import {StorageService} from '@smartstocktz/core-libs';
               <mat-error>Field required</mat-error>
             </mat-form-field>
             <button *ngIf="!isLogin" mat-flat-button color="primary">Login</button>
-            <mat-progress-spinner color="primary" mode="indeterminate" diameter="30" *ngIf="isLogin"></mat-progress-spinner>
+            <mat-progress-spinner color="primary" mode="indeterminate" diameter="30"
+                                  *ngIf="isLogin"></mat-progress-spinner>
           </form>
         </mat-card-content>
       </mat-card>
@@ -38,6 +39,7 @@ export class LoginPageComponent implements OnInit {
   constructor(private readonly formBuilder: FormBuilder,
               private readonly router: Router,
               private readonly storageService: StorageService,
+              private readonly userService: UserService,
               private readonly snack: MatSnackBar) {
   }
 
@@ -46,20 +48,22 @@ export class LoginPageComponent implements OnInit {
       this.snack.open('Please fill all required fields', 'Ok', {duration: 3000});
     } else {
       this.isLogin = true;
-      BFast.auth().logIn(this.loginForm.value.username, this.loginForm.value.password)
+      auth().logIn(this.loginForm.value.username, this.loginForm.value.password)
         .then(async user => {
           this.router.navigateByUrl('/stock').catch(console.log);
-          BFast.init({
+          init({
             applicationId: user.applicationId,
             projectId: user.projectId
           }, user.projectId);
-          await this.storageService.saveCurrentProjectId('0UTYLQKeifrk');
-          await this.storageService.saveActiveShop(user as any);
+          const shops = await this.userService.getShops(user);
+          await this.userService.saveCurrentShop(shops[0]);
+          await this.storageService.saveCurrentProjectId(user.projectId);
+          await this.userService.updateCurrentUser(user as any);
         })
         .catch(reason => {
           this.snack.open(reason && reason.message ? reason.message : reason, 'Ok');
         }).finally(() => {
-          this.isLogin = false;
+        this.isLogin = false;
       });
     }
   }

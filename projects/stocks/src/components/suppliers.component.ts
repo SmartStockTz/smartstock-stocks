@@ -8,7 +8,7 @@ import {MatPaginator} from '@angular/material/paginator';
 import {SupplierService} from '../services/supplier.service';
 import {SupplierState} from '../states/supplier.state';
 import {Router} from '@angular/router';
-import {DeviceState} from "@smartstocktz/core-libs";
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-suppliers',
@@ -154,7 +154,7 @@ export class SuppliersComponent implements OnInit {
 
   getSuppliers(): void {
     this.fetchSuppliersFlag = true;
-    this.supplierService.getAllSupplier({size: 100}).then(data => {
+    this.supplierService.getAllSupplier().then(data => {
       this.suppliersArray = JSON.parse(JSON.stringify(data));
       this.suppliersDatasource = new MatTableDataSource<SupplierModel>(this.suppliersArray);
       this.suppliersDatasource.paginator = this.matPaginator;

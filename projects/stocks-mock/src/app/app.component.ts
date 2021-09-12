@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {BFast} from 'bfastjs';
 import {StorageService} from '@smartstocktz/core-libs';
 
 @Component({
@@ -7,7 +6,7 @@ import {StorageService} from '@smartstocktz/core-libs';
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
-  constructor(private readonly storageService: StorageService) {
+  constructor() {
   }
 
   async ngOnInit(): Promise<void> {

@@ -3,7 +3,7 @@ import {NgModule} from '@angular/core';
 import {AppComponent} from './app.component';
 import {HttpClientModule} from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {BFast} from 'bfastjs';
+import {init} from 'bfast';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {RouterModule, Routes} from '@angular/router';
 import {MatNativeDateModule} from '@angular/material/core';
@@ -16,10 +16,10 @@ import {MatInputModule} from '@angular/material/input';
 import {ReactiveFormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import {MatDialogModule} from "@angular/material/dialog";
-import {MatBottomSheetModule} from "@angular/material/bottom-sheet";
+import {MatDialogModule} from '@angular/material/dialog';
+import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import { MatMenuModule } from '@angular/material/menu';
-import { LibModule } from '@smartstocktz/core-libs';
+import {IpfsService, LibModule} from '@smartstocktz/core-libs';
 
 
 const routes: Routes = [
@@ -67,7 +67,10 @@ const routes: Routes = [
 })
 export class AppModule {
   constructor() {
-    BFast.init({
+    IpfsService.getVersion().then(value => {
+      console.log('ipfs version : ', value.version);
+    });
+    init({
       applicationId: 'smartstock_lb',
       projectId: 'smartstock'
     });

@@ -4,7 +4,6 @@ import {MatDialog} from '@angular/material/dialog';
 import {StockState} from '../states/stock.state';
 import {DialogDeleteComponent} from './stock.component';
 import {ImportsDialogComponent} from './imports.component';
-import {Subject} from 'rxjs';
 
 @Component({
   selector: 'app-stock-products-table-sub-actions',

@@ -55,7 +55,7 @@ export class SuppliersFormFieldComponent implements OnInit {
 
   getSuppliers(): void {
     this.suppliersFetching = true;
-    this.supplierService.getAllSupplier({}).then(value => {
+    this.supplierService.getAllSupplier().then(value => {
       this.suppliersFetching = false;
       this.suppliers = of(JSON.parse(JSON.stringify(value)));
     }).catch(_ => {

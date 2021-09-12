@@ -5,7 +5,7 @@ import {CategoryService} from '../services/category.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'root'
 })
 export class CategoryState {
   selectedForEdit = new BehaviorSubject<CategoryModel>(null);

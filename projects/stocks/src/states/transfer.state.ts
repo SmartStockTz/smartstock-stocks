@@ -6,7 +6,7 @@ import {TransferModel} from '../models/transfer.model';
 import {Router} from '@angular/router';
 
 @Injectable({
-  providedIn: 'any'
+  providedIn: 'root'
 })
 
 export class TransferState {

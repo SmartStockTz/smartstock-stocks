@@ -18,32 +18,32 @@ export class StockNavigationService {
         {
           name: 'products',
           link: '/stock/products',
-          roles: ['admin', 'manager']
+          roles: ['admin', 'manager'],
+          click: null
         },
         {
           name: 'categories',
           link: '/stock/categories',
-          roles: ['admin', 'manager']
+          roles: ['admin', 'manager'],
+          click: null
         },
-        // {
-        //   name: 'catalogs',
-        //   link: '/stock/catalogs',
-        //   roles: ['admin', 'manager']
-        // },
         {
           name: 'units',
           link: '/stock/units',
-          roles: ['admin', 'manager']
+          roles: ['admin', 'manager'],
+          click: null
         },
         {
           name: 'suppliers',
           link: '/stock/suppliers',
-          roles: ['admin', 'manager']
+          roles: ['admin', 'manager'],
+          click: null
         },
         {
           name: 'transfers',
           link: '/stock/transfers',
-          roles: ['admin', 'manager']
+          roles: ['admin', 'manager'],
+          click: null
         }
       ]
     });

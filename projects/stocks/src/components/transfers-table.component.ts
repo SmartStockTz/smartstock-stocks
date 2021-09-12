@@ -8,7 +8,7 @@ import {PageEvent} from '@angular/material/paginator';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {TransfersItemsViewComponent} from './transfers-items-view.component';
 import {TransfersExportOptionsComponent} from './transfers-export-options.component';
-import {DeviceState} from "@smartstocktz/core-libs";
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-transfers-table',

@@ -7,7 +7,7 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {UnitsModel} from '../models/units.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {UnitsService} from '../services/units.service';
-import {DeviceState} from "@smartstocktz/core-libs";
+import {DeviceState} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-units',
