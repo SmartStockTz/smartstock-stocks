@@ -74,6 +74,7 @@ import {CategoriesEditPage} from './pages/categories-edit.page';
 import {CategoryCreateFormBottomSheetComponent} from './components/category-create-form-bottom-sheet.component';
 import {StockNavigationService} from './services/stock-navigation.service';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {ProductsListComponent} from "./components/products-list.component";
 
 const routes: Routes = [
   {path: '', component: IndexPage},
@@ -184,6 +185,7 @@ const routes: Routes = [
     TransferCreateComponent,
     ProductSearchDialogComponent,
     CategoryCreateFormComponent,
+    ProductsListComponent
   ],
 })
 export class StocksModule {

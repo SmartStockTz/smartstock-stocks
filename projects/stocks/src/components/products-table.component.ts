@@ -15,121 +15,89 @@ import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
 
 @Component({
-  selector: 'app-stock-products-table',
+  selector: 'app-products-table',
   template: `
-    <div>
-      <div [class]="(deviceState.isSmallScreen  | async) ===false?'container-fluid':''">
-
-        <div class="product-table-options">
-          <app-stock-products-table-sub-actions (done)="doneInSubMenu()"></app-stock-products-table-sub-actions>
-          <mat-paginator [style]="(deviceState.isSmallScreen  | async) ===false?{display:''}:{display:'none'}"
-                         #paginator pageSize="50"
-                         *ngIf="(deviceState.isSmallScreen  | async) ===false"
-                         showFirstLastButtons>
-          </mat-paginator>
-        </div>
-
-        <mat-progress-bar *ngIf="stockState.isFetchStocks | async" mode="indeterminate"></mat-progress-bar>
-
-        <div *ngIf="(deviceState.isSmallScreen  | async) ===false">
-          <table mat-table matSort [dataSource]="stockDatasource">
-            <ng-container matColumnDef="select">
-              <th mat-header-cell *matHeaderCellDef>
-                <mat-checkbox (change)="$event ? masterToggle() : null"
-                              [checked]="stockState.selection.hasValue()">
-                </mat-checkbox>
-              </th>
-              <td mat-cell *matCellDef="let row">
-                <mat-checkbox (click)="$event.stopPropagation()"
-                              (change)="$event ? stockState.selection.toggle(row) : null"
-                              [checked]="stockState.selection.isSelected(row)">
-                </mat-checkbox>
-              </td>
-              <td mat-footer-cell *matFooterCellDef>
-                TOTAL
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="product">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Product</th>
-              <td mat-cell *matCellDef="let element">{{element.product}}</td>
-              <td mat-footer-cell *matFooterCellDef></td>
-            </ng-container>
-            <ng-container matColumnDef="quantity">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
-              <td mat-cell *matCellDef="let element">
-                {{element.stockable ? (element.quantity | number) : 'N/A'}}
-              </td>
-              <td mat-footer-cell *matFooterCellDef>
-                {{totalQuantity() | number}}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="purchase">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Purchase Price</th>
-              <td mat-cell *matCellDef="let element">
-                {{element.purchasable ? (element.purchase | number) : 'N/A'}}
-              </td>
-              <td mat-footer-cell *matFooterCellDef="let element">
-                {{productValue() | number}}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="retailPrice">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>Sale Pice</th>
-              <td matRipple mat-cell *matCellDef="let element">
-                {{element.saleable ? (element.retailPrice | number) : 'N/A'}}
-              </td>
-              <td mat-footer-cell *matFooterCellDef="let element">
-                {{salesRetailValue() | number}}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="wholesalePrice">
-              <th mat-header-cell *matHeaderCellDef mat-sort-header>WholeSale Price</th>
-              <td mat-cell *matCellDef="let element">
-                {{element.saleable ? (element.wholesalePrice | number) : 'N/A'}}
-              </td>
-              <td mat-footer-cell *matFooterCellDef="let element">
-                {{salesWholeValue() | number}}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef>
-                <div class="d-flex flex-row justify-content-end align-items-end">
-                  <span>Actions</span>
-                </div>
-              </th>
-              <td mat-cell *matCellDef="let element">
-                <div class="d-flex flex-row flex-nowrap justify-content-end align-items-end">
-                  <button [matMenuTriggerFor]="menu" mat-icon-button>
-                    <mat-icon color="primary">more_horiz</mat-icon>
-                  </button>
-                  <mat-menu #menu>
-                    <button mat-menu-item [matTooltip]="'change product information'"
-                            (click)="viewProduct(element)">View
-                    </button>
-                    <button mat-menu-item [matTooltip]="'change product information'"
-                            (click)="editStock(element)">Edit
-                    </button>
-                    <button mat-menu-item [matTooltip]="'permanent delete stock'"
-                            (click)="deleteStock(element)">Delete
-                    </button>
-                  </mat-menu>
-                </div>
-              </td>
-              <td mat-footer-cell *matFooterCellDef></td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="stockColumns"></tr>
-            <tr class="table-data-row" mat-row *matRowDef="let row; columns: stockColumns;"></tr>
-            <tr mat-footer-row style="font-size: 36px" *matFooterRowDef="stockColumns"></tr>
-          </table>
-        </div>
+    <div class="product-table-options-container">
+      <div class="product-table-options">
+        <app-stock-products-table-sub-actions (done)="doneInSubMenu()"></app-stock-products-table-sub-actions>
+        <mat-paginator [style]="(deviceState.isSmallScreen  | async) ===false?{display:''}:{display:'none'}"
+                       #paginator pageSize="50"
+                       *ngIf="(deviceState.isSmallScreen  | async) ===false"
+                       showFirstLastButtons>
+        </mat-paginator>
       </div>
+      <mat-progress-bar *ngIf="stockState.isFetchStocks | async" mode="indeterminate"></mat-progress-bar>
     </div>
-
-    <div *ngIf="(deviceState.isSmallScreen  | async) ===true">
-      <cdk-virtual-scroll-viewport [orientation]="'vertical'" [itemSize]="20" style="min-height: 100vh; width: 100vw">
-        <mat-nav-list>
-          <div *cdkVirtualFor="let element of stockDatasource.connect() | async">
-            <mat-list-item [matMenuTriggerFor]="menu">
-              <h1 matLine>{{element.product}}</h1>
+    <div class="product-table">
+      <table mat-table matSort [dataSource]="stockDatasource">
+        <ng-container matColumnDef="select">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>
+            <mat-checkbox (change)="$event ? masterToggle() : null"
+                          [checked]="stockState.selection.hasValue()">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox (click)="$event.stopPropagation()"
+                          (change)="$event ? stockState.selection.toggle(row) : null"
+                          [checked]="stockState.selection.isSelected(row)">
+            </mat-checkbox>
+          </td>
+          <td mat-footer-cell *matFooterCellDef>
+            TOTAL
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="product">
+          <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Product</th>
+          <td mat-cell *matCellDef="let element">{{element.product}}</td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <ng-container matColumnDef="quantity">
+          <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.stockable ? (element.quantity | number) : 'N/A'}}
+          </td>
+          <td mat-footer-cell *matFooterCellDef>
+            {{totalQuantity() | number}}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="purchase">
+          <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Purchase Price</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.purchasable ? (element.purchase | number) : 'N/A'}}
+          </td>
+          <td mat-footer-cell *matFooterCellDef="let element">
+            {{productValue() | number}}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="retailPrice">
+          <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Retail Price</th>
+          <td matRipple mat-cell *matCellDef="let element">
+            {{element.saleable ? (element.retailPrice | number) : 'N/A'}}
+          </td>
+          <td mat-footer-cell *matFooterCellDef="let element">
+            {{salesRetailValue() | number}}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="wholesalePrice">
+          <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>WholeSale Price</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.saleable ? (element.wholesalePrice | number) : 'N/A'}}
+          </td>
+          <td mat-footer-cell *matFooterCellDef="let element">
+            {{salesWholeValue() | number}}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="action">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>
+            <div class="d-flex flex-row justify-content-end align-items-end">
+              <span>Actions</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex flex-row flex-nowrap justify-content-end align-items-end">
+              <button [matMenuTriggerFor]="menu" mat-icon-button>
+                <mat-icon color="primary">more_horiz</mat-icon>
+              </button>
               <mat-menu #menu>
                 <button mat-menu-item [matTooltip]="'change product information'"
                         (click)="viewProduct(element)">View
@@ -141,11 +109,14 @@ import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
                         (click)="deleteStock(element)">Delete
                 </button>
               </mat-menu>
-            </mat-list-item>
-            <mat-divider></mat-divider>
-          </div>
-        </mat-nav-list>
-      </cdk-virtual-scroll-viewport>
+            </div>
+          </td>
+          <td mat-footer-cell *matFooterCellDef></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="stockColumns"></tr>
+        <tr class="table-data-row" mat-row *matRowDef="let row; columns: stockColumns;"></tr>
+        <tr mat-footer-row style="font-size: 36px" *matFooterRowDef="stockColumns"></tr>
+      </table>
     </div>
   `,
   styleUrls: ['../styles/products.style.scss']
@@ -201,7 +172,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   editStock(element: StockModel): void {
-    // this.stockState.selectedStock.next(element);
     this.router.navigateByUrl('/stock/products/edit/' + element.id).catch(reason => this.logger.e(reason));
   }
 
@@ -252,7 +222,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       .reduce((a, b) => a + b, 0);
   }
 
-  salesRetailValue(): number{
+  salesRetailValue(): number {
     if (!this.stockDatasource.data) {
       return 0;
     }
@@ -262,22 +232,22 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       .reduce((a, b) => a + b, 0);
   }
 
-  salesWholeValue(): number{
+  salesWholeValue(): number {
     if (!this.stockDatasource.data) {
       return 0;
     }
     return this.stockState.stocks.value
-      .filter(x => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity>0)
+      .filter(x => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity > 0)
       .map(x => (x.wholesalePrice / x.wholesaleQuantity) * x.quantity)
       .reduce((a, b) => a + b, 0);
   }
 
-  totalQuantity(): number{
+  totalQuantity(): number {
     if (!this.stockDatasource.data) {
       return 0;
     }
     return this.stockState.stocks.value
-      .filter(x => x.stockable === true && x.quantity > 0 )
+      .filter(x => x.stockable === true && x.quantity > 0)
       .map(x => x.quantity)
       .reduce((a, b) => a + b, 0);
   }
