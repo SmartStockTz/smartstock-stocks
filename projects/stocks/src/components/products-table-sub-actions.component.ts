@@ -8,27 +8,26 @@ import {ImportsDialogComponent} from './imports.component';
 @Component({
   selector: 'app-stock-products-table-sub-actions',
   template: `
-    <div [class]="(deviceState.isSmallScreen  | async) ===false?'product-options-container':'product-options-container-mobile'">
-      <button routerLink="/stock/products/create" color="primary" mat-button>
-        <mat-icon>add</mat-icon>
+    <div class="product-options-container">
+      <button routerLink="/stock/products/create" color="primary" mat-button class="p-button">
         Create
       </button>
-      <button [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary" mat-button>
-        <mat-icon>refresh</mat-icon>
+      <button class="p-button" [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary"
+              mat-button>
         Reload
       </button>
-      <button [disabled]="stockState.isImportProducts | async" (click)="importProducts()" color="primary" mat-button>
-        <mat-icon>file_upload</mat-icon>
+      <button class="p-button" [disabled]="stockState.isImportProducts | async" (click)="importProducts()"
+              color="primary" mat-button>
         Import
       </button>
-      <button [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()" color="primary" mat-button>
-        <mat-icon>file_download</mat-icon>
+      <button class="p-button" [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()"
+              color="primary" mat-button>
         Export
       </button>
-      <button *ngIf="stockState.selection.hasValue()" [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
+      <button class="p-button" *ngIf="stockState.selection.hasValue()"
+              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
               color="primary"
               (click)="deleteMany()">
-        <mat-icon>delete</mat-icon>
         Delete
       </button>
     </div>
@@ -39,6 +38,7 @@ import {ImportsDialogComponent} from './imports.component';
 export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
 
   @Output() done = new EventEmitter();
+
   // private destroyer = new Subject<any>();
 
   constructor(private readonly dialog: MatDialog,
