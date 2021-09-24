@@ -24,11 +24,17 @@ import {ImportsDialogComponent} from './imports.component';
               color="primary" mat-button>
         Export
       </button>
+<!--      <button class="p-button" *ngIf="stockState.selection.selected.length>1"-->
+<!--              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button-->
+<!--              color="primary"-->
+<!--              (click)="createGroupProduct()">-->
+<!--        Group ( {{stockState.selection.selected.length}} )-->
+<!--      </button>-->
       <button class="p-button" *ngIf="stockState.selection.hasValue()"
               [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
               color="primary"
               (click)="deleteMany()">
-        Delete
+        Delete ( {{stockState.selection.selected.length}} )
       </button>
     </div>
   `,
@@ -38,8 +44,6 @@ import {ImportsDialogComponent} from './imports.component';
 export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
 
   @Output() done = new EventEmitter();
-
-  // private destroyer = new Subject<any>();
 
   constructor(private readonly dialog: MatDialog,
               private readonly messageService: MessageService,
@@ -89,6 +93,9 @@ export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // this.destroyer.next('done');
+  }
+
+  createGroupProduct(): void {
+
   }
 }

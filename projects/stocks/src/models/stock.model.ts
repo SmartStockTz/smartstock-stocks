@@ -5,6 +5,7 @@ export interface StockModel {
   catalog?: any[];
   updatedAt?: any;
   image?: any;
+  images?: string[];
   id?: string;
   _id?: string;
   product: string;
@@ -14,7 +15,11 @@ export interface StockModel {
   description?: string;
   unit?: string;
   category?: string;
-  type?: 'simple' | 'grouped';
+  type?: 'simple' | 'subscription';
+  subscription?: {
+    duration: number,
+    grace: number
+  };
   downloadable?: boolean | false;
   downloads?: { name: string, type: string, url: any }[];
   stockable?: boolean | true;
