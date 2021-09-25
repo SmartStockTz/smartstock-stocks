@@ -1,4 +1,5 @@
 import {MetasModel} from './metas.model';
+import {FileModel} from '@smartstocktz/core-libs';
 
 export interface StockModel {
   createdAt?: any;
@@ -21,7 +22,7 @@ export interface StockModel {
     grace: number
   };
   downloadable?: boolean | false;
-  downloads?: { name: string, type: string, url: any }[];
+  downloads?: FileModel[];
   stockable?: boolean | true;
   purchasable?: boolean | true;
   quantity?: number;

@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FilesService} from '@smartstocktz/core-libs';
 import {of} from 'rxjs';
 
@@ -21,7 +21,8 @@ import {of} from 'rxjs';
   `,
   styleUrls: ['../styles/image-upload.style.scss']
 })
-export class ImageUploadComponent {
+export class ImageUploadComponent implements OnInit{
+  @Input() initialImages = [];
   @Output() imagesReady = new EventEmitter<string[]>();
   images = new Set<string>();
   imagesOf = of([]);
@@ -45,5 +46,12 @@ export class ImageUploadComponent {
       } else {
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.initialImages.forEach(value => {
+      this.images.add(value);
+    });
+    this.imagesOf = of(this.initialImages);
   }
 }

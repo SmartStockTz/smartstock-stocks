@@ -1,12 +1,13 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {FormControl, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, FilesService, UserService} from '@smartstocktz/core-libs';
+import {FileBrowserDialogComponent, FileModel, FilesService, UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-downloadable',
   template: `
-    <div style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 8px 0; margin-bottom: 16px">
+    <div
+      style="display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; padding: 8px 0; margin-bottom: 16px">
       <div *ngFor="let file of files; let i =index"
            style="display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center">
         <mat-card style="height: 50px; margin: 5px; display: flex; flex-direction: row; align-items: center">
@@ -19,7 +20,8 @@ import {FileBrowserDialogComponent, FilesService, UserService} from '@smartstock
           </button>
         </mat-card>
       </div>
-      <mat-card (click)="chooseFile($event)" matRipple style="width: auto; height: 50px; margin: 5px 0">
+      <mat-card (click)="chooseFile($event)" matRipple
+                style="width: auto; height: 50px; margin: 5px 0;display: flex">
         <mat-icon>attachment</mat-icon>
         <span>Add digital file</span>
       </mat-card>
@@ -27,8 +29,8 @@ import {FileBrowserDialogComponent, FilesService, UserService} from '@smartstock
   `,
 })
 export class DownloadableComponent implements OnInit {
-  @Input() files: { name: string, type: string, url: string }[] = [];
-  @Input() uploadFileFormControl: FormControl = new FormControl([]);
+  @Input() files: FileModel[] = [];
+  @Output() filesReady = new EventEmitter<FileModel[]>();
 
   constructor(private readonly dialog: MatDialog,
               private readonly fileService: FilesService) {
@@ -40,6 +42,7 @@ export class DownloadableComponent implements OnInit {
   removeFile($event: MouseEvent, i: number): void {
     $event.preventDefault();
     this.files.splice(i, 1);
+    this.filesReady.emit(this.files);
   }
 
   async chooseFile($event: MouseEvent): Promise<void> {
@@ -48,19 +51,25 @@ export class DownloadableComponent implements OnInit {
       if (file && file.url) {
         if (this.files.length === 0) {
           this.files.push({
+            category: file.category,
+            size: file.size,
+            suffix: file.suffix,
             name: file.suffix,
             type: file.suffix,
-            url: file.url,
+            url: file.url
           });
         } else {
           this.files = this.files.filter(value => file.url !== value.url);
           this.files.push({
+            category: file.category,
+            size: file.size,
+            suffix: file.suffix,
             name: file.suffix,
             type: file.suffix,
             url: file.url,
           });
         }
-        this.uploadFileFormControl.setValue(this.files);
+        this.filesReady.emit(this.files);
       }
     });
   }

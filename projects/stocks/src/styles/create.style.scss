@@ -22,14 +22,18 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  width: 30px;
-  height: 30px;
+  //width: 30px;
+  //height: 30px;
+  span {
+    margin-right: 8px;
+  }
 }
 
 .status-text {
   height: 100%;
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
 }
 
 //mat-list-item{
@@ -45,6 +49,7 @@
   font-size: 14px;
   line-height: 16px;
   margin: 8px 0 4px 0;
+  padding-left: 10.5px;
   color: #000000;
 }
 
@@ -83,7 +88,7 @@ textarea:focus, input:focus {
   //font-weight: 200;
   font-size: 14px;
   line-height: 12px;
-  padding: 4px 0 8px 10.5px ;
+  padding: 4px 0 8px 10.5px;
   color: red;
 }
 

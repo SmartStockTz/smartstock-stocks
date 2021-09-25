@@ -19,7 +19,10 @@ import {CategoryState} from '../states/category.state';
                               *ngIf="categoryState.isFetchCategories | async" matSuffix color="accent"
                               mode="indeterminate"
                               [diameter]="20"></mat-progress-spinner>
-        <mat-error>Category required</mat-error>
+        <mat-error *ngIf="formGroup.get('category').invalid && formGroup.get('category').touched"
+                   class="error-text">
+          Category required
+        </mat-error>
         <div matSuffix class="d-flex flex-row">
           <button (click)="refreshCategories($event)" mat-icon-button matTooltip="refresh categories"
                   *ngIf="(categoryState.isFetchCategories | async)===false">
