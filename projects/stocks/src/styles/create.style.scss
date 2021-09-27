@@ -1,34 +1,39 @@
-.stock-new-wrapper{
-  margin-top: 24px;
-  margin-bottom: 24px;
+.stock-new-wrapper {
+  //margin-top: 24px;
+  //margin-bottom: 24px;
+  padding: 24px 16px;
 }
 
-.card-wrapper{
+.card-wrapper {
   margin-bottom: 16px;
 }
 
-.status-item{
+.status-item {
   padding: 8px 0;
   display: flex;
   flex-wrap: nowrap;
 }
 
-.status-container{
-  margin-bottom: 16px;
-}
+//.status-container {
+//  margin-bottom: 16px;
+//}
 
-.status-checker{
+.status-checker {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  width: 30px;
-  height: 30px;
+  //width: 30px;
+  //height: 30px;
+  span {
+    margin-right: 8px;
+  }
 }
 
-.status-text{
+.status-text {
   height: 100%;
   display: flex;
   align-items: center;
+  flex: 1 1 auto;
 }
 
 //mat-list-item{
@@ -36,3 +41,57 @@
 //    padding: 0!important;
 //  }
 //}
+
+.form-control-title {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 16px;
+  margin: 8px 0 4px 0;
+  padding-left: 10.5px;
+  color: #000000;
+}
+
+.form-field {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.form-field-input {
+  background: #FFFFFF;
+  border: 1px solid #EEEEEE;
+  box-sizing: border-box;
+  border-radius: 4px;
+  height: 40px;
+  width: 100%;
+  padding: 8px;
+}
+
+textarea:focus, input:focus {
+  outline: none;
+}
+
+.hint-text {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  font-weight: 200;
+  font-size: 10px;
+  line-height: 12px;
+  padding-left: 10.5px;
+  color: #000000;
+}
+
+.error-text {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  //font-weight: 200;
+  font-size: 14px;
+  line-height: 12px;
+  padding: 4px 0 8px 10.5px;
+  color: red;
+}
+
+mat-form-field {
+  width: 100%;
+}

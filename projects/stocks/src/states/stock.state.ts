@@ -12,7 +12,6 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 export class StockState {
 
   stocks: BehaviorSubject<StockModel[]> = new BehaviorSubject<StockModel[]>([]);
-  selectedStock: BehaviorSubject<StockModel> = new BehaviorSubject<StockModel>(null);
   isFetchStocks: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isExportToExcel: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   isImportProducts: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);

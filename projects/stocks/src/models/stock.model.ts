@@ -1,10 +1,12 @@
 import {MetasModel} from './metas.model';
+import {FileModel} from '@smartstocktz/core-libs';
 
 export interface StockModel {
   createdAt?: any;
   catalog?: any[];
   updatedAt?: any;
   image?: any;
+  images?: string[];
   id?: string;
   _id?: string;
   product: string;
@@ -14,9 +16,13 @@ export interface StockModel {
   description?: string;
   unit?: string;
   category?: string;
-  type?: 'simple' | 'grouped';
+  type?: 'simple' | 'subscription';
+  subscription?: {
+    duration: number,
+    grace: number
+  };
   downloadable?: boolean | false;
-  downloads?: { name: string, type: string, url: any }[];
+  downloads?: FileModel[];
   stockable?: boolean | true;
   purchasable?: boolean | true;
   quantity?: number;

@@ -75,6 +75,8 @@ import {CategoryCreateFormBottomSheetComponent} from './components/category-crea
 import {StockNavigationService} from './services/stock-navigation.service';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {ProductsListComponent} from "./components/products-list.component";
+import {ImageUploadComponent} from "./components/image-upload.component";
+import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 
 const routes: Routes = [
   {path: '', component: IndexPage},
@@ -93,49 +95,50 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [
-    CommonModule,
-    {
-      ngModule: RouterModule,
-      providers: [
+    imports: [
+        CommonModule,
         {
-          provide: ROUTES,
-          multi: true,
-          useValue: routes
-        }
-      ]
-    },
-    LibModule,
-    MatSidenavModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatAutocompleteModule,
-    MatInputModule,
-    ReactiveFormsModule,
-    MatDatepickerModule,
-    MatTabsModule,
-    MatTableModule,
-    MatIconModule,
-    MatPaginatorModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatRippleModule,
-    MatMenuModule,
-    MatBottomSheetModule,
-    MatDividerModule,
-    MatProgressSpinnerModule,
-    MatSelectModule,
-    MatCheckboxModule,
-    MatRadioModule,
-    MatExpansionModule,
-    MatDialogModule,
-    MatListModule,
-    MatSortModule,
-    CdkTableModule,
-    ScrollingModule,
-    FormsModule,
-    MatProgressBarModule
-  ],
+            ngModule: RouterModule,
+            providers: [
+                {
+                    provide: ROUTES,
+                    multi: true,
+                    useValue: routes
+                }
+            ]
+        },
+        LibModule,
+        MatSidenavModule,
+        MatCardModule,
+        MatFormFieldModule,
+        MatAutocompleteModule,
+        MatInputModule,
+        ReactiveFormsModule,
+        MatDatepickerModule,
+        MatTabsModule,
+        MatTableModule,
+        MatIconModule,
+        MatPaginatorModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatRippleModule,
+        MatMenuModule,
+        MatBottomSheetModule,
+        MatDividerModule,
+        MatProgressSpinnerModule,
+        MatSelectModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatExpansionModule,
+        MatDialogModule,
+        MatListModule,
+        MatSortModule,
+        CdkTableModule,
+        ScrollingModule,
+        FormsModule,
+        MatProgressBarModule,
+        MatSlideToggleModule
+    ],
   declarations: [
     SupplierCreateFormComponent,
     CategoriesEditPage,
@@ -185,7 +188,8 @@ const routes: Routes = [
     TransferCreateComponent,
     ProductSearchDialogComponent,
     CategoryCreateFormComponent,
-    ProductsListComponent
+    ProductsListComponent,
+    ImageUploadComponent
   ],
 })
 export class StocksModule {

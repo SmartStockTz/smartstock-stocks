@@ -151,23 +151,60 @@ export class StockWorker {
   async setProductsLocalSync(productsLocalSync: StockSyncModel[], shop: ShopModel): Promise<StockSyncModel[]> {
     init(shop);
     let productsMap = await this.productsLocalSyncMap(shop);
+    const stocks: StockModel[] = [];
     productsMap = productsLocalSync.reduce((a, b) => {
-      a[b.product.id] = b;
+      if (b.action === 'upsert') {
+        stocks.push(b.product);
+      } else {
+        a[b.product.id] = b;
+      }
       return a;
     }, productsMap);
     await bfast
       .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
       .set('all', productsMap);
+    if (stocks.length > 0) {
+      await bfast.database(shop.projectId)
+        .bulk()
+        .update('stocks', stocks.map(x => {
+          return {
+            query: {
+              id: x.id,
+              upsert: true
+            },
+            update: {
+              $set: x
+            }
+          };
+        }))
+        .commit();
+    }
     return productsLocalSync;
   }
 
   async setProductLocalSync(productSync: StockSyncModel, shop: ShopModel): Promise<StockSyncModel> {
     init(shop);
-    const productsMap = await this.productsLocalSyncMap(shop);
-    productsMap[productSync.product.id] = productSync;
-    await bfast
-      .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
-      .set('all', productsMap);
+    if (productSync.action === 'upsert') {
+      await bfast.database(shop.projectId).table('stocks')
+        .query()
+        .byId(productSync.product.id)
+        .updateBuilder()
+        .upsert(true)
+        .doc(productSync.product)
+        .update();
+    }
+    if (productSync.action === 'delete') {
+      await bfast.database(shop.projectId)
+        .table('stocks')
+        .query()
+        .byId(productSync.product.id)
+        .delete();
+      // const productsMap = await this.productsLocalSyncMap(shop);
+      // productsMap[productSync.product.id] = productSync;
+      // await bfast
+      //   .cache({database: 'stocks', collection: 'stocks_sync'}, shop.projectId)
+      //   .set('all', productsMap);
+    }
     return productSync;
   }
 
@@ -237,77 +274,77 @@ export class StockWorker {
   }
 
   private syncStocks(shop: ShopModel): void {
-    init(shop);
-    let isRunn = false;
-    if (this.syncInterval) {
-      // console.log('order sync running');
-      return;
-    }
-    console.log('products sync start');
-    this.syncInterval = setInterval(async () => {
-      if (isRunn === true) {
-        return;
-      }
-      isRunn = true;
-      const stockSyncModels: StockSyncModel[] = await this.getProductsLocalSync(shop);
-      if (Array.isArray(stockSyncModels) && stockSyncModels.length === 0) {
-        isRunn = false;
-        clearInterval(this.syncInterval);
-        this.syncInterval = undefined;
-        console.log('products sync stop');
-      } else {
-        const upserts = stockSyncModels.filter(x => x.action === 'upsert');
-        // if (upserts.length > 50) {
-        //   upserts = upserts.slice(0, 50);
-        // }
-        const deletes = stockSyncModels.filter(x => x.action === 'delete');
-        // if (deletes.length > 1000) {
-        //   deletes = deletes.slice(0, 1000);
-        // }
-        try {
-          if (upserts?.length > 0) {
-            const daasUrl = `https://${shop.projectId}-daas.bfast.fahamutech.com/v2`;
-            const r: any = await bfast.functions(shop.projectId)
-              .request(daasUrl)
-              .post({
-                applicationId: shop.applicationId,
-                updatestocks: upserts.map(u => {
-                  return {
-                    id: u.product.id,
-                    update: {
-                      $set: u.product
-                    },
-                    upsert: true,
-                    return: ['id']
-                  };
-                })
-              });
-            if (r && r.updatestocks) {
-              // console.log(r.updatestocks);
-            } else {
-              throw r;
-            }
-            // await bfast.database(shop.projectId)
-            //   .table('stocks')
-            //   .save(upserts.map(x => x.product));
-            await this.removeProductsLocalSync(upserts.map(k => k.product.id), shop);
-          }
-          if (deletes?.length > 0) {
-            await bfast.database(shop.projectId)
-              .table('stocks')
-              .query()
-              .size(deletes.length)
-              .skip(0)
-              .includesIn('id', deletes.map(d => d.product.id))
-              .delete();
-            await this.removeProductsLocalSync(deletes.map(d => d.product.id), shop);
-          }
-        } catch (e) {
-          console.log(e);
-        }
-        isRunn = false;
-      }
-    }, 2000);
+    // init(shop);
+    // let isRunn = false;
+    // if (this.syncInterval) {
+    //   // console.log('order sync running');
+    //   return;
+    // }
+    // console.log('products sync start');
+    // this.syncInterval = setInterval(async () => {
+    //   if (isRunn === true) {
+    //     return;
+    //   }
+    //   isRunn = true;
+    //   const stockSyncModels: StockSyncModel[] = await this.getProductsLocalSync(shop);
+    //   if (Array.isArray(stockSyncModels) && stockSyncModels.length === 0) {
+    //     isRunn = false;
+    //     clearInterval(this.syncInterval);
+    //     this.syncInterval = undefined;
+    //     console.log('products sync stop');
+    //   } else {
+    //     const upserts = stockSyncModels.filter(x => x.action === 'upsert');
+    //     // if (upserts.length > 50) {
+    //     //   upserts = upserts.slice(0, 50);
+    //     // }
+    //     const deletes = stockSyncModels.filter(x => x.action === 'delete');
+    //     // if (deletes.length > 1000) {
+    //     //   deletes = deletes.slice(0, 1000);
+    //     // }
+    //     try {
+    //       if (upserts?.length > 0) {
+    //         const daasUrl = `https://${shop.projectId}-daas.bfast.fahamutech.com/v2`;
+    //         const r: any = await bfast.functions(shop.projectId)
+    //           .request(daasUrl)
+    //           .post({
+    //             applicationId: shop.applicationId,
+    //             updatestocks: upserts.map(u => {
+    //               return {
+    //                 id: u.product.id,
+    //                 update: {
+    //                   $set: u.product
+    //                 },
+    //                 upsert: true,
+    //                 return: ['id']
+    //               };
+    //             })
+    //           });
+    //         if (r && r.updatestocks) {
+    //           // console.log(r.updatestocks);
+    //         } else {
+    //           throw r;
+    //         }
+    //         // await bfast.database(shop.projectId)
+    //         //   .table('stocks')
+    //         //   .save(upserts.map(x => x.product));
+    //         await this.removeProductsLocalSync(upserts.map(k => k.product.id), shop);
+    //       }
+    //       if (deletes?.length > 0) {
+    //         await bfast.database(shop.projectId)
+    //           .table('stocks')
+    //           .query()
+    //           .size(deletes.length)
+    //           .skip(0)
+    //           .includesIn('id', deletes.map(d => d.product.id))
+    //           .delete();
+    //         await this.removeProductsLocalSync(deletes.map(d => d.product.id), shop);
+    //       }
+    //     } catch (e) {
+    //       console.log(e);
+    //     }
+    //     isRunn = false;
+    //   }
+    // }, 2000);
   }
 
   private sanitizeField(value: string): any {
@@ -386,7 +423,7 @@ export class StockWorker {
   async getProductsRemote(shop: ShopModel, rProducts: StockModel[]): Promise<StockModel[]> {
     init(shop);
     const localProducts = await this.getProductsLocal(shop);
-    if (!rProducts){
+    if (!rProducts) {
       rProducts = localProducts;
     }
     await this.setProductsLocalFromRemote(rProducts, shop);
@@ -397,7 +434,7 @@ export class StockWorker {
     init(shop);
     const stocks = await this.getProductsLocal(shop);
     return stocks.filter(x => {
-      return x.saleable && x?.product?.toLowerCase().includes(query.toLowerCase());
+      return x?.product?.toLowerCase().includes(query.toLowerCase());
     });
   }
 
