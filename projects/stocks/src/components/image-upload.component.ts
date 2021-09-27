@@ -49,6 +49,9 @@ export class ImageUploadComponent implements OnInit{
   }
 
   ngOnInit(): void {
+    if (!this.initialImages){
+      return;
+    }
     this.initialImages.forEach(value => {
       this.images.add(value);
     });
