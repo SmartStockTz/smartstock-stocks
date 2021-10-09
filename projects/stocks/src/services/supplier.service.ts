@@ -1,7 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {IpfsService, UserService} from '@smartstocktz/core-libs';
-import {StorageService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {SupplierModel} from '../models/supplier.model';
 import {database} from 'bfast';
 
@@ -17,52 +16,37 @@ export class SupplierService {
   async addSupplier(supplier: SupplierModel, id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     if (id) {
-      return database(shop.projectId)
-        .collection('suppliers')
-        .query()
-        .byId(id)
-        .updateBuilder()
-        .doc(supplier)
-        .update();
+      let os = database(shop.projectId).syncs('suppliers').changes().get(id);
+      os.updatedAt = new Date().toISOString();
+      os = Object.assign(os, supplier);
+      database(shop.projectId).syncs('suppliers').changes().set(os);
+      return os;
     } else {
-      return database(shop.projectId)
-        .collection('suppliers')
-        .save(supplier);
+      supplier.id = SecurityUtil.generateUUID();
+      supplier.createdAt = new Date().toISOString();
+      supplier.updatedAt = new Date().toISOString();
+      database(shop.projectId).syncs('suppliers').changes().set(supplier as any);
+      return supplier;
     }
   }
 
   async deleteSupplier(id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).collection('suppliers').query().byId(id).delete();
+    database(shop.projectId).syncs('suppliers').changes().delete(id);
+    return {id};
   }
 
   async getAllSupplier(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    const cids = await database(shop.projectId)
-      .collection<SupplierModel>('suppliers')
-      .getAll<string>({
-        cids: true
-      });
-    return await Promise.all(
-      cids.map(c => {
-        return IpfsService.getDataFromCid(c);
-      })
-    );
+    const s = await database(shop.projectId)
+      .syncs('suppliers')
+      .changes()
+      .values();
+    return Array.from(s);
   }
 
-  async updateSupplier(value: { id: string, field: string, value: string }): Promise<any> {
+  async getAllSupplierRemotely(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    const supplierId = value.id;
-    const data = {};
-    data[value.field] = value.value;
-    delete value.id;
-    const response = await database(shop.projectId).collection('suppliers')
-      .query()
-      .byId(supplierId)
-      .updateBuilder()
-      .set(value.field, value.value)
-      .update();
-    response.id = supplierId;
-    return response;
+    return database(shop.projectId).syncs('suppliers').upload();
   }
 }

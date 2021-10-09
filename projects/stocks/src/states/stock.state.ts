@@ -30,7 +30,7 @@ export class StockState {
   }
 
   stopChanges(): void{
-    this.stockService.stocksListeningStop();
+    this.stockService.stocksListeningStop().catch(console.log);
   }
 
   getStocks(): void {

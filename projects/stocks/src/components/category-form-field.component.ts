@@ -3,6 +3,8 @@ import {FormGroup} from '@angular/forms';
 import {CategoryCreateFormBottomSheetComponent} from './category-create-form-bottom-sheet.component';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {CategoryState} from '../states/category.state';
+import {database} from 'bfast';
+import {UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-category-form-field',
@@ -39,14 +41,36 @@ import {CategoryState} from '../states/category.state';
 })
 export class CategoryFormFieldComponent implements OnInit, OnDestroy {
   @Input() formGroup: FormGroup;
+  private sig = false;
+  private obfn;
 
   constructor(public readonly categoryState: CategoryState,
+              private readonly userService: UserService,
               private readonly bottomSheet: MatBottomSheet) {
   }
 
-  ngOnInit(): void {
+
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getCategories();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
     this.categoryState.startChanges();
     this.getCategories();
+    const shop = await this.userService.getCurrentShop();
+    this.obfn = database(shop.projectId).syncs('categories').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    this.categoryState.stopChanges();
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   getCategories(): void {
@@ -69,10 +93,6 @@ export class CategoryFormFieldComponent implements OnInit, OnDestroy {
     $event.preventDefault();
     $event.stopPropagation();
     this.categoryState.getCategoriesRemote();
-  }
-
-  ngOnDestroy(): void {
-    this.categoryState.stopChanges();
   }
 
 }

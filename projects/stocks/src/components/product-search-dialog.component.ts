@@ -1,9 +1,11 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {MatDialogRef} from '@angular/material/dialog';
 import {StockState} from '../states/stock.state';
 import {FormControl} from '@angular/forms';
 import {StockModel} from '../models/stock.model';
 import {debounceTime} from 'rxjs/operators';
+import {database} from 'bfast';
+import {UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-products-search-dialog',
@@ -47,14 +49,17 @@ import {debounceTime} from 'rxjs/operators';
   styleUrls: ['../styles/product-search-dialog.style.scss']
 })
 
-export class ProductSearchDialogComponent implements OnInit {
+export class ProductSearchDialogComponent implements OnInit, OnDestroy {
   searchFormControl = new FormControl('');
+  private sig = false;
+  private obfn;
 
   constructor(public readonly dialogRef: MatDialogRef<ProductSearchDialogComponent>,
-              public readonly stockState: StockState) {
+              public readonly stockState: StockState,
+              private readonly userService: UserService) {
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.searchFormControl.valueChanges
       .pipe(
         debounceTime(500)
@@ -62,6 +67,21 @@ export class ProductSearchDialogComponent implements OnInit {
       this.stockState.filter(value);
     });
     this.stockState.getStocks();
+    const shop = await this.userService.getCurrentShop();
+    this.obfn = database(shop.projectId).syncs('stocks').changes().observe(_ => {
+      if (this?.sig === false) {
+        this.getProducts();
+        this.sig = true;
+      } else {
+        return;
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this?.obfn) {
+      this?.obfn?.unobserve();
+    }
   }
 
   getProducts(): void {

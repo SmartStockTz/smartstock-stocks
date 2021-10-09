@@ -13,6 +13,7 @@ import {MatSidenav} from '@angular/material/sidenav';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
+import {database} from "bfast";
 
 @Component({
   selector: 'app-products-table',
@@ -130,6 +131,8 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) matSort: MatSort;
+  private sig = false;
+  private obfn;
 
   constructor(private readonly router: Router,
               private readonly indexDb: StorageService,
@@ -147,6 +150,27 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       this.stockDatasource.data = stocks;
       this._getTotalPurchaseOfStock(stocks);
     });
+    this.obfn = database().syncs('categories').changes().observe(response => {
+      if (this?.sig === false) {
+        this.stockState.getStocks();
+        this.sig = true;
+      } else {
+        return;
+      }
+    });
+    // const syncs = database().syncs('categories').doc(
+    //   () => {
+    //     console.log('syscs connected');
+    //   },
+    //   () => {
+    //     console.log('syncs disconnected');
+    //   }
+    // );
+    // syncs.observe(args => {
+    //   console.log(args);
+    // });
+    // // @ts-ignore
+    // window.syncs = syncs;
   }
 
 
@@ -207,6 +231,9 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   ngOnDestroy(): void {
     this.stockState.stocks.next([]);
     this.onDestroy.next();
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   createGroupProduct(): void {

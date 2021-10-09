@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {IpfsService, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
 import {CategoryWorker} from '../workers/category.worker';
 import {ShopModel} from '../models/shop.model';
@@ -12,7 +12,6 @@ import {database} from 'bfast';
 export class CategoryService {
   private categoryWorker: CategoryWorker;
   private categoryWorkerNative;
-  private changes;
 
   constructor(private readonly userService: UserService) {
   }
@@ -34,104 +33,73 @@ export class CategoryService {
   }
 
   async startChanges(): Promise<void> {
-    if (!this.changes) {
-      const shop = await this.userService.getCurrentShop();
-      this.changes = database(shop.projectId)
-        .table('categories')
-        .query()
-        .changes(() => {
-          console.log('categories changes connected');
-          // if (this.remoteAllProductsRunning === true) {
-          //   console.log('another remote fetch is running');
-          //   return;
-          // }
-          // this.getAllCategoryRemote().catch(console.log);
-        }, () => {
-          console.log('categories changes disconnected');
-        });
-      this.changes.addListener(async response => {
-        if (response && response.body && response.body.change) {
-          // console.log(response.body.change);
-          if (response.body.change.name === 'create') {
-            this.categoryWorker.setCategoryLocal(response.body.change.snapshot, shop).catch(console.log);
-          } else if (response.body.change.name === 'update') {
-            this.categoryWorker.setCategoryLocal(response.body.change.snapshot, shop).catch(console.log);
-          } else if (response.body.change.name === 'delete') {
-            await this.categoryWorker.removeCategoryLocal(response.body.change.snapshot, shop);
-          } else {
-          }
-        }
-      });
-    }
-  }
-
-  stopChanges(): void {
-    if (this.changes) {
-      this.changes.close();
-      this.changes = undefined;
-    }
-  }
-
-  async addCategory(category: CategoryModel, id = null): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
+    database(shop.projectId).syncs('categories');
+  }
+
+  async stopChanges(): Promise<void> {
+    const shop = await this.userService.getCurrentShop();
+    database(shop.projectId).syncs('categories').close();
+  }
+
+  async addCategory(category: CategoryModel, id = null): Promise<CategoryModel> {
+    const shop = await this.userService.getCurrentShop();
     if (id) {
       category.id = id;
+    }else {
+      category.id = SecurityUtil.generateUUID();
     }
-    return this.categoryWorker.saveCategory(category, shop);
+    category.createdAt = new Date().toISOString();
+    category.updatedAt = new Date().toISOString();
+    database(shop.projectId).syncs('categories')
+      .changes()
+      .set(category as any);
+    return category;
   }
 
   async deleteCategory(category: CategoryModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.categoryWorker.deleteCategory(category, shop);
+    database(shop.projectId).syncs('categories')
+      .changes()
+      .delete(category.id);
+    return category;
   }
 
   async getAllCategory(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.categoryWorker.getCategories(shop);
+    const c = database(shop.projectId).syncs('categories')
+      .changes()
+      .values();
+    return this.categoryWorker.sort(Array.from(c));
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
-    // this.remoteAllProductsRunning = true;
-    const cids = await database(shop.projectId)
-      .collection('categories')
-      .getAll<string>({
-        cids: true
-      }).finally(() => {
-        // this.remoteAllProductsRunning = false;
-      });
-    return await Promise.all(
-      cids.map(c => {
-        return IpfsService.getDataFromCid(c);
-      })
-    ) as any[];
+    const cr = await database(shop.projectId)
+      .syncs('categories')
+      .upload();
+    await this.startWorker(shop);
+    return this.categoryWorker.sort(cr);
   }
 
 
   async getAllCategoryRemote(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    const categories = await this.remoteAllCategories(shop);
-    return this.categoryWorker.getCategoriesRemote(shop, categories);
+    return await this.remoteAllCategories(shop);
   }
 
   async getCategory(id: string): Promise<CategoryModel> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.categoryWorker.getCategoryLocal(id, shop);
+    return database(shop.projectId).syncs('categories').changes().get(id);
   }
 
   async search(q: string): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.categoryWorker.search(q, shop);
+    return this.categoryWorker.search(q, await this.getAllCategory());
   }
 
   async save(category: CategoryModel): Promise<any> {
-    const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.categoryWorker.saveCategory(category, shop);
+    return this.addCategory(category);
   }
 }

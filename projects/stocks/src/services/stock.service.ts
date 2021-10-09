@@ -1,11 +1,10 @@
 import {Injectable} from '@angular/core';
-import {IpfsService, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {database} from 'bfast';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
-import * as bfast from 'bfast';
 
 @Injectable({
   providedIn: 'root'
@@ -14,49 +13,18 @@ export class StockService {
 
   private stockWorker: StockWorker;
   private stockWorkerNative;
-  private changes;
 
   constructor(private readonly userService: UserService) {
   }
 
-  stocksListeningStop(): void {
-    if (this.changes) {
-      this.changes.close();
-      this.changes = undefined;
-    }
+  async stocksListeningStop(): Promise<void> {
+    // const shop = await this.userService.getCurrentShop();
+    // database(shop.projectId).syncs('stocks').close();
   }
 
   async stocksListening(): Promise<void> {
-    if (this.changes) {
-      return;
-    }
     const shop = await this.userService.getCurrentShop();
-    this.changes = database(shop.projectId)
-      .table('stocks')
-      .query()
-      .changes(() => {
-        console.log('stocks changes connected');
-        // if (this.remoteAllProductsRunning === true) {
-        //   console.log('another remote fetch is running');
-        //   return;
-        // }
-        // this.getProductsRemote().catch(console.log);
-      }, () => {
-        console.log('stocks changes disconnected');
-      });
-    this.changes.addListener(async response => {
-      if (response && response.body && response.body.change) {
-        // console.log(response.body.change);
-        if (response.body.change.name === 'create') {
-          this.stockWorker.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
-        } else if (response.body.change.name === 'update') {
-          this.stockWorker.setProductLocal(response.body.change.snapshot, shop).catch(console.log);
-        } else if (response.body.change.name === 'delete') {
-          await this.stockWorker.removeProductLocal(response.body.change.snapshot, shop);
-        } else {
-        }
-      }
-    });
+    database(shop.projectId).syncs('stocks');
   }
 
   async startWorker(shop: ShopModel): Promise<any> {
@@ -75,10 +43,19 @@ export class StockService {
     }
   }
 
+  async stocksFromSyncs(): Promise<StockModel[]> {
+    const activeShop = await this.userService.getCurrentShop();
+    const v = database(activeShop.projectId).syncs('stocks')
+      .changes()
+      .values();
+    return Array.from(v);
+  }
+
   async exportToExcel(): Promise<any> {
     const activeShop = await this.userService.getCurrentShop();
     await this.startWorker(activeShop);
-    const csv = await this.stockWorker.export(activeShop);
+    const s = await this.stocksFromSyncs();
+    const csv = await this.stockWorker.export(s);
     const csvContent = 'data:text/csv;charset=utf-8,' + csv;
     const url = encodeURI(csvContent);
     const anchor = document.createElement('a');
@@ -92,65 +69,92 @@ export class StockService {
   async importStocks(csv: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.stockWorker.import(csv, shop);
+    const st = await this.stockWorker.import(csv);
+    for (const s of st) {
+      database(shop.projectId).syncs('stocks')
+        .changes()
+        .set(s as any);
+    }
+    return st;
   }
 
   async addStock(stock: StockModel): Promise<StockModel> {
+    stock.id = stock.id ? stock.id : SecurityUtil.generateUUID();
+    stock.createdAt = new Date().toISOString();
+    stock.updatedAt = new Date().toISOString();
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.stockWorker.saveProduct(stock, shop);
+    database(shop.projectId).syncs('stocks')
+      .changes()
+      .set(stock as any);
+    return stock;
+    // await this.startWorker(shop);
+    // return this.stockWorker.saveProduct(stock, shop);
   }
 
   async deleteStock(stock: StockModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.stockWorker.deleteProduct(stock, shop);
+    database(shop.projectId).syncs('stocks')
+      .changes()
+      .delete(stock.id);
+    return {id: stock.id};
+    // await this.startWorker(shop);
+    // return this.stockWorker.deleteProduct(stock, shop);
   }
 
   async getProducts(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.stockWorker.getProducts(shop);
+    const products = await this.stocksFromSyncs();
+    return this.stockWorker.sort(products);
   }
 
   private async remoteAllProducts(shop: ShopModel): Promise<StockModel[]> {
+    return database(shop.projectId).syncs('stocks').upload();
     // this.remoteAllProductsRunning = true;
-    const cids = await bfast.database(shop.projectId)
-      .collection('stocks')
-      .getAll<string>({
-        cids: true
-      }).finally(() => {
-        // this.remoteAllProductsRunning = false;
-      });
-    return await Promise.all(
-      cids.map(c => {
-        return IpfsService.getDataFromCid(c);
-      })
-    ) as any[];
+    // const cids = await bfast.database(shop.projectId)
+    //   .collection('stocks')
+    //   .getAll<string>({
+    //     cids: true
+    //   }).finally(() => {
+    //     // this.remoteAllProductsRunning = false;
+    //   });
+    // return await Promise.all(
+    //   cids.map(c => {
+    //     return IpfsService.getDataFromCid(c);
+    //   })
+    // ) as any[];
   }
 
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
     const products = await this.remoteAllProducts(shop);
-    return this.stockWorker.getProductsRemote(shop, products);
+    return this.stockWorker.sort(products);
   }
 
   async deleteMany(stocksId: string[]): Promise<any> {
     const activeShop = await this.userService.getCurrentShop();
-    await this.startWorker(activeShop);
-    return this.stockWorker.deleteMany(stocksId, activeShop);
+    // await this.startWorker(activeShop);
+    for (const id of stocksId) {
+      database(activeShop.projectId).syncs('stocks')
+        .changes()
+        .delete(id);
+    }
+    return this.getProducts();
+    // return this.stockWorker.deleteMany(stocksId, activeShop);
   }
 
   async search(query: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    return this.stockWorker.search(query, shop);
+    const s = await this.getProducts();
+    return this.stockWorker.search(query, s);
   }
 
   async getProduct(id: string): Promise<StockModel> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.stockWorker.getProductLocal(id, shop);
+    return database(shop.projectId).syncs('stocks').changes().get(id);
+    // await this.startWorker(shop);
+    // return this.stockWorker.getProductLocal(id, shop);
   }
 }

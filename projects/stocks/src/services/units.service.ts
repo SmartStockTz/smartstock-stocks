@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {IpfsService, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {database} from 'bfast';
 import {UnitsModel} from '../models/units.model';
 
@@ -15,41 +15,35 @@ export class UnitsService {
 
   async addUnit(unit: UnitsModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).collection<UnitsModel>('units').save(unit);
+    unit.id = SecurityUtil.generateUUID();
+    unit.createdAt = new Date().toISOString();
+    unit.updatedAt = new Date().toISOString();
+    database(shop.projectId).syncs('units').changes().set(unit as any);
+    return unit;
   }
 
-  async getAllUnit(pagination: { size?: number, skip?: number }): Promise<UnitsModel[]> {
+  async getAllUnit(): Promise<UnitsModel[]> {
     const shop = await this.userService.getCurrentShop();
-    const cids = await database(shop.projectId)
-      .collection('units')
-      .getAll<string>({
-        cids: true
-      });
-    return await Promise.all(
-      cids.map(c => {
-        return IpfsService.getDataFromCid(c);
-      })
-    ) as any[];
+    const u = database(shop.projectId).syncs('units').changes().values();
+    return Array.from(u);
+  }
+  async getAllUnitRemotely(): Promise<UnitsModel[]> {
+    const shop = await this.userService.getCurrentShop();
+    return database(shop.projectId).syncs('units').upload();
   }
 
   async updateUnit(unit: { id: string; value: string; field: string }): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    const unitId = unit.id;
-    const data = {};
-    data[unit.field] = unit.value;
-    delete unit.id;
-    const response = await database(shop.projectId).collection('units')
-      .query()
-      .byId(unitId)
-      .updateBuilder()
-      .set(unit.field, unit.value)
-      .update();
-    response.id = unitId;
-    return response;
+    const ou = database(shop.projectId).syncs('units').changes().get(unit.id);
+    ou[unit.field] = unit.value;
+    ou.updatedAt = new Date().toISOString();
+    database(shop.projectId).syncs('units').changes().set(ou);
+    return ou;
   }
 
   async deleteUnit(unit: UnitsModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).collection('units').query().byId(unit.id).delete();
+    database(shop.projectId).syncs('units').changes().delete(unit.id);
+    return {id: unit.id};
   }
 }

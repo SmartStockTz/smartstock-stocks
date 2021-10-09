@@ -23,7 +23,7 @@ export class CategoryState {
   }
 
   stopChanges(): void {
-    this.categoryService.stopChanges();
+    // this.categoryService.stopChanges();
   }
 
   search(q: string): void {

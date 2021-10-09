@@ -9,9 +9,10 @@ import {DialogCategoryDeleteComponent} from './dialog-category-delete.component'
 import {CategoryService} from '../services/category.service';
 import {Router} from '@angular/router';
 import {CategoryState} from '../states/category.state';
-import {DeviceState} from '@smartstocktz/core-libs';
+import {DeviceState, UserService} from '@smartstocktz/core-libs';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
+import {database} from "bfast";
 
 @Component({
   selector: 'app-categories',
@@ -93,6 +94,8 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
   categoriesDatasource = new MatTableDataSource<CategoryModel>([]);
   categoriesTableColums = ['check', 'name', 'description', 'actions'];
   destroyer = new Subject<any>();
+  private sig = false;
+  private obfn;
 
   constructor(private readonly stockDatabase: CategoryService,
               private readonly formBuilder: FormBuilder,
@@ -100,10 +103,20 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
               public readonly deviceState: DeviceState,
               public readonly categoryState: CategoryState,
               private readonly router: Router,
+              private readonly userService: UserService,
               private readonly snack: MatSnackBar) {
   }
 
-  ngOnInit(): void {
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getCategories();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
     this.categoryState.startChanges();
     this.categoryState.categories.pipe(
       takeUntil(this.destroyer)
@@ -113,6 +126,16 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     });
     this.getCategories();
+    const shop = await this.userService.getCurrentShop();
+    this.obfn = database(shop.projectId).syncs('categories').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    this.categoryState.stopChanges();
+    this.destroyer.next('done');
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   editCategory(element: CategoryModel): void {
@@ -138,11 +161,6 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.categoriesDatasource.paginator = this.matPaginator;
-  }
-
-  ngOnDestroy(): void {
-    this.categoryState.stopChanges();
-    this.destroyer.next('done');
   }
 
   getCategories(): void {

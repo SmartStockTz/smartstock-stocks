@@ -1,9 +1,11 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {Observable, of} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {DialogUnitNewComponent} from './units.component';
 import {UnitsService} from '../services/units.service';
+import {database} from "bfast";
+import {UserService} from "@smartstocktz/core-libs";
 
 @Component({
   selector: 'app-units-form-field',
@@ -35,23 +37,55 @@ import {UnitsService} from '../services/units.service';
     </div>
   `
 })
-export class UnitsFormFieldComponent implements OnInit {
+export class UnitsFormFieldComponent implements OnInit, OnDestroy {
   @Input() formGroup: FormGroup;
   units: Observable<[any]>;
   unitsFetching = true;
   @Input() stockable = false;
+  private sig = false;
+  private obfn;
 
   constructor(private readonly unitsService: UnitsService,
+              private readonly userService: UserService,
               private readonly dialog: MatDialog) {
   }
 
-  ngOnInit(): void {
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getUnits();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
+    const shop = await this.userService.getCurrentShop();
     this.getUnits();
+    this.obfn = database(shop.projectId).syncs('units').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   getUnits(): void {
     this.unitsFetching = true;
-    this.unitsService.getAllUnit({}).then(unitsObjects => {
+    this.unitsService.getAllUnit().then(unitsObjects => {
+      this.units = of(JSON.parse(JSON.stringify(unitsObjects)));
+      this.unitsFetching = false;
+    }).catch(reason => {
+      this.units = of([{name: 'No unit'}]);
+      console.warn(reason);
+      this.unitsFetching = false;
+    });
+  }
+
+  reload(): void {
+    this.unitsFetching = true;
+    this.unitsService.getAllUnitRemotely().then(unitsObjects => {
       this.units = of(JSON.parse(JSON.stringify(unitsObjects)));
       this.unitsFetching = false;
     }).catch(reason => {
@@ -76,7 +110,7 @@ export class UnitsFormFieldComponent implements OnInit {
   refreshUnits($event: MouseEvent): void {
     $event.preventDefault();
     $event.stopPropagation();
-    this.getUnits();
+    this.reload();
   }
 
 }

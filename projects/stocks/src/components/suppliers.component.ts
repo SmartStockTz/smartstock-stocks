@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatTableDataSource} from '@angular/material/table';
@@ -8,7 +8,8 @@ import {MatPaginator} from '@angular/material/paginator';
 import {SupplierService} from '../services/supplier.service';
 import {SupplierState} from '../states/supplier.state';
 import {Router} from '@angular/router';
-import {DeviceState} from '@smartstocktz/core-libs';
+import {DeviceState, UserService} from '@smartstocktz/core-libs';
+import {database} from 'bfast';
 
 @Component({
   selector: 'app-suppliers',
@@ -23,7 +24,7 @@ import {DeviceState} from '@smartstocktz/core-libs';
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menuSuppliers>
-        <button (click)="getSuppliers()" mat-menu-item>Reload Suppliers</button>
+        <button (click)="reload()" mat-menu-item>Reload Suppliers</button>
       </mat-menu>
     </mat-card-title>
     <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
@@ -111,13 +112,15 @@ import {DeviceState} from '@smartstocktz/core-libs';
   `,
   styleUrls: ['../styles/suppliers.style.scss']
 })
-export class SuppliersComponent implements OnInit {
+export class SuppliersComponent implements OnInit, OnDestroy {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
   suppliersDatasource: MatTableDataSource<SupplierModel> = new MatTableDataSource<SupplierModel>([]);
   suppliersTableColums = ['name', 'email', 'mobile', 'address', 'actions'];
   suppliersTableColumsMobile = ['name', 'mobile', 'actions'];
   suppliersArray: SupplierModel[] = [];
   fetchSuppliersFlag = false;
+  private sig = false;
+  private obfn;
 
   constructor(private readonly supplierService: SupplierService,
               private readonly formBuilder: FormBuilder,
@@ -125,11 +128,29 @@ export class SuppliersComponent implements OnInit {
               private readonly router: Router,
               public readonly deviceState: DeviceState,
               private readonly supplierState: SupplierState,
+              private readonly userService: UserService,
               private readonly snack: MatSnackBar) {
   }
 
-  ngOnInit(): void {
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getSuppliers();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
+    const shop = await this.userService.getCurrentShop();
     this.getSuppliers();
+    this.obfn = database(shop.projectId).syncs('suppliers').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.obfn) {
+      this?.obfn?.unobserve();
+    }
   }
 
   searchSupplier(query: string): void {
@@ -155,12 +176,28 @@ export class SuppliersComponent implements OnInit {
   getSuppliers(): void {
     this.fetchSuppliersFlag = true;
     this.supplierService.getAllSupplier().then(data => {
-      this.suppliersArray = JSON.parse(JSON.stringify(data));
+      this.suppliersArray = data;
       this.suppliersDatasource = new MatTableDataSource<SupplierModel>(this.suppliersArray);
       this.suppliersDatasource.paginator = this.matPaginator;
       this.fetchSuppliersFlag = false;
     }).catch(_ => {
       this.fetchSuppliersFlag = false;
+    });
+  }
+
+  reload(): void {
+    this.fetchSuppliersFlag = true;
+    this.supplierService.getAllSupplierRemotely().then(value => {
+      this.fetchSuppliersFlag = false;
+      this.suppliersArray = value;
+      this.suppliersDatasource = new MatTableDataSource<SupplierModel>(this.suppliersArray);
+    }).catch(_ => {
+      this.fetchSuppliersFlag = false;
+      if (Array.isArray(this.suppliersArray) && this.suppliersArray.length > 0) {
+        return;
+      }
+      this.suppliersArray = [{name: 'Default'}];
+      this.suppliersDatasource = new MatTableDataSource<SupplierModel>(this.suppliersArray);
     });
   }
 
@@ -236,7 +273,7 @@ export class DialogSupplierDeleteComponent {
     this.supplierService.deleteSupplier(supplier.id).then(value => {
       this.dialogRef.close(supplier);
       this.deleteProgress = false;
-    }).catch(reason => {
+    }).catch(_ => {
       this.errorSupplierMessage = 'Fails to delete supplier, try again';
       this.deleteProgress = false;
     });

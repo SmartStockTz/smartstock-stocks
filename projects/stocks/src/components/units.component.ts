@@ -1,4 +1,4 @@
-import {Component, Inject, OnInit, ViewChild} from '@angular/core';
+import {Component, Inject, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MAT_DIALOG_DATA, MatDialog, MatDialogRef} from '@angular/material/dialog';
 import {MatMenuTrigger} from '@angular/material/menu';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -7,7 +7,8 @@ import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
 import {UnitsModel} from '../models/units.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {UnitsService} from '../services/units.service';
-import {DeviceState} from '@smartstocktz/core-libs';
+import {DeviceState, UserService} from '@smartstocktz/core-libs';
+import {database} from "bfast";
 
 @Component({
   selector: 'app-units',
@@ -20,7 +21,7 @@ import {DeviceState} from '@smartstocktz/core-libs';
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #unitsMenu>
-        <button (click)="getUnits()" mat-menu-item>Reload Units</button>
+        <button (click)="reload()" mat-menu-item>Reload Units</button>
       </mat-menu>
     </mat-card-title>
     <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
@@ -133,7 +134,7 @@ import {DeviceState} from '@smartstocktz/core-libs';
   `,
   styleUrls: ['../styles/units.style.scss']
 })
-export class UnitsComponent implements OnInit {
+export class UnitsComponent implements OnInit, OnDestroy {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
   unitsDatasource: MatTableDataSource<UnitsModel> = new MatTableDataSource<UnitsModel>([]);
   unitsTableColums = ['name', 'abbreviation', 'description', 'actions'];
@@ -142,21 +143,54 @@ export class UnitsComponent implements OnInit {
   nameFormControl = new FormControl();
   abbreviationFormControl = new FormControl();
   descriptionFormControl = new FormControl();
+  private sig = false;
+  private obfn;
 
   constructor(private readonly unitsService: UnitsService,
               private readonly formBuilder: FormBuilder,
               private readonly dialog: MatDialog,
               public readonly deviceState: DeviceState,
+              private readonly userService: UserService,
               private readonly snack: MatSnackBar) {
   }
 
-  ngOnInit(): void {
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getUnits();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
+    const shop = await this.userService.getCurrentShop();
     this.getUnits();
+    this.obfn = database(shop.projectId).syncs('units').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   getUnits(): void {
     this.fetchUnitsFlag = true;
-    this.unitsService.getAllUnit({size: 100}).then(data => {
+    this.unitsService.getAllUnit().then(data => {
+      this.unitsArray = JSON.parse(JSON.stringify(data));
+      this.unitsDatasource = new MatTableDataSource<UnitsModel>(this.unitsArray);
+      this.unitsDatasource.paginator = this.matPaginator;
+      this.fetchUnitsFlag = false;
+    }).catch(reason => {
+      // console.log(reason);
+      this.fetchUnitsFlag = false;
+    });
+  }
+
+  reload(): void {
+    this.fetchUnitsFlag = true;
+    this.unitsService.getAllUnitRemotely().then(data => {
       this.unitsArray = JSON.parse(JSON.stringify(data));
       this.unitsDatasource = new MatTableDataSource<UnitsModel>(this.unitsArray);
       this.unitsDatasource.paginator = this.matPaginator;

@@ -1,10 +1,11 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import {FormGroup} from '@angular/forms';
 import {Observable, of} from 'rxjs';
-import {MatDialog} from '@angular/material/dialog';
 import {SupplierService} from '../services/supplier.service';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {SupplierCreateFormBottomSheetComponent} from './supplier-create-form-bottom-sheet.component';
+import {database} from 'bfast';
+import {UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-suppliers-form-field',
@@ -38,26 +39,56 @@ import {SupplierCreateFormBottomSheetComponent} from './supplier-create-form-bot
   `
 })
 
-export class SuppliersFormFieldComponent implements OnInit {
+export class SuppliersFormFieldComponent implements OnInit, OnDestroy {
   @Input() formGroup: FormGroup;
   @Input() purchasable = true;
   suppliers: Observable<any[]>;
   suppliersFetching = true;
+  private sig = false;
+  private obfn;
 
   constructor(private readonly supplierService: SupplierService,
               private readonly bottomSheet: MatBottomSheet,
-              private readonly dialog: MatDialog) {
+              private readonly userService: UserService) {
   }
 
-  ngOnInit(): void {
+  observer(_): void {
+    if (this?.sig === false) {
+      this.getSuppliers();
+      this.sig = true;
+    } else {
+      return;
+    }
+  }
+
+  async ngOnInit(): Promise<void> {
     this.getSuppliers();
+    const shop = await this.userService.getCurrentShop();
+    this.obfn = database(shop.projectId).syncs('suppliers').changes().observe(this.observer);
+  }
+
+  async ngOnDestroy(): Promise<void> {
+    if (this.obfn){
+      this?.obfn?.unobserve();
+    }
   }
 
   getSuppliers(): void {
     this.suppliersFetching = true;
     this.supplierService.getAllSupplier().then(value => {
       this.suppliersFetching = false;
-      this.suppliers = of(JSON.parse(JSON.stringify(value)));
+      this.suppliers = of(value);
+    }).catch(_ => {
+      this.suppliersFetching = false;
+      this.suppliers = of([{name: 'Default'}]);
+    });
+  }
+
+  reload(): void {
+    this.suppliersFetching = true;
+    this.supplierService.getAllSupplierRemotely().then(value => {
+      this.suppliersFetching = false;
+      this.suppliers = of(value);
     }).catch(_ => {
       this.suppliersFetching = false;
       this.suppliers = of([{name: 'Default'}]);
@@ -74,19 +105,12 @@ export class SuppliersFormFieldComponent implements OnInit {
     }).afterDismissed().subscribe(value => {
       this.getSuppliers();
     });
-    // this.dialog.open(SupplierCreateFormComponent, {
-    //   closeOnNavigation: true
-    // }).afterClosed().subscribe(value => {
-    //   if (value) {
-    //     this.getSuppliers();
-    //   }
-    // });
   }
 
   refreshSuppliers($event: MouseEvent): void {
     $event.preventDefault();
     $event.stopPropagation();
-    this.getSuppliers();
+    this.reload();
   }
 
 }
