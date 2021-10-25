@@ -83,9 +83,7 @@ export class StockService {
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
     const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('stocks')
-      .changes()
-      .set(stock as any);
+    database(shop.projectId).syncs('stocks').changes().set(stock as any);
     return stock;
     // await this.startWorker(shop);
     // return this.stockWorker.saveProduct(stock, shop);
@@ -93,9 +91,7 @@ export class StockService {
 
   async deleteStock(stock: StockModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('stocks')
-      .changes()
-      .delete(stock.id);
+    database(shop.projectId).syncs('stocks').changes().delete(stock.id);
     return {id: stock.id};
     // await this.startWorker(shop);
     // return this.stockWorker.deleteProduct(stock, shop);
