@@ -102,7 +102,7 @@ export class StockWorker {
   async search(query: string, stocks: StockModel[]): Promise<StockModel[]> {
     // const stocks = await this.getProductsLocal(shop);
     return stocks.filter(x => {
-      return x?.product?.toLowerCase().includes(query.toLowerCase());
+      return x && x.product ? x.product.toString().toLowerCase().includes(query.toLowerCase()) : false;
     });
   }
 
@@ -136,10 +136,16 @@ export class StockWorker {
 
   sort(stocks: StockModel[]): StockModel[] {
     stocks.sort((a, b) => {
-      if (a?.product?.toLowerCase() < b?.product?.toLowerCase()) {
+      if (a && !a.product) {
+        return 0;
+      }
+      if (b && !b.product) {
+        return 0;
+      }
+      if (a.product.toLowerCase() < b.product.toLowerCase()) {
         return -1;
       }
-      if (a?.product?.toLowerCase() > b?.product?.toLowerCase()) {
+      if (a.product.toLowerCase() > b.product.toLowerCase()) {
         return 1;
       }
       return 0;
