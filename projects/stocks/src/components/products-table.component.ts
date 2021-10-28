@@ -2,7 +2,7 @@ import {AfterViewInit, Component, OnDestroy, OnInit, ViewChild} from '@angular/c
 import {MatTableDataSource} from '@angular/material/table';
 import {Observable, of, Subject} from 'rxjs';
 import {Router} from '@angular/router';
-import {DeviceState, LogService, StorageService} from '@smartstocktz/core-libs';
+import {DeviceState, LogService, StorageService, UserService} from '@smartstocktz/core-libs';
 import {MatBottomSheet} from '@angular/material/bottom-sheet';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {MatDialog} from '@angular/material/dialog';
@@ -14,6 +14,7 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
 import {getStockQuantity} from '../utils/stock.util';
+import {database} from "bfast";
 
 @Component({
   selector: 'app-products-table',
@@ -131,6 +132,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) matSort: MatSort;
+  private sig: boolean = false;
 
   constructor(private readonly router: Router,
               private readonly indexDb: StorageService,
@@ -139,26 +141,28 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
               private readonly logger: LogService,
               private readonly dialog: MatDialog,
               public readonly deviceState: DeviceState,
+              private readonly userService: UserService,
               public readonly stockState: StockState) {
   }
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
     this.stockState.getStocks();
     this.stockState.stocks.pipe(takeUntil(this.onDestroy)).subscribe(stocks => {
       this.stockDatasource.data = stocks;
       this._getTotalPurchaseOfStock(stocks);
     });
-    // const a = database().syncs('stocks').changes();
-    // a.observe(_ => {
-    //   console.log(_);
-    //   if (this.sig === false) {
-    //     console.log(_);
-    //     this.stockState.getStocks();
-    //     this.sig = true;
-    //   } else {
-    //     return;
-    //   }
-    // });
+    const shop = await this.userService.getCurrentShop();
+    const a = database(shop.projectId).syncs('stocks').changes();
+    a.observe(_ => {
+      // console.log(_);
+      if (this.sig === false) {
+        // console.log(_);
+        this.stockState.getStocks();
+        this.sig = true;
+      } else {
+        return;
+      }
+    });
     // database().syncs('categories').changes().observe(_ => {
     //   if (this.sig === false) {
     //     this.stockState.getStocks();
