@@ -7,8 +7,7 @@ export interface StockModel {
   updatedAt?: any;
   image?: any;
   images?: string[];
-  id?: string;
-  _id?: string;
+  id: string;
   product: string;
   barcode?: string;
   saleable?: boolean | true;
@@ -25,7 +24,13 @@ export interface StockModel {
   downloads?: FileModel[];
   stockable?: boolean | true;
   purchasable?: boolean | true;
-  quantity?: number;
+  quantity?: number | {
+    [key: string]: {
+      q: number,
+      s: string,
+      d: string
+    }
+  };
   wholesaleQuantity?: number;
   reorder?: number;
   purchase?: number;

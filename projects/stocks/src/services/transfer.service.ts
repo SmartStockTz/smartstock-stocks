@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {database} from 'bfast';
-import {IpfsService, StorageService, UserService} from '@smartstocktz/core-libs';
+import {IpfsService, SecurityUtil, StorageService, UserService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
+import {StockModel} from '../models/stock.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,35 +17,84 @@ export class TransferService {
 
   async countAll(): Promise<number> {
     const activeShop = await this.userService.getCurrentShop();
-    return database(activeShop.projectId)
-      .collection(this.COLLECTION)
-      .query()
-      .count(true)
-      .find();
+    return database(activeShop.projectId).collection(this.COLLECTION).query().count(true).find();
   }
 
   async save(transfer: TransferModel): Promise<TransferModel> {
     const activeShop = await this.userService.getCurrentShop();
-    return database(activeShop.projectId)
-      .bulk()
-      .create(this.COLLECTION, transfer)
-      .update('stocks', transfer.items
-        .filter(x => x.product.stockable === true)
-        .map(y => {
-          return {
-            query: {
-              id: y.product.id
-            },
-            update: {
-              $inc: {
-                quantity: -y.quantity
-              }
+    transfer.id = SecurityUtil.generateUUID();
+    transfer.createdAt = new Date().toISOString();
+    const stockableItems = transfer.items.filter(x => x.product.stockable === true);
+    await database(activeShop.projectId).bulk().update(this.COLLECTION, {
+      query: {
+        id: transfer.id,
+        upsert: true,
+      },
+      update: {
+        $set: transfer
+      }
+    }).update('stocks', stockableItems.map(y => {
+      return {
+        query: {
+          id: y.product.id,
+          upsert: true,
+        },
+        update: {
+          $set: {
+            [`quantity.${transfer.id}`]: {
+              q: -y.quantity,
+              s: 'transfer',
+              d: new Date().toISOString()
             }
-          };
-        }))
-      .commit();
-    // .collection(this.COLLECTION)
-    // .save<TransferModel>(transfer);
+          }
+        }
+      };
+    })).update('stocks-tracking', stockableItems.map(y => {
+      return {
+        query: {
+          id: y.product.id,
+          upsert: true,
+        },
+        update: {
+          $set: {
+            [`quantity.${transfer.id}`]: {
+              q: -y.quantity,
+              s: 'transfer',
+              d: new Date().toISOString()
+            }
+          }
+        }
+      };
+    })).commit();
+    for (const stockableItem of stockableItems) {
+      const changes = database(activeShop.projectId).syncs('stocks').changes();
+      const oSt: StockModel = changes.get(stockableItem.product.id);
+      if (oSt && isNaN(Number(oSt.quantity)) && typeof oSt.quantity === 'object') {
+        oSt.quantity[transfer.id] = {
+          q: -stockableItem.quantity,
+          s: 'transfer',
+          d: new Date().toISOString()
+        };
+      }
+      if (oSt && isNaN(Number(oSt.quantity)) && typeof oSt.quantity !== 'object') {
+        oSt.quantity = {};
+        oSt.quantity[transfer.id] = {
+          q: -stockableItem.quantity,
+          s: 'transfer',
+          d: new Date().toISOString()
+        };
+      }
+      if (oSt && !isNaN(Number(oSt.quantity))) {
+        oSt.quantity = {};
+        oSt.quantity[transfer.id] = {
+          q: -stockableItem.quantity,
+          s: 'transfer',
+          d: new Date().toISOString()
+        };
+      }
+      changes.set(oSt);
+    }
+    return transfer;
   }
 
   async fetch(pagination: { size?: number, skip?: number } = {size: 20, skip: 0}): Promise<TransferModel[]> {
@@ -53,7 +103,7 @@ export class TransferService {
       .collection(this.COLLECTION)
       .query()
       .cids(true)
-      // .orderBy('_created_at', -1)
+      .orderBy('createdAt', 'desc')
       .size(pagination?.size)
       .skip(pagination?.skip)
       .find();
@@ -63,13 +113,4 @@ export class TransferService {
       })
     );
   }
-
-  // async searchByDate(date: string): Promise<TransferModel[]> {
-  //   const activeShop = await this.userService.getCurrentShop();
-  //   return database(activeShop.projectId)
-  //     .collection(this.COLLECTION)
-  //     .query()
-  //     .searchByRegex('date', date)
-  //     .find();
-  // }
 }

@@ -19,7 +19,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import { MatMenuModule } from '@angular/material/menu';
-import {IpfsService, LibModule} from '@smartstocktz/core-libs';
+import {IpfsService, LibModule, SyncsService} from '@smartstocktz/core-libs';
 
 
 const routes: Routes = [
@@ -66,7 +66,8 @@ const routes: Routes = [
   bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor() {
+  constructor(private readonly syncService: SyncsService) {
+    syncService.startWorker().then(_ => console.log('start syncs worker')).catch(console.log);
     IpfsService.getVersion().then(value => {
       console.log('ipfs version : ', value.version);
     });

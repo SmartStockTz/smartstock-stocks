@@ -12,7 +12,9 @@ import {CategoryState} from '../states/category.state';
 import {DeviceState, UserService} from '@smartstocktz/core-libs';
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
-import {database} from "bfast";
+import {database} from 'bfast';
+
+let sig = false;
 
 @Component({
   selector: 'app-categories',
@@ -94,8 +96,6 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
   categoriesDatasource = new MatTableDataSource<CategoryModel>([]);
   categoriesTableColums = ['check', 'name', 'description', 'actions'];
   destroyer = new Subject<any>();
-  private sig = false;
-  private obfn;
 
   constructor(private readonly stockDatabase: CategoryService,
               private readonly formBuilder: FormBuilder,
@@ -107,16 +107,19 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
               private readonly snack: MatSnackBar) {
   }
 
-  observer(_): void {
-    if (this?.sig === false) {
-      this.getCategories();
-      this.sig = true;
-    } else {
-      return;
-    }
-  }
+  // observer(_): void {
+  //   console.log(_);
+  // if (sig === false) {
+  //   console.log(_, '*******');
+  //   this.getCategories();
+  //   sig = true;
+  // } else {
+  //   return;
+  // }
+  // }
 
   async ngOnInit(): Promise<void> {
+    // console.log('start');
     this.categoryState.startChanges();
     this.categoryState.categories.pipe(
       takeUntil(this.destroyer)
@@ -125,17 +128,27 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
         this.categoriesDatasource.data = value;
       }
     });
-    this.getCategories();
+    // this.getCategories();
     const shop = await this.userService.getCurrentShop();
-    this.obfn = database(shop.projectId).syncs('categories').changes().observe(this.observer);
+    const a = database(shop.projectId).syncs('categories').changes();
+    a.observe(_ => {
+      if (sig === false) {
+        // console.log(_, '*******');
+        this.getCategories();
+        sig = true;
+      } else {
+        return;
+      }
+    });
+    // setTimeout(() => {
+    //   console.log(a.toJSON());
+    // }, 500);
+    // console.log('end');
   }
 
   async ngOnDestroy(): Promise<void> {
     this.categoryState.stopChanges();
     this.destroyer.next('done');
-    if (this.obfn){
-      this?.obfn?.unobserve();
-    }
   }
 
   editCategory(element: CategoryModel): void {

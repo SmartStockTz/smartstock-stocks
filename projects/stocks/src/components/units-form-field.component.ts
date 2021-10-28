@@ -4,8 +4,8 @@ import {Observable, of} from 'rxjs';
 import {MatDialog} from '@angular/material/dialog';
 import {DialogUnitNewComponent} from './units.component';
 import {UnitsService} from '../services/units.service';
-import {database} from "bfast";
-import {UserService} from "@smartstocktz/core-libs";
+import {database} from 'bfast';
+import {UserService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-units-form-field',

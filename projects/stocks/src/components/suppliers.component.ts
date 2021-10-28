@@ -196,7 +196,7 @@ export class SuppliersComponent implements OnInit, OnDestroy {
       if (Array.isArray(this.suppliersArray) && this.suppliersArray.length > 0) {
         return;
       }
-      this.suppliersArray = [{name: 'Default'}];
+      this.suppliersArray = [{name: 'Default', id: 'default'}];
       this.suppliersDatasource = new MatTableDataSource<SupplierModel>(this.suppliersArray);
     });
   }

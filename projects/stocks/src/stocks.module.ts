@@ -27,7 +27,7 @@ import {RouterModule, ROUTES, Routes} from '@angular/router';
 import {ProductsPage} from './pages/products.page';
 import {DialogDeleteComponent, StockDetailsComponent} from './components/stock.component';
 import {CreatePageComponent} from './pages/product-create.page';
-import {EditPageComponent} from './pages/edit.page';
+import {EditPageComponent} from './pages/product-edit.page';
 import {CategoriesComponent} from './components/categories.component';
 import {DialogUnitDeleteComponent, DialogUnitNewComponent, UnitsComponent} from './components/units.component';
 import {DialogSupplierDeleteComponent, SuppliersComponent} from './components/suppliers.component';
@@ -74,15 +74,16 @@ import {CategoriesEditPage} from './pages/categories-edit.page';
 import {CategoryCreateFormBottomSheetComponent} from './components/category-create-form-bottom-sheet.component';
 import {StockNavigationService} from './services/stock-navigation.service';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
-import {ProductsListComponent} from "./components/products-list.component";
-import {ImageUploadComponent} from "./components/image-upload.component";
-import {MatSlideToggleModule} from "@angular/material/slide-toggle";
+import {ProductsListComponent} from './components/products-list.component';
+import {ImageUploadComponent} from './components/image-upload.component';
+import {MatSlideToggleModule} from '@angular/material/slide-toggle';
+import {StockQuantityComponent} from './components/stock-quantity.component';
 
 const routes: Routes = [
   {path: '', component: IndexPage},
   {path: 'products', component: ProductsPage},
   {path: 'products/create', component: CreatePageComponent},
-  {path: 'products/edit/:id', component: EditPageComponent},
+  {path: 'products/:id/edit', component: EditPageComponent},
   {path: 'categories', component: CategoriesPage},
   {path: 'categories/create', component: CategoryCreatePage},
   {path: 'categories/edit/:id', component: CategoriesEditPage},
@@ -95,51 +96,52 @@ const routes: Routes = [
 ];
 
 @NgModule({
-    imports: [
-        CommonModule,
+  imports: [
+    CommonModule,
+    {
+      ngModule: RouterModule,
+      providers: [
         {
-            ngModule: RouterModule,
-            providers: [
-                {
-                    provide: ROUTES,
-                    multi: true,
-                    useValue: routes
-                }
-            ]
-        },
-        LibModule,
-        MatSidenavModule,
-        MatCardModule,
-        MatFormFieldModule,
-        MatAutocompleteModule,
-        MatInputModule,
-        ReactiveFormsModule,
-        MatDatepickerModule,
-        MatTabsModule,
-        MatTableModule,
-        MatIconModule,
-        MatPaginatorModule,
-        MatButtonModule,
-        MatTooltipModule,
-        MatRippleModule,
-        MatMenuModule,
-        MatBottomSheetModule,
-        MatDividerModule,
-        MatProgressSpinnerModule,
-        MatSelectModule,
-        MatCheckboxModule,
-        MatRadioModule,
-        MatExpansionModule,
-        MatDialogModule,
-        MatListModule,
-        MatSortModule,
-        CdkTableModule,
-        ScrollingModule,
-        FormsModule,
-        MatProgressBarModule,
-        MatSlideToggleModule
-    ],
+          provide: ROUTES,
+          multi: true,
+          useValue: routes
+        }
+      ]
+    },
+    LibModule,
+    MatSidenavModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    ReactiveFormsModule,
+    MatDatepickerModule,
+    MatTabsModule,
+    MatTableModule,
+    MatIconModule,
+    MatPaginatorModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatRippleModule,
+    MatMenuModule,
+    MatBottomSheetModule,
+    MatDividerModule,
+    MatProgressSpinnerModule,
+    MatSelectModule,
+    MatCheckboxModule,
+    MatRadioModule,
+    MatExpansionModule,
+    MatDialogModule,
+    MatListModule,
+    MatSortModule,
+    CdkTableModule,
+    ScrollingModule,
+    FormsModule,
+    MatProgressBarModule,
+    MatSlideToggleModule
+  ],
   declarations: [
+    StockQuantityComponent,
     SupplierCreateFormComponent,
     CategoriesEditPage,
     CategoryCreateFormBottomSheetComponent,

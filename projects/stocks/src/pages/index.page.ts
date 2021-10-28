@@ -112,7 +112,7 @@ export class IndexPage implements OnInit {
   }
 
   async ngOnInit(): Promise<void> {
-    this.stockState.getStocksSummary();
+    // this.stockState.getStocksSummary();
   }
 
 }

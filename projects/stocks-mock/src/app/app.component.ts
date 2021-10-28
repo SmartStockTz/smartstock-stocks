@@ -1,5 +1,4 @@
 import {Component, OnInit} from '@angular/core';
-import {StorageService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-root',

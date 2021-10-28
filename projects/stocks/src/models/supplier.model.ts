@@ -1,6 +1,6 @@
 export interface SupplierModel {
   idOld?: string;
-  id?: string;
+  id: string;
   name?: string;
   number?: string;
   email?: string;

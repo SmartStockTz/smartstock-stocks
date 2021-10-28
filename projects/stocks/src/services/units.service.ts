@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
-import {database} from 'bfast';
+import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {cache, database} from 'bfast';
 import {UnitsModel} from '../models/units.model';
 
 @Injectable({
@@ -19,6 +19,14 @@ export class UnitsService {
     unit.createdAt = new Date().toISOString();
     unit.updatedAt = new Date().toISOString();
     database(shop.projectId).syncs('units').changes().set(unit as any);
+    await cache().addSyncs({
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop),
+      tree: 'units',
+      action: 'create',
+      payload: unit
+    });
     return unit;
   }
 
@@ -27,6 +35,7 @@ export class UnitsService {
     const u = database(shop.projectId).syncs('units').changes().values();
     return Array.from(u);
   }
+
   async getAllUnitRemotely(): Promise<UnitsModel[]> {
     const shop = await this.userService.getCurrentShop();
     return database(shop.projectId).syncs('units').upload();
@@ -38,12 +47,28 @@ export class UnitsService {
     ou[unit.field] = unit.value;
     ou.updatedAt = new Date().toISOString();
     database(shop.projectId).syncs('units').changes().set(ou);
+    await cache().addSyncs({
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop),
+      tree: 'units',
+      action: 'update',
+      payload: ou
+    });
     return ou;
   }
 
   async deleteUnit(unit: UnitsModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     database(shop.projectId).syncs('units').changes().delete(unit.id);
+    await cache().addSyncs({
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop),
+      tree: 'units',
+      action: 'delete',
+      payload: {id: unit.id}
+    });
     return {id: unit.id};
   }
 }

@@ -1,7 +1,8 @@
 import {expose} from 'comlink';
 import {ShopModel} from '@smartstocktz/core-libs/models/shop.model';
 import {StockModel} from '../models/stock.model';
-import {SecurityUtil} from "@smartstocktz/core-libs";
+import {SecurityUtil} from '@smartstocktz/core-libs';
+import {getStockQuantity} from '../utils/stock.util';
 
 // function _init(shop: ShopModel): void {
 //   init({
@@ -113,12 +114,13 @@ export class StockWorker {
     ];
     let csv = '';
     csv = csv.concat(columns.join(',')).concat(',\n');
-    stocks.forEach(stock => {
-      columns.forEach(column => {
+    for (const stock of stocks) {
+      stock.quantity = getStockQuantity(stock);
+      for (const column of columns) {
         csv = csv.concat(stock[column] ? stock[column].toString().replace(new RegExp('[,-]', 'ig'), '') : '').concat(', ');
-      });
+      }
       csv = csv.concat('\n');
-    });
+    }
     return csv;
   }
 

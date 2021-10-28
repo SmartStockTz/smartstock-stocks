@@ -13,7 +13,7 @@ import {MatSidenav} from '@angular/material/sidenav';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
-import {database} from "bfast";
+import {getStockQuantity} from '../utils/stock.util';
 
 @Component({
   selector: 'app-products-table',
@@ -55,7 +55,7 @@ import {database} from "bfast";
         <ng-container matColumnDef="quantity">
           <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
           <td mat-cell *matCellDef="let element">
-            {{element.stockable ? (element.quantity | number) : 'N/A'}}
+            <app-stock-quantity [stock]="element"></app-stock-quantity>
           </td>
           <td mat-footer-cell *matFooterCellDef>
             {{totalQuantity() | number}}
@@ -131,8 +131,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) matSort: MatSort;
-  private sig = false;
-  private obfn;
 
   constructor(private readonly router: Router,
               private readonly indexDb: StorageService,
@@ -150,14 +148,25 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       this.stockDatasource.data = stocks;
       this._getTotalPurchaseOfStock(stocks);
     });
-    this.obfn = database().syncs('categories').changes().observe(response => {
-      if (this?.sig === false) {
-        this.stockState.getStocks();
-        this.sig = true;
-      } else {
-        return;
-      }
-    });
+    // const a = database().syncs('stocks').changes();
+    // a.observe(_ => {
+    //   console.log(_);
+    //   if (this.sig === false) {
+    //     console.log(_);
+    //     this.stockState.getStocks();
+    //     this.sig = true;
+    //   } else {
+    //     return;
+    //   }
+    // });
+    // database().syncs('categories').changes().observe(_ => {
+    //   if (this.sig === false) {
+    //     this.stockState.getStocks();
+    //     this.sig = true;
+    //   } else {
+    //     return;
+    //   }
+    // });
     // const syncs = database().syncs('categories').doc(
     //   () => {
     //     console.log('syscs connected');
@@ -172,7 +181,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     // // @ts-ignore
     // window.syncs = syncs;
   }
-
 
   isAllSelected(): boolean {
     if (!this.stockDatasource.data) {
@@ -196,7 +204,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   }
 
   editStock(element: StockModel): void {
-    this.router.navigateByUrl('/stock/products/edit/' + element.id).catch(reason => this.logger.e(reason));
+    this.router.navigateByUrl('/stock/products/' + element.id + '/edit').catch(reason => this.logger.e(reason));
   }
 
   deleteStock(element: StockModel): void {
@@ -220,7 +228,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   private _getTotalPurchaseOfStock(stocks: StockModel[] = []): void {
     const sum = stocks.map(x => {
       if (x.purchase && x.quantity && x.quantity >= 0 && x.purchasable === true) {
-        return x.purchase * x.quantity;
+        return x.purchase * getStockQuantity(x);
       } else {
         return 0;
       }
@@ -231,9 +239,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   ngOnDestroy(): void {
     this.stockState.stocks.next([]);
     this.onDestroy.next();
-    if (this.obfn){
-      this?.obfn?.unobserve();
-    }
   }
 
   createGroupProduct(): void {
@@ -245,7 +250,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     return this.stockState.stocks.value
       .filter(x => x.stockable === true && x.quantity > 0)
-      .map(x => x.purchase * x.quantity)
+      .map(x => x.purchase * getStockQuantity(x))
       .reduce((a, b) => a + b, 0);
   }
 
@@ -255,7 +260,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     return this.stockState.stocks.value
       .filter(x => x.stockable === true && x.quantity > 0)
-      .map(x => x.retailPrice * x.quantity)
+      .map(x => x.retailPrice * getStockQuantity(x))
       .reduce((a, b) => a + b, 0);
   }
 
@@ -265,7 +270,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     return this.stockState.stocks.value
       .filter(x => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity > 0)
-      .map(x => (x.wholesalePrice / x.wholesaleQuantity) * x.quantity)
+      .map(x => (x.wholesalePrice / x.wholesaleQuantity) * getStockQuantity(x))
       .reduce((a, b) => a + b, 0);
   }
 
@@ -275,8 +280,7 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
     }
     return this.stockState.stocks.value
       .filter(x => x.stockable === true && x.quantity > 0)
-      .map(x => x.quantity)
-      .reduce((a, b) => a + b, 0);
+      .reduce((a, b) => a + getStockQuantity(b), 0);
   }
 
   ngAfterViewInit(): void {

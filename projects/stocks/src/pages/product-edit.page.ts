@@ -31,24 +31,21 @@ export class EditPageComponent implements OnInit {
   getStock(): void {
     this.loadStock = true;
     this.activatedRouter.params.subscribe(async value => {
-      // console.log(value);
       if (value && value.id) {
-        return this.stockState
-          .getStock(value.id)
-          .then(value1 => {
-            if (value1) {
-              this.stock = value1;
-            } else {
-              throw new Error('no product');
-            }
-          }).catch(_ => {
-            this.snack.open('Fails to get stock for update, try again', 'Ok', {
-              duration: 3000
-            });
-            this.router.navigateByUrl('/stock/products').catch();
-          }).finally(() => {
-            this.loadStock = false;
+        return this.stockState.getStock(value.id).then(value1 => {
+          if (value1) {
+            this.stock = value1;
+          } else {
+            throw new Error('no product');
+          }
+        }).catch(_ => {
+          this.snack.open('Fails to get stock for update, try again', 'Ok', {
+            duration: 3000
           });
+          this.router.navigateByUrl('/stock/products').catch();
+        }).finally(() => {
+          this.loadStock = false;
+        });
       } else {
         throw new Error('no id');
       }

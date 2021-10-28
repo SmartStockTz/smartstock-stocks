@@ -1,10 +1,11 @@
 import {Injectable} from '@angular/core';
-import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
-import {database} from 'bfast';
+import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {cache, database} from 'bfast';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
+import {sha1} from 'crypto-hash';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,7 @@ export class StockService {
 
   async stocksListening(): Promise<void> {
     const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('stocks');
+    database(shop.projectId).syncs('stocks').changes();
   }
 
   async startWorker(shop: ShopModel): Promise<any> {
@@ -45,9 +46,7 @@ export class StockService {
 
   async stocksFromSyncs(): Promise<StockModel[]> {
     const activeShop = await this.userService.getCurrentShop();
-    const v = database(activeShop.projectId).syncs('stocks')
-      .changes()
-      .values();
+    const v = database(activeShop.projectId).syncs('stocks').changes().values();
     return Array.from(v);
   }
 
@@ -66,14 +65,33 @@ export class StockService {
     return csv;
   }
 
+  private async mapStockQuantity(stock: StockModel): Promise<StockModel> {
+    const s = JSON.parse(JSON.stringify(stock));
+    const q = s.quantity as number;
+    s.quantity = {};
+    s.quantity[await sha1(JSON.stringify(s))] = {
+      q,
+      s: 'manual',
+      d: new Date().toISOString()
+    };
+    return s;
+  }
+
   async importStocks(csv: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
     const st = await this.stockWorker.import(csv);
-    for (const s of st) {
-      database(shop.projectId).syncs('stocks')
-        .changes()
-        .set(s as any);
+    for (let s of st) {
+      s = await this.mapStockQuantity(s);
+      await cache().addSyncs({
+        action: 'create',
+        payload: s,
+        tree: 'stocks',
+        projectId: shop.projectId,
+        applicationId: shop.applicationId,
+        databaseURL: getDaasAddress(shop)
+      });
+      database(shop.projectId).syncs('stocks').changes().set(s as any);
     }
     return st;
   }
@@ -82,7 +100,16 @@ export class StockService {
     stock.id = stock.id ? stock.id : SecurityUtil.generateUUID();
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
+    stock = await this.mapStockQuantity(stock);
     const shop = await this.userService.getCurrentShop();
+    await cache().addSyncs({
+      action: 'update',
+      payload: stock,
+      tree: 'stocks',
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop)
+    });
     database(shop.projectId).syncs('stocks').changes().set(stock as any);
     return stock;
     // await this.startWorker(shop);
@@ -91,6 +118,14 @@ export class StockService {
 
   async deleteStock(stock: StockModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
+    await cache().addSyncs({
+      action: 'delete',
+      payload: stock,
+      tree: 'stocks',
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop)
+    });
     database(shop.projectId).syncs('stocks').changes().delete(stock.id);
     return {id: stock.id};
     // await this.startWorker(shop);
@@ -104,37 +139,26 @@ export class StockService {
     return this.stockWorker.sort(products);
   }
 
-  private async remoteAllProducts(shop: ShopModel): Promise<StockModel[]> {
-    return database(shop.projectId).syncs('stocks').upload();
-    // this.remoteAllProductsRunning = true;
-    // const cids = await bfast.database(shop.projectId)
-    //   .collection('stocks')
-    //   .getAll<string>({
-    //     cids: true
-    //   }).finally(() => {
-    //     // this.remoteAllProductsRunning = false;
-    //   });
-    // return await Promise.all(
-    //   cids.map(c => {
-    //     return IpfsService.getDataFromCid(c);
-    //   })
-    // ) as any[];
-  }
-
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    const products = await this.remoteAllProducts(shop);
+    const products = await database(shop.projectId).syncs('stocks').upload();
     return this.stockWorker.sort(products);
   }
 
   async deleteMany(stocksId: string[]): Promise<any> {
-    const activeShop = await this.userService.getCurrentShop();
+    const shop = await this.userService.getCurrentShop();
     // await this.startWorker(activeShop);
     for (const id of stocksId) {
-      database(activeShop.projectId).syncs('stocks')
-        .changes()
-        .delete(id);
+      await cache().addSyncs({
+        action: 'delete',
+        payload: {id},
+        tree: 'stocks',
+        projectId: shop.projectId,
+        applicationId: shop.applicationId,
+        databaseURL: getDaasAddress(shop)
+      });
+      database(shop.projectId).syncs('stocks').changes().delete(id);
     }
     return this.getProducts();
     // return this.stockWorker.deleteMany(stocksId, activeShop);

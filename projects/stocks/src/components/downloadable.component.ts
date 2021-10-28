@@ -1,7 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {FormControl, Validators} from '@angular/forms';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, FileModel, FilesService, UserService} from '@smartstocktz/core-libs';
+import {FileModel, FilesService} from '@smartstocktz/core-libs';
 
 @Component({
   selector: 'app-stock-downloadable',

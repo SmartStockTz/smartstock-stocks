@@ -1,10 +1,10 @@
 import {Injectable} from '@angular/core';
-import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
 import {CategoryWorker} from '../workers/category.worker';
 import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
-import {database} from 'bfast';
+import {cache, database} from 'bfast';
 
 @Injectable({
   providedIn: 'root'
@@ -38,8 +38,8 @@ export class CategoryService {
   }
 
   async stopChanges(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('categories').close();
+    // const shop = await this.userService.getCurrentShop();
+    // database(shop.projectId).syncs('categories').close();
   }
 
   async addCategory(category: CategoryModel, id = null): Promise<CategoryModel> {
@@ -51,33 +51,41 @@ export class CategoryService {
     }
     category.createdAt = new Date().toISOString();
     category.updatedAt = new Date().toISOString();
-    database(shop.projectId).syncs('categories')
-      .changes()
-      .set(category as any);
+    await cache().addSyncs({
+      action: 'create',
+      payload: category,
+      tree: 'categories',
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop)
+    });
+    database(shop.projectId).syncs('categories').changes().set(category as any);
     return category;
   }
 
   async deleteCategory(category: CategoryModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('categories')
-      .changes()
-      .delete(category.id);
+    await cache().addSyncs({
+      action: 'delete',
+      payload: category,
+      tree: 'categories',
+      projectId: shop.projectId,
+      applicationId: shop.applicationId,
+      databaseURL: getDaasAddress(shop)
+    });
+    database(shop.projectId).syncs('categories').changes().delete(category.id);
     return category;
   }
 
   async getAllCategory(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
     await this.startWorker(shop);
-    const c = database(shop.projectId).syncs('categories')
-      .changes()
-      .values();
+    const c = database(shop.projectId).syncs('categories').changes().values();
     return this.categoryWorker.sort(Array.from(c));
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
-    const cr = await database(shop.projectId)
-      .syncs('categories')
-      .upload();
+    const cr = await database(shop.projectId).syncs('categories').upload();
     await this.startWorker(shop);
     return this.categoryWorker.sort(cr);
   }
