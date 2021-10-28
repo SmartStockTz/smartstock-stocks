@@ -2,7 +2,6 @@ import {expose} from 'comlink';
 import {ShopModel} from '@smartstocktz/core-libs/models/shop.model';
 import {StockModel} from '../models/stock.model';
 import {SecurityUtil} from '@smartstocktz/core-libs';
-import {getStockQuantity} from '../utils/stock.util';
 
 // function _init(shop: ShopModel): void {
 //   init({
@@ -23,6 +22,17 @@ import {getStockQuantity} from '../utils/stock.util';
 export class StockWorker {
 
   constructor(shop: ShopModel) {
+  }
+
+  getStockQuantity(stock: StockModel): number {
+    if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {
+      // @ts-ignore
+      return Object.values(stock.quantity).reduce<any>((a, b) => a + b.q, 0);
+    }
+    if (stock && !isNaN(Number(stock.quantity)) && typeof stock.quantity === 'number') {
+      return stock.quantity as number;
+    }
+    return 0;
   }
 
   private sanitizeField(value: string): any {
@@ -115,7 +125,7 @@ export class StockWorker {
     let csv = '';
     csv = csv.concat(columns.join(',')).concat(',\n');
     for (const stock of stocks) {
-      stock.quantity = getStockQuantity(stock);
+      stock.quantity = this.getStockQuantity(stock);
       for (const column of columns) {
         csv = csv.concat(stock[column] ? stock[column].toString().replace(new RegExp('[,-]', 'ig'), '') : '').concat(', ');
       }
