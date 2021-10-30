@@ -32,8 +32,20 @@ export class UnitsService {
 
   async getAllUnit(): Promise<UnitsModel[]> {
     const shop = await this.userService.getCurrentShop();
-    const u = database(shop.projectId).syncs('units').changes().values();
-    return Array.from(u);
+    return new Promise((resolve, reject) => {
+      database(shop.projectId).syncs('units', syncs => {
+        try {
+          const u0 = Array.from(syncs.changes().values());
+          if (u0.length === 0) {
+            this.getAllUnitRemotely().then(resolve).catch(reject);
+          } else {
+            resolve(u0);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
 
   async getAllUnitRemotely(): Promise<UnitsModel[]> {

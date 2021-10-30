@@ -46,7 +46,7 @@ export class CategoryService {
     const shop = await this.userService.getCurrentShop();
     if (id) {
       category.id = id;
-    }else {
+    } else {
       category.id = SecurityUtil.generateUUID();
     }
     category.createdAt = new Date().toISOString();
@@ -79,9 +79,22 @@ export class CategoryService {
 
   async getAllCategory(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    const c = database(shop.projectId).syncs('categories').changes().values();
-    return this.categoryWorker.sort(Array.from(c));
+    // await this.startWorker(shop);
+    return new Promise((resolve, reject) => {
+      database(shop.projectId).syncs('categories', (syn) => {
+        try {
+          const c = Array.from(syn.changes().values());
+          // c = this.categoryWorker.sort(c);
+          if (c.length === 0) {
+            this.getAllCategoryRemote().then(resolve).catch(reject);
+          } else {
+            resolve(c);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {

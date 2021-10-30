@@ -67,7 +67,7 @@ export class ProductsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.stockState.startChanges();
+    // this.stockState.startChanges();
   }
 
 

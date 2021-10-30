@@ -19,14 +19,16 @@ export class StockService {
   }
 
   async stocksListeningStop(): Promise<void> {
-    // const shop = await this.userService.getCurrentShop();
-    // database(shop.projectId).syncs('stocks').close();
+    const shop = await this.userService.getCurrentShop();
+    database(shop.projectId).syncs('stocks').close();
   }
 
-  async stocksListening(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('stocks').changes();
-  }
+  // async stocksListening(): Promise<void> {
+  //   const shop = await this.userService.getCurrentShop();
+  //   database(shop.projectId).syncs('stocks', () => {
+  //     console.log('stocks initial connect');
+  //   });
+  // }
 
   async startWorker(shop: ShopModel): Promise<any> {
     if (!this.stockWorker) {
@@ -46,8 +48,20 @@ export class StockService {
 
   async stocksFromSyncs(): Promise<StockModel[]> {
     const activeShop = await this.userService.getCurrentShop();
-    const v = database(activeShop.projectId).syncs('stocks').changes().values();
-    return Array.from(v);
+    return new Promise((resolve, reject) => {
+      database(activeShop.projectId).syncs('stocks', async (syncs) => {
+        try {
+          const v = Array.from(syncs.changes().values());
+          if (v.length === 0) {
+            this.getProductsRemote().then(resolve).catch(reject);
+          } else {
+            resolve(v);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
 
   async exportToExcel(): Promise<any> {
@@ -173,7 +187,16 @@ export class StockService {
 
   async getProduct(id: string): Promise<StockModel> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).syncs('stocks').changes().get(id);
+    return new Promise((resolve, reject) => {
+      try {
+        database(shop.projectId).syncs('stocks', syncs => {
+          resolve(syncs.changes().get(id));
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+    // return database(shop.projectId).syncs('stocks').changes().get(id);
     // await this.startWorker(shop);
     // return this.stockWorker.getProductLocal(id, shop);
   }

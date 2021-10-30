@@ -26,7 +26,7 @@ export class StockState {
   }
 
   startChanges(): void{
-    this.stockService.stocksListening().catch(console.log);
+    // this.stockService.stocksListening().catch(console.log);
   }
 
   stopChanges(): void{

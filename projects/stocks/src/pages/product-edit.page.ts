@@ -3,6 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockModel} from '../models/stock.model';
 import {StockState} from '../states/stock.state';
+import {getStockQuantity} from "../utils/stock.util";
 
 @Component({
   selector: 'app-stock-edit',
@@ -34,11 +35,13 @@ export class EditPageComponent implements OnInit {
       if (value && value.id) {
         return this.stockState.getStock(value.id).then(value1 => {
           if (value1) {
+            value1.quantity = getStockQuantity(value1);
             this.stock = value1;
           } else {
             throw new Error('no product');
           }
         }).catch(_ => {
+          // console.log(_);
           this.snack.open('Fails to get stock for update, try again', 'Ok', {
             duration: 3000
           });
@@ -55,14 +58,5 @@ export class EditPageComponent implements OnInit {
       });
       this.router.navigateByUrl('/stock/products').catch();
     });
-    // if (this.stockState.selectedStock.value) {
-    //   this.stock = this.stockState.selectedStock.value;
-    // } else {
-    //   this.snack.open('Fails to get stock for update, try again', 'Ok', {
-    //     duration: 3000
-    //   });
-    //   this.router.navigateByUrl('/stock/products').catch();
-    // }
-    // this.loadStock = false;
   }
 }

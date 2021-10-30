@@ -62,8 +62,20 @@ export class SupplierService {
 
   async getAllSupplier(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    const s = await database(shop.projectId).syncs('suppliers').changes().values();
-    return Array.from(s);
+    return new Promise((resolve, reject) => {
+      database(shop.projectId).syncs('suppliers', (syncs) => {
+        try {
+          const s0 = Array.from(syncs.changes().values());
+          if (s0.length === 0) {
+            this.getAllSupplierRemotely().then(resolve).catch(reject);
+          } else {
+            resolve(s0);
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
 
   async getAllSupplierRemotely(): Promise<SupplierModel[]> {
