@@ -63,8 +63,6 @@ export class SuppliersFormFieldComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.getSuppliers();
-    const shop = await this.userService.getCurrentShop();
-    this.obfn = database(shop.projectId).syncs('suppliers').changes().observe(this.observer);
   }
 
   async ngOnDestroy(): Promise<void> {

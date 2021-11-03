@@ -143,8 +143,6 @@ export class UnitsComponent implements OnInit, OnDestroy {
   nameFormControl = new FormControl();
   abbreviationFormControl = new FormControl();
   descriptionFormControl = new FormControl();
-  private sig = false;
-  private obfn;
 
   constructor(private readonly unitsService: UnitsService,
               private readonly formBuilder: FormBuilder,
@@ -154,25 +152,11 @@ export class UnitsComponent implements OnInit, OnDestroy {
               private readonly snack: MatSnackBar) {
   }
 
-  observer(_): void {
-    if (this?.sig === false) {
-      this.getUnits();
-      this.sig = true;
-    } else {
-      return;
-    }
-  }
-
   async ngOnInit(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
     this.getUnits();
-    this.obfn = database(shop.projectId).syncs('units').changes().observe(this.observer);
   }
 
   async ngOnDestroy(): Promise<void> {
-    if (this.obfn){
-      this?.obfn?.unobserve();
-    }
   }
 
   getUnits(): void {

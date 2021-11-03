@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
 import {CategoryWorker} from '../workers/category.worker';
 import {ShopModel} from '../models/shop.model';
@@ -33,13 +33,11 @@ export class CategoryService {
   }
 
   async startChanges(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('categories');
+    // const shop = await this.userService.getCurrentShop();
   }
 
   async stopChanges(): Promise<void> {
     // const shop = await this.userService.getCurrentShop();
-    // database(shop.projectId).syncs('categories').close();
   }
 
   async addCategory(category: CategoryModel, id = null): Promise<CategoryModel> {
@@ -51,56 +49,41 @@ export class CategoryService {
     }
     category.createdAt = new Date().toISOString();
     category.updatedAt = new Date().toISOString();
-    await cache().addSyncs({
-      action: 'create',
-      payload: category,
-      tree: 'categories',
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop)
-    });
-    database(shop.projectId).syncs('categories').changes().set(category as any);
+    await database(shop.projectId).table('categories').query().byId(category.id)
+      .updateBuilder()
+      .upsert(true)
+      .doc(category)
+      .update();
+    cache({database: shop.projectId, collection: 'categories'}).set(category.id, category).catch(console.log);
     return category;
   }
 
   async deleteCategory(category: CategoryModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await cache().addSyncs({
-      action: 'delete',
-      payload: category,
-      tree: 'categories',
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop)
-    });
-    database(shop.projectId).syncs('categories').changes().delete(category.id);
+    await database(shop.projectId).table('categories').query().byId(category.id).delete();
+    cache({database: shop.projectId, collection: 'categories'}).remove(category.id).catch(console.log);
     return category;
   }
 
   async getAllCategory(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
-    // await this.startWorker(shop);
-    return new Promise((resolve, reject) => {
-      database(shop.projectId).syncs('categories', (syn) => {
-        try {
-          const c = Array.from(syn.changes().values());
-          // c = this.categoryWorker.sort(c);
-          if (c.length === 0) {
-            this.getAllCategoryRemote().then(resolve).catch(reject);
-          } else {
-            resolve(c);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
+    return cache({database: shop.projectId, collection: 'categories'}).getAll().then(categories => {
+      if (Array.isArray(categories) && categories.length > 0) {
+        return categories;
+      }
+      return this.remoteAllCategories(shop);
+    }).then(c => {
+      cache({database: shop.projectId, collection: 'categories'})
+        .setBulk(c.map(x => x.id), c).catch(console.log);
+      return c;
     });
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
-    const cr = await database(shop.projectId).syncs('categories').upload();
-    await this.startWorker(shop);
-    return this.categoryWorker.sort(cr);
+    const cr: any[] = await database(shop.projectId).table('categories').getAll();
+    return cr;
+    // await this.startWorker(shop);
+    // return this.categoryWorker.sort(cr);
   }
 
 
@@ -111,7 +94,12 @@ export class CategoryService {
 
   async getCategory(id: string): Promise<CategoryModel> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).syncs('categories').changes().get(id);
+    return cache({database: shop.projectId, collection: 'categories'}).get<any>(id).then(category => {
+      if (category) {
+        return category;
+      }
+      return database(shop.projectId).table('categories').get(id);
+    });
   }
 
   async search(q: string): Promise<CategoryModel[]> {

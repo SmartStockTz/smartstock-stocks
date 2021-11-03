@@ -14,7 +14,6 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
 import {getStockQuantity} from '../utils/stock.util';
-import {database} from 'bfast';
 
 @Component({
   selector: 'app-products-table',
@@ -151,39 +150,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
       this.stockDatasource.data = stocks;
       this._getTotalPurchaseOfStock(stocks);
     });
-    // const shop = await this.userService.getCurrentShop();
-    // const a = database(shop.projectId).syncs('stocks').changes();
-    // a.observe(_ => {
-    //   // console.log(_);
-    //   if (this.sig === false) {
-    //     // console.log(_);
-    //     this.stockState.getStocks();
-    //     this.sig = true;
-    //   } else {
-    //     return;
-    //   }
-    // });
-    // database().syncs('categories').changes().observe(_ => {
-    //   if (this.sig === false) {
-    //     this.stockState.getStocks();
-    //     this.sig = true;
-    //   } else {
-    //     return;
-    //   }
-    // });
-    // const syncs = database().syncs('categories').doc(
-    //   () => {
-    //     console.log('syscs connected');
-    //   },
-    //   () => {
-    //     console.log('syncs disconnected');
-    //   }
-    // );
-    // syncs.observe(args => {
-    //   console.log(args);
-    // });
-    // // @ts-ignore
-    // window.syncs = syncs;
   }
 
   isAllSelected(): boolean {

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {SupplierModel} from '../models/supplier.model';
 import {cache, database} from 'bfast';
 
@@ -15,71 +15,48 @@ export class SupplierService {
 
   async addSupplier(supplier: SupplierModel, id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
+    const sCache = cache({database: shop.projectId, collection: 'suppliers'});
     if (id) {
-      let os = database(shop.projectId).syncs('suppliers').changes().get(id);
-      os.updatedAt = new Date().toISOString();
-      os = Object.assign(os, supplier);
-      await cache().addSyncs({
-        action: 'update',
-        payload: os,
-        tree: 'suppliers',
-        projectId: shop.projectId,
-        applicationId: shop.applicationId,
-        databaseURL: getDaasAddress(shop)
-      });
-      database(shop.projectId).syncs('suppliers').changes().set(os);
-      return os;
+      supplier.updatedAt = new Date().toISOString();
+      await database(shop.projectId).table('suppliers').query().byId(id)
+        .updateBuilder().doc(supplier).update();
+      sCache.set(id, supplier).catch(console.log);
+      return supplier;
     } else {
       supplier.id = SecurityUtil.generateUUID();
       supplier.createdAt = new Date().toISOString();
       supplier.updatedAt = new Date().toISOString();
-      await cache().addSyncs({
-        action: 'create',
-        payload: supplier,
-        tree: 'suppliers',
-        projectId: shop.projectId,
-        applicationId: shop.applicationId,
-        databaseURL: getDaasAddress(shop)
-      });
-      database(shop.projectId).syncs('suppliers').changes().set(supplier as any);
+      await database(shop.projectId).table('suppliers').query().byId(supplier.id).updateBuilder()
+        .doc(supplier)
+        .update();
+      sCache.set(supplier.id, supplier).catch(console.log);
       return supplier;
     }
   }
 
   async deleteSupplier(id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await cache().addSyncs({
-      action: 'delete',
-      payload: {id},
-      tree: 'suppliers',
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop)
-    });
-    database(shop.projectId).syncs('suppliers').changes().delete(id);
+    await database(shop.projectId).table('suppliers').query().byId(id).delete();
+    cache({database: shop.projectId, collection: 'suppliers'}).remove(id).catch(console.log);
     return {id};
   }
 
   async getAllSupplier(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return new Promise((resolve, reject) => {
-      database(shop.projectId).syncs('suppliers', (syncs) => {
-        try {
-          const s0 = Array.from(syncs.changes().values());
-          if (s0.length === 0) {
-            this.getAllSupplierRemotely().then(resolve).catch(reject);
-          } else {
-            resolve(s0);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
+    return cache({database: shop.projectId, collection: 'suppliers'}).getAll().then(suppliers => {
+      if (Array.isArray(suppliers) && suppliers.length > 0) {
+        return suppliers;
+      }
+      return this.getAllSupplierRemotely();
+    }).then(s => {
+      cache({database: shop.projectId, collection: 'suppliers'})
+        .setBulk(s.map(x => x.id), s).catch(console.log);
+      return s;
     });
   }
 
   async getAllSupplierRemotely(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).syncs('suppliers').upload();
+    return database(shop.projectId).table('suppliers').getAll();
   }
 }

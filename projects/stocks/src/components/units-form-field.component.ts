@@ -42,33 +42,18 @@ export class UnitsFormFieldComponent implements OnInit, OnDestroy {
   units: Observable<[any]>;
   unitsFetching = true;
   @Input() stockable = false;
-  private sig = false;
-  private obfn;
 
   constructor(private readonly unitsService: UnitsService,
               private readonly userService: UserService,
               private readonly dialog: MatDialog) {
   }
 
-  observer(_): void {
-    if (this?.sig === false) {
-      this.getUnits();
-      this.sig = true;
-    } else {
-      return;
-    }
-  }
-
   async ngOnInit(): Promise<void> {
     const shop = await this.userService.getCurrentShop();
     this.getUnits();
-    this.obfn = database(shop.projectId).syncs('units').changes().observe(this.observer);
   }
 
   async ngOnDestroy(): Promise<void> {
-    if (this.obfn){
-      this?.obfn?.unobserve();
-    }
   }
 
   getUnits(): void {

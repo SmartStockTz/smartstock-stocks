@@ -142,15 +142,10 @@ export class SuppliersComponent implements OnInit, OnDestroy {
   }
 
   async ngOnInit(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
     this.getSuppliers();
-    this.obfn = database(shop.projectId).syncs('suppliers').changes().observe(this.observer);
   }
 
   async ngOnDestroy(): Promise<void> {
-    if (this.obfn) {
-      this?.obfn?.unobserve();
-    }
   }
 
   searchSupplier(query: string): void {

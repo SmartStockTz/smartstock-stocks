@@ -51,12 +51,9 @@ import {UserService} from '@smartstocktz/core-libs';
 
 export class ProductSearchDialogComponent implements OnInit, OnDestroy {
   searchFormControl = new FormControl('');
-  private sig = false;
-  private obfn;
 
   constructor(public readonly dialogRef: MatDialogRef<ProductSearchDialogComponent>,
-              public readonly stockState: StockState,
-              private readonly userService: UserService) {
+              public readonly stockState: StockState) {
   }
 
   async ngOnInit(): Promise<void> {
@@ -67,21 +64,9 @@ export class ProductSearchDialogComponent implements OnInit, OnDestroy {
       this.stockState.filter(value);
     });
     this.stockState.getStocks();
-    const shop = await this.userService.getCurrentShop();
-    this.obfn = database(shop.projectId).syncs('stocks').changes().observe(_ => {
-      if (this?.sig === false) {
-        this.getProducts();
-        this.sig = true;
-      } else {
-        return;
-      }
-    });
   }
 
   ngOnDestroy(): void {
-    if (this?.obfn) {
-      this?.obfn?.unobserve();
-    }
   }
 
   getProducts(): void {

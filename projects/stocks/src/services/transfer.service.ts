@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {database} from 'bfast';
+import {cache, database} from 'bfast';
 import {IpfsService, SecurityUtil, StorageService, UserService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
 import {StockModel} from '../models/stock.model';
@@ -49,26 +49,28 @@ export class TransferService {
           }
         }
       };
-    })).update('stocks-tracking', stockableItems.map(y => {
-      return {
-        query: {
-          id: y.product.id,
-          upsert: true,
-        },
-        update: {
-          $set: {
-            [`quantity.${transfer.id}`]: {
-              q: -y.quantity,
-              s: 'transfer',
-              d: new Date().toISOString()
-            }
-          }
-        }
-      };
-    })).commit();
+    }))
+      //   .update('stocks-tracking', stockableItems.map(y => {
+      //   return {
+      //     query: {
+      //       id: y.product.id,
+      //       upsert: true,
+      //     },
+      //     update: {
+      //       $set: {
+      //         [`quantity.${transfer.id}`]: {
+      //           q: -y.quantity,
+      //           s: 'transfer',
+      //           d: new Date().toISOString()
+      //         }
+      //       }
+      //     }
+      //   };
+      // }))
+      .commit();
     for (const stockableItem of stockableItems) {
-      const changes = database(activeShop.projectId).syncs('stocks').changes();
-      const oSt: StockModel = changes.get(stockableItem.product.id);
+      const stockCache = cache({database: activeShop.projectId, collection: 'stocks'});
+      const oSt: StockModel = await stockCache.get(stockableItem.product.id);
       if (oSt && isNaN(Number(oSt.quantity)) && typeof oSt.quantity === 'object') {
         oSt.quantity[transfer.id] = {
           q: -stockableItem.quantity,
@@ -92,7 +94,7 @@ export class TransferService {
           d: new Date().toISOString()
         };
       }
-      changes.set(oSt);
+      await stockCache.set(oSt.id, oSt);
     }
     return transfer;
   }

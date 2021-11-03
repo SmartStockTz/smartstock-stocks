@@ -107,20 +107,8 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
               private readonly snack: MatSnackBar) {
   }
 
-  // observer(_): void {
-  //   console.log(_);
-  // if (sig === false) {
-  //   console.log(_, '*******');
-  //   this.getCategories();
-  //   sig = true;
-  // } else {
-  //   return;
-  // }
-  // }
-
   async ngOnInit(): Promise<void> {
-    // console.log('start');
-    this.categoryState.startChanges();
+    this.categoryState.getCategories();
     this.categoryState.categories.pipe(
       takeUntil(this.destroyer)
     ).subscribe(value => {
@@ -128,22 +116,6 @@ export class CategoriesComponent implements OnInit, OnDestroy, AfterViewInit {
         this.categoriesDatasource.data = value;
       }
     });
-    // this.getCategories();
-    const shop = await this.userService.getCurrentShop();
-    const a = database(shop.projectId).syncs('categories').changes();
-    a.observe(_ => {
-      if (sig === false) {
-        // console.log(_, '*******');
-        this.getCategories();
-        sig = true;
-      } else {
-        return;
-      }
-    });
-    // setTimeout(() => {
-    //   console.log(a.toJSON());
-    // }, 500);
-    // console.log('end');
   }
 
   async ngOnDestroy(): Promise<void> {

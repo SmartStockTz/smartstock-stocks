@@ -67,9 +67,8 @@ export class ProductsPage implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // this.stockState.startChanges();
+    this.stockState.startChanges();
   }
-
 
   handleSearch(query: string): void {
     this.stockState.filter(query);
@@ -87,9 +86,6 @@ export class ProductsPage implements OnInit, OnDestroy {
     this.dialog.open(ImportsDialogComponent, {
       closeOnNavigation: true,
     });
-    // .afterClosed().subscribe(value => {
-    //   this.done.emit();
-    // });
   }
 
   exportProducts(): void {

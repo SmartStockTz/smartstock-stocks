@@ -62,8 +62,6 @@ export class CategoryFormFieldComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.categoryState.startChanges();
     this.getCategories();
-    const shop = await this.userService.getCurrentShop();
-    this.obfn = database(shop.projectId).syncs('categories').changes().observe(this.observer);
   }
 
   async ngOnDestroy(): Promise<void> {

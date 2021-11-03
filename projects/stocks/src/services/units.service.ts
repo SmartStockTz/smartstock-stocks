@@ -18,69 +18,47 @@ export class UnitsService {
     unit.id = SecurityUtil.generateUUID();
     unit.createdAt = new Date().toISOString();
     unit.updatedAt = new Date().toISOString();
-    database(shop.projectId).syncs('units').changes().set(unit as any);
-    await cache().addSyncs({
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop),
-      tree: 'units',
-      action: 'create',
-      payload: unit
-    });
+    await database(shop.projectId).table('units').query().byId(unit.id).updateBuilder()
+      .upsert(true)
+      .doc(unit)
+      .update();
+    cache({database: shop.projectId, collection: 'units'}).set(unit.id, unit).catch(console.log);
     return unit;
   }
 
   async getAllUnit(): Promise<UnitsModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return new Promise((resolve, reject) => {
-      database(shop.projectId).syncs('units', syncs => {
-        try {
-          const u0 = Array.from(syncs.changes().values());
-          if (u0.length === 0) {
-            this.getAllUnitRemotely().then(resolve).catch(reject);
-          } else {
-            resolve(u0);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
+    return cache({database: shop.projectId, collection: 'units'}).getAll().then(units => {
+      if (Array.isArray(units) && units.length > 0) {
+        return units;
+      }
+      return this.getAllUnitRemotely();
+    }).then(u => {
+      cache({database: shop.projectId, collection: 'units'}).setBulk(u.map(x => x.id), u).catch(console.log);
+      return u;
     });
   }
 
   async getAllUnitRemotely(): Promise<UnitsModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).syncs('units').upload();
+    return database(shop.projectId).table('units').getAll();
   }
 
   async updateUnit(unit: { id: string; value: string; field: string }): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    const ou = database(shop.projectId).syncs('units').changes().get(unit.id);
-    ou[unit.field] = unit.value;
-    ou.updatedAt = new Date().toISOString();
-    database(shop.projectId).syncs('units').changes().set(ou);
-    await cache().addSyncs({
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop),
-      tree: 'units',
-      action: 'update',
-      payload: ou
-    });
-    return ou;
+    const u = await database(shop.projectId).table('units').query()
+      .byId(unit.id)
+      .updateBuilder()
+      .upsert(true)
+      .set(unit.field, unit.value)
+      .update();
+    cache({database: shop.projectId, collection: 'units'}).set(u.id, u).catch(console.log);
   }
 
   async deleteUnit(unit: UnitsModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    database(shop.projectId).syncs('units').changes().delete(unit.id);
-    await cache().addSyncs({
-      projectId: shop.projectId,
-      applicationId: shop.applicationId,
-      databaseURL: getDaasAddress(shop),
-      tree: 'units',
-      action: 'delete',
-      payload: {id: unit.id}
-    });
+    await database(shop.projectId).table('units').query().byId(unit.id).delete();
+    cache({database: shop.projectId, collection: 'units'}).remove(unit.id).catch(console.log);
     return {id: unit.id};
   }
 }
