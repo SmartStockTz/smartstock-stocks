@@ -16,8 +16,8 @@ import {StockState} from '../states/stock.state';
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">
-          <div *ngIf="(deviceState.isSmallScreen | async)===false" class="d-flex flex-row flex-wrap">
+        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3">
+          <div *ngIf="(deviceState.isSmallScreen | async)===false" class="d-flex flex-row flex-wrap" style="padding: 0 10px">
             <app-libs-rbac [groups]="['admin', 'manager']" [pagePath]="page.path" *ngFor="let page of pages">
               <ng-template>
                 <div routerLink="{{page.path}}" style="margin: 5px; cursor: pointer">
@@ -51,16 +51,14 @@ import {StockState} from '../states/stock.state';
           </mat-nav-list>
         </div>
 
-<!--        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">-->
-<!--          <div class="d-flex flex-row flex-wrap">-->
-<!--            <app-total-products-summary style="margin: 5px 0;"-->
-<!--                                        class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12">-->
-<!--            </app-total-products-summary>-->
-<!--            <app-products-value-summary style="margin: 5px 0;"-->
-<!--                                        class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12">-->
-<!--            </app-products-value-summary>-->
-<!--          </div>-->
-<!--        </div>-->
+        <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">
+          <div style="padding: 0" class="d-flex flex-row flex-wrap">
+<!--            <app-total-products-summary-->
+<!--              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12"></app-total-products-summary>-->
+<!--            <app-products-value-summary-->
+<!--              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12"></app-products-value-summary>-->
+          </div>
+        </div>
       </ng-template>
     </app-layout-sidenav>
   `

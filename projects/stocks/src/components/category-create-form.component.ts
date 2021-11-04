@@ -3,7 +3,7 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {CategoryService} from '../services/category.service';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, StorageService, UserService} from '@smartstocktz/core-libs';
+import {FileBrowserDialogComponent, FilesService, StorageService, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
 import {MetasModel} from '../models/metas.model';
 import {Router} from '@angular/router';
@@ -46,13 +46,13 @@ import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
 
         </mat-card>
 
-        <h2>
-          Other Attributes
-        </h2>
-        <app-stock-metas-form-field [formGroup]="newCategoryForm"
-                                           [metas]="metasModel"></app-stock-metas-form-field>
+        <!--        <h2>-->
+        <!--          Other Attributes-->
+        <!--        </h2>-->
+        <!--        <app-stock-metas-form-field [formGroup]="newCategoryForm"-->
+        <!--                                           [metas]="metasModel"></app-stock-metas-form-field>-->
 
-        <div style="height: 24px"></div>
+        <!--        <div style="height: 24px"></div>-->
 
         <button color="primary" [disabled]="createCategoryProgress" mat-flat-button class="ft-button">
           {{category ? 'Update' : 'Save'}}
@@ -74,13 +74,15 @@ export class CategoryCreateFormComponent implements OnInit {
   createCategoryProgress = false;
   @Input() category: CategoryModel;
   @Input() bottomRef: MatBottomSheetRef;
-  metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
+
+  // metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
 
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly snack: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly storage: StorageService,
+    private readonly fileService: FilesService,
     private readonly router: Router,
     private readonly userService: UserService,
     private readonly categoryService: CategoryService) {
@@ -91,22 +93,22 @@ export class CategoryCreateFormComponent implements OnInit {
   }
 
   initiateForm(): void {
-    if (this.category && this.category.metas) {
-      this.metasModel.next(Object.keys(this.category.metas).map<MetasModel>(x => {
-        return {
-          name: x,
-          value: this.category.metas[x],
-          type: typeof this.category.metas[x]
-        };
-      }));
-    }
+    // if (this.category && this.category.metas) {
+    // this.metasModel.next(Object.keys(this.category.metas).map<MetasModel>(x => {
+    //   return {
+    //     name: x,
+    //     value: this.category.metas[x],
+    //     type: typeof this.category.metas[x]
+    //   };
+    // }));
+    // }
     this.newCategoryForm = this.formBuilder.group({
       image: [this.category && this.category.image ? this.category.image : ''],
       name: [this.category && this.category.name ? this.category.name : '', [Validators.nullValidator, Validators.required]],
       description: [this.category && this.category.description ? this.category.description : ''],
-      metas: this.category && this.category.metas
-        ? this.getMetaFormGroup(this.category.metas)
-        : this.formBuilder.group({})
+      // metas: this.category && this.category.metas
+      //   ? this.getMetaFormGroup(this.category.metas)
+      //   : this.formBuilder.group({})
     });
   }
 
@@ -145,17 +147,19 @@ export class CategoryCreateFormComponent implements OnInit {
 
   async mediaBrowser($event: MouseEvent): Promise<void> {
     $event.preventDefault();
-    this.dialog.open(FileBrowserDialogComponent, {
-      closeOnNavigation: false,
-      disableClose: false,
-      data: {
-        shop: await this.userService.getCurrentShop()
-      }
-    }).afterClosed().subscribe(value => {
+    this.fileService.browse().then(value => {
       if (value && value.url) {
         this.newCategoryForm.get('image').setValue(value.url);
       }
     });
+    // this.dialog.open(FileBrowserDialogComponent, {
+    //   closeOnNavigation: false,
+    //   disableClose: false,
+    //   data: {
+    //     shop: await this.userService.getCurrentShop()
+    //   }
+    // }).afterClosed().subscribe(value => {
+    // });
   }
 
   private getMetaFormGroup(metas: { [p: string]: any }): FormGroup {

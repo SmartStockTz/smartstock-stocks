@@ -78,12 +78,20 @@ import {ProductsListComponent} from './components/products-list.component';
 import {ImageUploadComponent} from './components/image-upload.component';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {StockQuantityComponent} from './components/stock-quantity.component';
+import {CategoriesDesktopContextMenuComponent} from './components/categories-desktop-context-menu.component';
+import {CategoriesTableComponent} from './components/categories-table.component';
+import {ProductQuantityTrackPage} from './pages/product-quantity-track.page';
+import {StockQuantityTrackingHeadComponent} from './components/stock-quantity-tracking-head.component';
+import {StockQuantityTrackingHistogramComponent} from './components/stock-quantity-tracking-histogram.component';
+import {StockQuantityTrackingComponent} from './components/stock-quantity-tracking.component';
+import {StockQuantityTrackingTableComponent} from './components/stock-quantity-tracking-table.component';
 
 const routes: Routes = [
   {path: '', component: IndexPage},
   {path: 'products', component: ProductsPage},
   {path: 'products/create', component: CreatePageComponent},
   {path: 'products/:id/edit', component: EditPageComponent},
+  {path: 'products/:id/quantity', component: ProductQuantityTrackPage},
   {path: 'categories', component: CategoriesPage},
   {path: 'categories/create', component: CategoryCreatePage},
   {path: 'categories/edit/:id', component: CategoriesEditPage},
@@ -141,6 +149,13 @@ const routes: Routes = [
     MatSlideToggleModule
   ],
   declarations: [
+    StockQuantityTrackingHeadComponent,
+    StockQuantityTrackingComponent,
+    StockQuantityTrackingTableComponent,
+    StockQuantityTrackingHistogramComponent,
+    CategoriesTableComponent,
+    ProductQuantityTrackPage,
+    CategoriesDesktopContextMenuComponent,
     StockQuantityComponent,
     SupplierCreateFormComponent,
     CategoriesEditPage,

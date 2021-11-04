@@ -57,11 +57,11 @@ import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
           </mat-form-field>
         </mat-card>
 
-        <h2>
-          Other Attributes
-        </h2>
-        <app-stock-metas-form-field [formGroup]="newSupplierForm"
-                                           [metas]="metasModel"></app-stock-metas-form-field>
+<!--        <h2>-->
+<!--          Other Attributes-->
+<!--        </h2>-->
+<!--        <app-stock-metas-form-field [formGroup]="newSupplierForm"-->
+<!--                                           [metas]="metasModel"></app-stock-metas-form-field>-->
 
         <div style="height: 24px"></div>
 
@@ -85,7 +85,7 @@ export class SupplierCreateFormComponent implements OnInit {
   createSupplierProgress = false;
   @Input() supplier: SupplierModel;
   @Input() bottomRef: MatBottomSheetRef;
-  metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
+  // metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
 
   constructor(
     private readonly formBuilder: FormBuilder,
@@ -102,15 +102,15 @@ export class SupplierCreateFormComponent implements OnInit {
   }
 
   initiateForm(): void {
-    if (this.supplier && this.supplier.metas) {
-      this.metasModel.next(Object.keys(this.supplier.metas).map<MetasModel>(x => {
-        return {
-          name: x,
-          value: this.supplier.metas[x],
-          type: typeof this.supplier.metas[x]
-        };
-      }));
-    }
+    // if (this.supplier && this.supplier.metas) {
+    //   this.metasModel.next(Object.keys(this.supplier.metas).map<MetasModel>(x => {
+    //     return {
+    //       name: x,
+    //       value: this.supplier.metas[x],
+    //       type: typeof this.supplier.metas[x]
+    //     };
+    //   }));
+    // }
     this.newSupplierForm = this.formBuilder.group({
       image: [this.supplier && this.supplier.image ? this.supplier.image : ''],
       name: [this.supplier && this.supplier.name ? this.supplier.name : '', [Validators.nullValidator, Validators.required]],
@@ -121,9 +121,9 @@ export class SupplierCreateFormComponent implements OnInit {
       address: [this.supplier && this.supplier.address
         ? this.supplier.address
         : '', [Validators.nullValidator, Validators.required]],
-      metas: this.supplier && this.supplier.metas
-        ? this.getMetaFormGroup(this.supplier.metas)
-        : this.formBuilder.group({})
+      // metas: this.supplier && this.supplier.metas
+      //   ? this.getMetaFormGroup(this.supplier.metas)
+      //   : this.formBuilder.group({})
     });
   }
 
@@ -173,14 +173,6 @@ export class SupplierCreateFormComponent implements OnInit {
         this.newSupplierForm.get('image').setValue(value.url);
       }
     });
-  }
-
-  private getMetaFormGroup(metas: { [p: string]: any }): FormGroup {
-    const fg = this.formBuilder.group({});
-    Object.keys(metas).forEach(key => {
-      fg.setControl(key, this.formBuilder.control(metas[key]));
-    });
-    return fg;
   }
 
   close($event: MouseEvent): void {

@@ -67,7 +67,7 @@ const routes: Routes = [
 })
 export class AppModule {
   constructor(private readonly syncService: SyncsService) {
-    syncService.startWorker().then(_ => console.log('start syncs worker')).catch(console.log);
+    syncService.startWorker().catch(console.log);
     IpfsService.getVersion().then(value => {
       console.log('ipfs version : ', value.version);
     });

@@ -9,28 +9,28 @@ import {ImportsDialogComponent} from './imports.component';
   selector: 'app-stock-products-table-sub-actions',
   template: `
     <div class="product-options-container">
-      <button routerLink="/stock/products/create" color="primary" mat-button class="p-button">
+      <button routerLink="/stock/products/create" color="primary" mat-button class="menu-button">
         Create
       </button>
-      <button class="p-button" [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary"
+      <button class="menu-button" [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary"
               mat-button>
         Reload
       </button>
-      <button class="p-button" [disabled]="stockState.isImportProducts | async" (click)="importProducts()"
+      <button class="menu-button" [disabled]="stockState.isImportProducts | async" (click)="importProducts()"
               color="primary" mat-button>
         Import
       </button>
-      <button class="p-button" [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()"
+      <button class="menu-button" [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()"
               color="primary" mat-button>
         Export
       </button>
-<!--      <button class="p-button" *ngIf="stockState.selection.selected.length>1"-->
+<!--      <button class="menu-button" *ngIf="stockState.selection.selected.length>1"-->
 <!--              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button-->
 <!--              color="primary"-->
 <!--              (click)="createGroupProduct()">-->
 <!--        Group ( {{stockState.selection.selected.length}} )-->
 <!--      </button>-->
-      <button class="p-button" *ngIf="stockState.selection.hasValue()"
+      <button class="menu-button" *ngIf="stockState.selection.hasValue()"
               [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
               color="primary"
               (click)="deleteMany()">
@@ -38,7 +38,7 @@ import {ImportsDialogComponent} from './imports.component';
       </button>
     </div>
   `,
-  styleUrls: ['../styles/products-options.style.scss']
+  styleUrls: ['../styles/products-options.style.scss', '../styles/stock-desktop.style.scss']
 })
 
 export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {

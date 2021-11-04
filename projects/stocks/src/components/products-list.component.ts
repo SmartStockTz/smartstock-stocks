@@ -19,9 +19,17 @@ import {Subject} from 'rxjs';
         <div *cdkVirtualFor="let element of stockDatasource.connect() | async">
           <mat-list-item [matMenuTriggerFor]="menu">
             <h1 matLine>{{element.product}}</h1>
+            <button mat-icon-button matSuffix>
+              <mat-icon>more_horiz</mat-icon>
+            </button>
             <mat-menu #menu>
               <button mat-menu-item [matTooltip]="'change product information'"
-                      (click)="viewProduct(element)">View
+                      (click)="viewProduct(element)">
+                Details
+              </button>
+              <button mat-menu-item [matTooltip]="'change product information'"
+                      (click)="trackQuantity(element)">
+                Quantity Tracking
               </button>
               <button mat-menu-item [matTooltip]="'change product information'"
                       (click)="editStock(element)">Edit
@@ -81,5 +89,9 @@ export class ProductsListComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.onDestroy.next('done');
+  }
+
+  trackQuantity(element: StockModel): void {
+    this.router.navigateByUrl(`/stock/products/${element.id}/quantity`).catch(console.log);
   }
 }

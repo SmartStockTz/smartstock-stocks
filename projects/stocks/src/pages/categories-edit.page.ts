@@ -20,7 +20,7 @@ import {CategoryModel} from '../models/category.model';
       </ng-template>
       <ng-template #body>
         <div class="container">
-          <div class="container col-lg-9 col-xl-9 col-sm-12 col-md-10 col-112" style="min-height: 100vh">
+          <div class="container col-lg-9 col-xl-9 col-sm-11 col-md-10 col-11" style="min-height: 100vh">
             <app-stock-category-create-form
               *ngIf="category"
               [category]="category"></app-stock-category-create-form>

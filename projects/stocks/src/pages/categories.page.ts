@@ -24,8 +24,7 @@ import {CategoryState} from '../states/category.state';
       </ng-template>
       <ng-template #body>
         <div>
-          <div
-            class="container-fluid categories-container">
+          <div class="container-fluid categories-container">
             <app-categories></app-categories>
           </div>
         </div>
@@ -34,17 +33,11 @@ import {CategoryState} from '../states/category.state';
   `,
   styleUrls: ['../styles/categories.style.scss']
 })
-export class CategoriesPage implements OnInit, OnDestroy {
+export class CategoriesPage {
 
   constructor(public readonly deviceState: DeviceState,
               public readonly categoryState: CategoryState) {
     document.title = 'SmartStock - Categories';
-  }
-
-  ngOnInit(): void {
-  }
-
-  ngOnDestroy(): void {
   }
 
   search(q: string): void {
