@@ -1,7 +1,9 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {AfterViewInit, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {StockModel} from '../models/stock.model';
 import {MatTableDataSource} from '@angular/material/table';
 import {getStockQuantity} from '../utils/stock.util';
+import {MatPaginator} from '@angular/material/paginator';
+import * as path from 'path';
 
 @Component({
   selector: 'app-stock-quantity-tracking-table',
@@ -32,14 +34,16 @@ import {getStockQuantity} from '../utils/stock.util';
         <tr mat-row *matRowDef="let row; columns: columns;"></tr>
         <tr mat-footer-row *matFooterRowDef="columns"></tr>
       </table>
+      <mat-paginator [pageSize]="50" showFirstLastButtons></mat-paginator>
     </div>
   `,
   styleUrls: ['../styles/stock-quantity-table.style.scss']
 })
 
-export class StockQuantityTrackingTableComponent implements OnInit {
+export class StockQuantityTrackingTableComponent implements OnInit, AfterViewInit {
   columns = ['date', 'source', 'in', 'out'];
   @Input() stock: StockModel;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   tableDataSource = new MatTableDataSource([]);
   total = 0;
 
@@ -49,5 +53,9 @@ export class StockQuantityTrackingTableComponent implements OnInit {
   ngOnInit(): void {
     this.tableDataSource.data = Object.values(this.stock.quantity);
     this.total = getStockQuantity(this.stock);
+  }
+
+  ngAfterViewInit(): void {
+    this.tableDataSource.paginator = this.paginator;
   }
 }
