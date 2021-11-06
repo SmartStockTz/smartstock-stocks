@@ -39,7 +39,9 @@ export class StockState {
       if (localStocks && Array.isArray(localStocks) && localStocks.length > 0) {
         this.stocks.next(localStocks);
       }
-    }).catch(this.message).finally(() => {
+    }).catch(reason => {
+      console.log(reason);
+    }).finally(() => {
       this.isFetchStocks.next(false);
     });
   }

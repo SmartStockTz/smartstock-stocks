@@ -142,10 +142,10 @@ export class StockWorker {
       if (b && !b.product) {
         return 0;
       }
-      if (a.product.toLowerCase() < b.product.toLowerCase()) {
+      if (a.product.toString().toLowerCase() < b.product.toString().toLowerCase()) {
         return -1;
       }
-      if (a.product.toLowerCase() > b.product.toLowerCase()) {
+      if (a.product.toString().toLowerCase() > b.product.toString().toLowerCase()) {
         return 1;
       }
       return 0;

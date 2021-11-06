@@ -3,7 +3,6 @@ import {StockModel} from '../models/stock.model';
 import {MatTableDataSource} from '@angular/material/table';
 import {getStockQuantity} from '../utils/stock.util';
 import {MatPaginator} from '@angular/material/paginator';
-import * as path from 'path';
 
 @Component({
   selector: 'app-stock-quantity-tracking-table',
