@@ -106,6 +106,7 @@ export class TransferService {
       .query()
       .cids(true)
       .orderBy('createdAt', 'desc')
+      .orderBy('_created_at', 'desc')
       .size(pagination?.size)
       .skip(pagination?.skip)
       .find();
