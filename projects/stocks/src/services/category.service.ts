@@ -10,25 +10,21 @@ import {cache, database} from 'bfast';
   providedIn: 'root'
 })
 export class CategoryService {
-  private categoryWorker: CategoryWorker;
-  private categoryWorkerNative;
 
   constructor(private readonly userService: UserService) {
   }
 
-  async startWorker(shop: ShopModel): Promise<any> {
-    if (!this.categoryWorker) {
-      this.categoryWorkerNative = new Worker(new URL('../workers/category.worker', import .meta.url));
-      const SW = wrap(this.categoryWorkerNative) as unknown as any;
-      this.categoryWorker = await new SW(shop);
-    }
-  }
-
-  stopWorker(): void {
-    if (this.categoryWorkerNative) {
-      this.categoryWorkerNative.terminate();
-      this.categoryWorker = undefined;
-      this.categoryWorkerNative = undefined;
+  private static async withWorker(fn: (categoryWorker: CategoryWorker) => Promise<any>): Promise<any> {
+    let categoryWorkerNative: Worker;
+    try {
+      categoryWorkerNative = new Worker(new URL('../workers/category.worker', import .meta.url));
+      const SW = wrap(categoryWorkerNative) as unknown as any;
+      const categoryWorker = await new SW();
+      return await fn(categoryWorker);
+    } finally {
+      if (categoryWorkerNative) {
+        categoryWorkerNative.terminate();
+      }
     }
   }
 
@@ -80,12 +76,8 @@ export class CategoryService {
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
-    const cr: any[] = await database(shop.projectId).table('categories').getAll();
-    return cr;
-    // await this.startWorker(shop);
-    // return this.categoryWorker.sort(cr);
+    return await database(shop.projectId).table('categories').getAll();
   }
-
 
   async getAllCategoryRemote(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
@@ -103,9 +95,7 @@ export class CategoryService {
   }
 
   async search(q: string): Promise<CategoryModel[]> {
-    const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    return this.categoryWorker.search(q, await this.getAllCategory());
+    return CategoryService.withWorker(async categoryWorker => categoryWorker.search(q, await this.getAllCategory()));
   }
 
   async save(category: CategoryModel): Promise<any> {

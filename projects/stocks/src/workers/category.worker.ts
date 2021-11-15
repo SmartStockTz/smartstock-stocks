@@ -1,11 +1,7 @@
 import {expose} from 'comlink';
-import {ShopModel} from '../models/shop.model';
 import {CategoryModel} from '../models/category.model';
 
 export class CategoryWorker {
-
-  constructor(shop: ShopModel) {
-  }
 
   async sort(categories: CategoryModel[]): Promise<CategoryModel[]> {
     categories.sort((a, b) => {

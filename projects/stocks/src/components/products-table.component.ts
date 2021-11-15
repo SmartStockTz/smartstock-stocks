@@ -131,7 +131,6 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('sidenav') sidenav: MatSidenav;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) matSort: MatSort;
-  // private sig: boolean = false;
 
   constructor(private readonly router: Router,
               private readonly indexDb: StorageService,
@@ -140,16 +139,11 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
               private readonly logger: LogService,
               private readonly dialog: MatDialog,
               public readonly deviceState: DeviceState,
-              private readonly userService: UserService,
               public readonly stockState: StockState) {
   }
 
   async ngOnInit(): Promise<void> {
-    this.stockState.getStocks();
-    this.stockState.stocks.pipe(takeUntil(this.onDestroy)).subscribe(stocks => {
-      this.stockDatasource.data = stocks;
-      this._getTotalPurchaseOfStock(stocks);
-    });
+
   }
 
   isAllSelected(): boolean {
@@ -256,6 +250,13 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
   ngAfterViewInit(): void {
     this.stockDatasource.paginator = this.paginator;
     this.stockDatasource.sort = this.matSort;
+    this.stockState.stocks.pipe(takeUntil(this.onDestroy)).subscribe(stocks => {
+      setTimeout(() => this.stockDatasource.data = stocks, 0);
+      this._getTotalPurchaseOfStock(stocks);
+    });
+    if (this.stockState.stocks.value.length === 0) {
+      setTimeout(() => this.stockState.getStocks(), 0);
+    }
   }
 
   doneInSubMenu(): void {

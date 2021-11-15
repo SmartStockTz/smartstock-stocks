@@ -17,7 +17,8 @@ import {StockState} from '../states/stock.state';
       </ng-template>
       <ng-template #body>
         <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3">
-          <div *ngIf="(deviceState.isSmallScreen | async)===false" class="d-flex flex-row flex-wrap" style="padding: 0 10px">
+          <div *ngIf="(deviceState.isSmallScreen | async)===false" class="d-flex flex-row flex-wrap"
+               style="padding: 0 10px">
             <app-libs-rbac [groups]="['admin', 'manager']" [pagePath]="page.path" *ngFor="let page of pages">
               <ng-template>
                 <div routerLink="{{page.path}}" style="margin: 5px; cursor: pointer">
@@ -53,15 +54,17 @@ import {StockState} from '../states/stock.state';
 
         <div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="">
           <div style="padding: 0" class="d-flex flex-row flex-wrap">
-<!--            <app-total-products-summary-->
-<!--              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12"></app-total-products-summary>-->
-<!--            <app-products-value-summary-->
-<!--              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12"></app-products-value-summary>-->
+            <app-total-products-summary
+              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12 mbc">
+            </app-total-products-summary>
+            <app-products-value-summary
+              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12 mbc"></app-products-value-summary>
           </div>
         </div>
       </ng-template>
     </app-layout-sidenav>
-  `
+  `,
+  styleUrls: ['../styles/index.style.scss']
 })
 
 export class IndexPage implements OnInit {
@@ -78,12 +81,6 @@ export class IndexPage implements OnInit {
       detail: 'Group your products',
       icon: 'list'
     },
-    // {
-    //   name: 'Catalogs',
-    //   path: '/stock/catalogs',
-    //   detail: 'Tag your products',
-    //   icon: 'loyalty'
-    // },
     {
       name: 'Units',
       path: '/stock/units',

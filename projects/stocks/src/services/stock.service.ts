@@ -3,7 +3,6 @@ import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {cache, database, functions} from 'bfast';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
-import {ShopModel} from '../models/shop.model';
 import {wrap} from 'comlink';
 import {SocketController} from 'bfast/dist/lib/controllers/socket.controller';
 
@@ -12,11 +11,24 @@ import {SocketController} from 'bfast/dist/lib/controllers/socket.controller';
 })
 export class StockService {
 
-  private stockWorker: StockWorker;
-  private stockWorkerNative;
   private changes: SocketController;
+  private isRunning = false;
 
   constructor(private readonly userService: UserService) {
+  }
+
+  private static async withWorker(fn: (stockWorker: StockWorker) => Promise<any>): Promise<any> {
+    let nativeWorker: Worker;
+    try {
+      nativeWorker = new Worker(new URL('../workers/stock.worker', import .meta.url));
+      const SW = wrap(nativeWorker) as unknown as any;
+      const stWorker = await new SW();
+      return await fn(stWorker);
+    } finally {
+      if (nativeWorker) {
+        nativeWorker.terminate();
+      }
+    }
   }
 
   async stocksListeningStop(): Promise<void> {
@@ -69,22 +81,6 @@ export class StockService {
     });
   }
 
-  async startWorker(shop: ShopModel): Promise<any> {
-    if (!this.stockWorker) {
-      this.stockWorkerNative = new Worker(new URL('../workers/stock.worker', import .meta.url));
-      const SW = wrap(this.stockWorkerNative) as unknown as any;
-      this.stockWorker = await new SW(shop);
-    }
-  }
-
-  stopWorker(): void {
-    if (this.stockWorkerNative) {
-      this.stockWorkerNative.terminate();
-      this.stockWorker = undefined;
-      this.stockWorkerNative = undefined;
-    }
-  }
-
   async stocksFromLocal(): Promise<StockModel[]> {
     const activeShop = await this.userService.getCurrentShop();
     return cache({database: activeShop.projectId, collection: 'stocks'}).getAll().then(stocks => {
@@ -99,9 +95,10 @@ export class StockService {
 
   async exportToExcel(): Promise<any> {
     const activeShop = await this.userService.getCurrentShop();
-    await this.startWorker(activeShop);
     const s = await this.stocksFromLocal();
-    const csv = await this.stockWorker.export(s);
+    const csv = await StockService.withWorker(stockWorker => {
+      return stockWorker.export(s);
+    });
     const csvContent = 'data:text/csv;charset=utf-8,' + csv;
     const url = encodeURI(csvContent);
     const anchor = document.createElement('a');
@@ -126,12 +123,12 @@ export class StockService {
 
   async importStocks(csv: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
-    let st = await this.stockWorker.import(csv);
+    let st = await StockService.withWorker(stockWorker => {
+      return stockWorker.import(csv);
+    });
     st = st.map(x => this.mapStockQuantity(x));
     await database(shop.projectId).table('stocks').save(st);
     await cache({database: shop.projectId, collection: 'stocks'}).setBulk(st.map(z => z.id), st);
-    // }
     return st;
   }
 
@@ -155,22 +152,19 @@ export class StockService {
     await database(shop.projectId).table('stocks').query().byId(stock.id).delete();
     cache({database: shop.projectId, collection: 'stocks'}).remove(stock.id).catch(console.log);
     return {id: stock.id};
-    // await this.startWorker(shop);
-    // return this.stockWorker.deleteProduct(stock, shop);
   }
 
   async getProducts(): Promise<StockModel[]> {
-    const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
     const products = await this.stocksFromLocal();
-    return this.stockWorker.sort(products);
+    return StockService.withWorker(async stockWorker => {
+      return stockWorker.sort(products);
+    });
   }
 
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
     return database(shop.projectId).table('stocks').getAll().then((products: StockModel[]) => {
-      return this.stockWorker.sort(products);
+      return StockService.withWorker(async stockWorker => stockWorker.sort(products));
     }).then(stocks => {
       cache({database: shop.projectId, collection: 'stocks'}).setBulk(stocks.map(s => s.id), stocks);
       return stocks;
@@ -187,10 +181,8 @@ export class StockService {
   }
 
   async search(query: string): Promise<any> {
-    const shop = await this.userService.getCurrentShop();
-    await this.startWorker(shop);
     const s = await this.getProducts();
-    return this.stockWorker.search(query, s);
+    return StockService.withWorker(stockWorker => stockWorker.search(query, s));
   }
 
   async getProduct(id: string): Promise<any> {
@@ -201,5 +193,26 @@ export class StockService {
       }
       return database(shop.projectId).table('stocks').get(id);
     });
+  }
+
+  async compactStockQuantity(): Promise<any> {
+    console.log('start compact is running');
+    const intV = setInterval(async _ => {
+      try {
+        if (this.isRunning === true) {
+          console.log('another compact is running');
+          return;
+        }
+        this.isRunning = true;
+        console.log('compact stock quantity now');
+        const shop = await this.userService.getCurrentShop();
+        await StockService.withWorker(stockWorker => stockWorker.compactQuantity(shop));
+      } catch (e) {
+        console.log(e, ' :COMPACT ERROR');
+      } finally {
+        this.isRunning = false;
+        console.log('compact is finish');
+      }
+    }, 120000);
   }
 }

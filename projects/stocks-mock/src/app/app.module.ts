@@ -20,6 +20,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
 import { MatMenuModule } from '@angular/material/menu';
 import {IpfsService, LibModule, SyncsService} from '@smartstocktz/core-libs';
+import {StockService} from '../../../stocks/src/public-api';
 
 
 const routes: Routes = [
@@ -66,8 +67,10 @@ const routes: Routes = [
   bootstrap: [AppComponent]
 })
 export class AppModule {
-  constructor(private readonly syncService: SyncsService) {
+  constructor(private readonly syncService: SyncsService,
+              private readonly stockService: StockService) {
     syncService.startWorker().catch(console.log);
+    stockService.compactStockQuantity().catch(console.log);
     IpfsService.getVersion().then(value => {
       console.log('ipfs version : ', value.version);
     });

@@ -3,11 +3,9 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SupplierService} from '../services/supplier.service';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, StorageService, UserService} from '@smartstocktz/core-libs';
+import {FilesService, StorageService, UserService} from '@smartstocktz/core-libs';
 import {SupplierModel} from '../models/supplier.model';
-import {MetasModel} from '../models/metas.model';
 import {Router} from '@angular/router';
-import {BehaviorSubject} from 'rxjs';
 import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
 
 @Component({
@@ -57,11 +55,11 @@ import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
           </mat-form-field>
         </mat-card>
 
-<!--        <h2>-->
-<!--          Other Attributes-->
-<!--        </h2>-->
-<!--        <app-stock-metas-form-field [formGroup]="newSupplierForm"-->
-<!--                                           [metas]="metasModel"></app-stock-metas-form-field>-->
+        <!--        <h2>-->
+        <!--          Other Attributes-->
+        <!--        </h2>-->
+        <!--        <app-stock-metas-form-field [formGroup]="newSupplierForm"-->
+        <!--                                           [metas]="metasModel"></app-stock-metas-form-field>-->
 
         <div style="height: 24px"></div>
 
@@ -85,6 +83,7 @@ export class SupplierCreateFormComponent implements OnInit {
   createSupplierProgress = false;
   @Input() supplier: SupplierModel;
   @Input() bottomRef: MatBottomSheetRef;
+
   // metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
 
   constructor(
@@ -93,6 +92,7 @@ export class SupplierCreateFormComponent implements OnInit {
     private readonly dialog: MatDialog,
     private readonly storage: StorageService,
     private readonly router: Router,
+    private readonly fileService: FilesService,
     private readonly userService: UserService,
     private readonly supplierService: SupplierService) {
   }
@@ -162,13 +162,7 @@ export class SupplierCreateFormComponent implements OnInit {
 
   async mediaBrowser($event: MouseEvent): Promise<void> {
     $event.preventDefault();
-    this.dialog.open(FileBrowserDialogComponent, {
-      closeOnNavigation: false,
-      disableClose: false,
-      data: {
-        shop: await this.userService.getCurrentShop()
-      }
-    }).afterClosed().subscribe(value => {
+    this.fileService.browse().then(value => {
       if (value && value.url) {
         this.newSupplierForm.get('image').setValue(value.url);
       }

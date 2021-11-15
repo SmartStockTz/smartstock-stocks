@@ -3,11 +3,9 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {CategoryService} from '../services/category.service';
 import {MatDialog} from '@angular/material/dialog';
-import {FileBrowserDialogComponent, FilesService, StorageService, UserService} from '@smartstocktz/core-libs';
+import {FilesService, StorageService, UserService} from '@smartstocktz/core-libs';
 import {CategoryModel} from '../models/category.model';
-import {MetasModel} from '../models/metas.model';
 import {Router} from '@angular/router';
-import {BehaviorSubject} from 'rxjs';
 import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
 
 @Component({
@@ -75,8 +73,6 @@ export class CategoryCreateFormComponent implements OnInit {
   @Input() category: CategoryModel;
   @Input() bottomRef: MatBottomSheetRef;
 
-  // metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
-
   constructor(
     private readonly formBuilder: FormBuilder,
     private readonly snack: MatSnackBar,
@@ -93,22 +89,10 @@ export class CategoryCreateFormComponent implements OnInit {
   }
 
   initiateForm(): void {
-    // if (this.category && this.category.metas) {
-    // this.metasModel.next(Object.keys(this.category.metas).map<MetasModel>(x => {
-    //   return {
-    //     name: x,
-    //     value: this.category.metas[x],
-    //     type: typeof this.category.metas[x]
-    //   };
-    // }));
-    // }
     this.newCategoryForm = this.formBuilder.group({
       image: [this.category && this.category.image ? this.category.image : ''],
       name: [this.category && this.category.name ? this.category.name : '', [Validators.nullValidator, Validators.required]],
       description: [this.category && this.category.description ? this.category.description : ''],
-      // metas: this.category && this.category.metas
-      //   ? this.getMetaFormGroup(this.category.metas)
-      //   : this.formBuilder.group({})
     });
   }
 

@@ -29,7 +29,7 @@ export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroyer.next();
+    this.destroyer.next('done');
   }
 
   ngOnInit(): void {

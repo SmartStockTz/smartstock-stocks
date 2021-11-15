@@ -28,19 +28,6 @@
             "tsConfig": "projects/stocks/tsconfig.spec.json",
             "karmaConfig": "projects/stocks/karma.conf.js"
           }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "fix": true,
-            "tsConfig": [
-              "projects/stocks/tsconfig.lib.json",
-              "projects/stocks/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
         }
       }
     },
@@ -70,8 +57,7 @@
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/stocks-mock/src/styles.scss",
-              "node_modules/material-design-icons/iconfont/material-icons.css",
-              "node_modules/bootstrap/dist/css/bootstrap.css"
+              "node_modules/material-design-icons/iconfont/material-icons.css"
             ],
             "scripts": [],
             "vendorChunk": true,
@@ -144,23 +130,9 @@
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/stocks-mock/src/styles.scss",
               "node_modules/material-design-icons/iconfont/material-icons.css",
-              "node_modules/bootstrap/dist/css/bootstrap.css",
               "node_modules/fontsource-roboto/index.css?family=Roboto:300,400,500&display=swap"
             ],
             "scripts": []
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/stocks-mock/tsconfig.app.json",
-              "projects/stocks-mock/tsconfig.spec.json",
-              "projects/stocks-mock/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         },
         "e2e": {

@@ -25,11 +25,11 @@ export class StockState {
               private readonly snack: MatSnackBar) {
   }
 
-  startChanges(): void{
+  startChanges(): void {
     this.stockService.stocksListening().catch(console.log);
   }
 
-  stopChanges(): void{
+  stopChanges(): void {
     this.stockService.stocksListeningStop().catch(console.log);
   }
 

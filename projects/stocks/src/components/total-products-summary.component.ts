@@ -8,19 +8,18 @@ import {takeUntil} from 'rxjs/operators';
   template: `
     <app-dash-card [description]="'number of products you have in stocks'"
                    [title]="'Total Products'"
+                   height=""
                    [content]="content">
       <ng-template #content>
-        <div
-          style="display: flex; height: 100%; flex-direction: column; justify-content: center; align-items: center">
-          <h1 style="font-size: 34px">
+        <div class="summary-container">
+          <h1 style="font-size: 30px">
             {{total | number}}
           </h1>
-<!--          <mat-progress-spinner *ngIf="stockState.isFetchStocks.value" mode="indeterminate" diameter="20"-->
-<!--                                color="primary"></mat-progress-spinner>-->
         </div>
       </ng-template>
     </app-dash-card>
-  `
+  `,
+  styleUrls: ['../styles/index.style.scss']
 })
 export class TotalProductsSummaryComponent implements OnInit, OnDestroy {
   total = 0;

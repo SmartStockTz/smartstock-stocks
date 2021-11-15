@@ -92,7 +92,7 @@ export class TransfersTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.onDestroy.next();
+    this.onDestroy.next('done');
   }
 
   loadPage($event: PageEvent): void {

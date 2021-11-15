@@ -9,19 +9,18 @@ import {getStockQuantity} from '../utils/stock.util';
   template: `
     <app-dash-card [description]="'non zeros stock values currently'"
                    [title]="'Positive Stock Value'"
+                   height=""
                    [content]="content">
       <ng-template #content>
-        <div
-          style="display: flex; height: 100%; flex-direction: column; justify-content: center; align-items: center">
-          <h1 *ngIf="(stockState.isFetchStocks | async)=== false" style="font-size: 34px">
+        <div class="summary-container">
+          <h1 style="font-size: 34px">
             {{total | number}}
           </h1>
-          <mat-progress-spinner *ngIf="(stockState.isFetchStocks | async)=== true" mode="indeterminate" diameter="20"
-                                color="primary"></mat-progress-spinner>
         </div>
       </ng-template>
     </app-dash-card>
-  `
+  `,
+  styleUrls: ['../styles/index.style.scss']
 })
 export class ProductsValueSummaryComponent implements OnInit, OnDestroy {
   totalLoad = false;

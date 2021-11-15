@@ -7,7 +7,7 @@ import {StockModel} from '../models/stock.model';
     <div class="sqh-container">
       <p class="product-title">Product</p>
       <p class="product-text">{{stock.product}}</p>
-      <p class="product-title">Past 30 days movements</p>
+      <p class="product-title">Movements</p>
     </div>
   `,
   styleUrls: ['../styles/stock-quantity-head.style.scss']
