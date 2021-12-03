@@ -33,7 +33,7 @@ import {DialogUnitDeleteComponent, DialogUnitNewComponent, UnitsComponent} from 
 import {DialogSupplierDeleteComponent, SuppliersComponent} from './components/suppliers.component';
 import {ImportsDialogComponent} from './components/imports.component';
 import {CommonModule} from '@angular/common';
-import {LibModule} from '@smartstocktz/core-libs';
+import {LibModule, PaymentGuard} from '@smartstocktz/core-libs';
 import {CategoryFormFieldComponent} from './components/category-form-field.component';
 import {SuppliersFormFieldComponent} from './components/suppliers-form-field.component';
 import {UnitsFormFieldComponent} from './components/units-form-field.component';
@@ -99,8 +99,8 @@ const routes: Routes = [
   {path: 'suppliers', component: SuppliersPage},
   {path: 'suppliers/create', component: SuppliersCreatePage},
   {path: 'suppliers/edit/:id', component: SuppliersEditPage},
-  {path: 'transfers', canActivate: [ManyShopsGuard], component: TransferPage},
-  {path: 'transfers/create', canActivate: [ManyShopsGuard], component: TransferCreateComponent},
+  {path: 'transfers', canActivate: [PaymentGuard, ManyShopsGuard], component: TransferPage},
+  {path: 'transfers/create', canActivate: [PaymentGuard, ManyShopsGuard], component: TransferCreateComponent},
 ];
 
 @NgModule({

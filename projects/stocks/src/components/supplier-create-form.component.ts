@@ -3,7 +3,7 @@ import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {SupplierService} from '../services/supplier.service';
 import {MatDialog} from '@angular/material/dialog';
-import {FilesService, StorageService, UserService} from '@smartstocktz/core-libs';
+import {FilesService, UserService} from '@smartstocktz/core-libs';
 import {SupplierModel} from '../models/supplier.model';
 import {Router} from '@angular/router';
 import {MatBottomSheetRef} from '@angular/material/bottom-sheet';
@@ -90,7 +90,6 @@ export class SupplierCreateFormComponent implements OnInit {
     private readonly formBuilder: FormBuilder,
     private readonly snack: MatSnackBar,
     private readonly dialog: MatDialog,
-    private readonly storage: StorageService,
     private readonly router: Router,
     private readonly fileService: FilesService,
     private readonly userService: UserService,

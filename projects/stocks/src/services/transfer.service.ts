@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {cache, database} from 'bfast';
-import {IpfsService, SecurityUtil, StorageService, UserService} from '@smartstocktz/core-libs';
+import {IpfsService, SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
 import {StockModel} from '../models/stock.model';
 
@@ -11,8 +11,7 @@ import {StockModel} from '../models/stock.model';
 export class TransferService {
   private COLLECTION = 'transfers';
 
-  constructor(private readonly storage: StorageService,
-              private readonly userService: UserService) {
+  constructor(private readonly userService: UserService) {
   }
 
   async countAll(): Promise<number> {

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {getDaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {cache, database} from 'bfast';
 import {UnitsModel} from '../models/units.model';
 
