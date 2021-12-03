@@ -25,7 +25,7 @@ import {StockService} from '../../../stocks/src/public-api';
 
 const routes: Routes = [
   {path: '', component: WelcomePage},
-  {path: 'login', component: LoginPageComponent},
+  {path: 'account/login', component: LoginPageComponent},
   {
     path: 'stock',
     canActivate: [AuthGuard],

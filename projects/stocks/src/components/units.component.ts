@@ -8,7 +8,6 @@ import {UnitsModel} from '../models/units.model';
 import {MatPaginator} from '@angular/material/paginator';
 import {UnitsService} from '../services/units.service';
 import {DeviceState, UserService} from '@smartstocktz/core-libs';
-import {database} from 'bfast';
 
 @Component({
   selector: 'app-units',

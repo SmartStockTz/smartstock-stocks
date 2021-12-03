@@ -9,7 +9,6 @@ import {SupplierService} from '../services/supplier.service';
 import {SupplierState} from '../states/supplier.state';
 import {Router} from '@angular/router';
 import {DeviceState, UserService} from '@smartstocktz/core-libs';
-import {database} from 'bfast';
 
 @Component({
   selector: 'app-suppliers',

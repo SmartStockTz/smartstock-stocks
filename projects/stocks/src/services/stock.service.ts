@@ -165,8 +165,9 @@ export class StockService {
     const shop = await this.userService.getCurrentShop();
     return database(shop.projectId).table('stocks').getAll().then((products: StockModel[]) => {
       return StockService.withWorker(async stockWorker => stockWorker.sort(products));
-    }).then(stocks => {
-      cache({database: shop.projectId, collection: 'stocks'}).setBulk(stocks.map(s => s.id), stocks);
+    }).then(async stocks => {
+      await cache({database: shop.projectId, collection: 'stocks'}).clearAll();
+      await cache({database: shop.projectId, collection: 'stocks'}).setBulk(stocks.map(s => s.id), stocks);
       return stocks;
     });
   }
