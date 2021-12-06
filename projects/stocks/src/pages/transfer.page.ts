@@ -1,5 +1,6 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, OnDestroy} from '@angular/core';
 import {DeviceState} from '@smartstocktz/core-libs';
+import {TransferState} from '../states/transfer.state';
 
 @Component({
   selector: 'app-stocks-index',
@@ -16,27 +17,21 @@ import {DeviceState} from '@smartstocktz/core-libs';
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div class="container col-lg-9 col-xl-9 col-sm-12 col-md-10 col-12 pt-3"
-             style="min-height: 100vh;">
-          <div style="margin-top: 4px">
-            <app-stock-transfers-table-actions></app-stock-transfers-table-actions>
-            <mat-card [class]="(deviceState.isSmallScreen | async) === true?'mat-elevation-z0':'mat-elevation-z2'">
-              <app-stock-transfers-table></app-stock-transfers-table>
-            </mat-card>
-          </div>
-        </div>
+        <app-stock-transfer-desktop-ux></app-stock-transfer-desktop-ux>
       </ng-template>
     </app-layout-sidenav>
   `
 })
 
-export class TransferPage implements OnInit {
+export class TransferPage implements OnDestroy {
 
-  constructor(public readonly deviceState: DeviceState) {
+  constructor(public readonly deviceState: DeviceState,
+              private readonly transferState: TransferState) {
     document.title = 'SmartStock - Stock Transfers';
   }
 
-  ngOnInit(): void {
+  ngOnDestroy(): void {
+    this.transferState.dispose();
   }
 
 }

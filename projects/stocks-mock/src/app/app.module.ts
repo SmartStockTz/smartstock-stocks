@@ -8,8 +8,6 @@ import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {RouterModule, Routes} from '@angular/router';
 import {MatNativeDateModule} from '@angular/material/core';
 import {WelcomePage} from './pages/welcome.page';
-import {LoginPageComponent} from './pages/login.page';
-import {AuthGuard} from './guards/auth.guard';
 import {MatCardModule} from '@angular/material/card';
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatInputModule} from '@angular/material/input';
@@ -18,30 +16,33 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatBottomSheetModule} from '@angular/material/bottom-sheet';
-import { MatMenuModule } from '@angular/material/menu';
-import {IpfsService, LibModule, SyncsService} from '@smartstocktz/core-libs';
+import {MatMenuModule} from '@angular/material/menu';
+import {ActiveShopGuard, AuthenticationGuard, IpfsService, LibModule, SyncsService} from '@smartstocktz/core-libs';
 import {StockService} from '../../../stocks/src/public-api';
 
 
 const routes: Routes = [
   {path: '', component: WelcomePage},
-  {path: 'account/login', component: LoginPageComponent},
+  {
+    path: 'account',
+    loadChildren: () => import('@smartstocktz/accounts').then(mod => mod.AccountModule)
+  },
   {
     path: 'stock',
-    canActivate: [AuthGuard],
+    canActivate: [AuthenticationGuard, ActiveShopGuard],
     loadChildren: () => import('../../../stocks/src/public-api').then(mod => mod.StocksModule)
   },
-  // {
-  //   path: 'account/shop',
-  //   component: ''
-  // }
+  {
+    path: 'dashboard',
+    canActivate: [AuthenticationGuard, ActiveShopGuard],
+    loadChildren: () => import('../../../stocks/src/public-api').then(mod => mod.StocksModule)
+  }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
-    WelcomePage,
-    LoginPageComponent
+    WelcomePage
   ],
   imports: [
     BrowserModule,
@@ -70,7 +71,7 @@ export class AppModule {
   constructor(private readonly syncService: SyncsService,
               private readonly stockService: StockService) {
     syncService.startWorker().catch(console.log);
-    stockService.compactStockQuantity().catch(console.log);
+    // stockService.compactStockQuantity().catch(console.log);
     IpfsService.getVersion().then(value => {
       console.log('ipfs version : ', value.version);
     });

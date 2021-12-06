@@ -24,12 +24,12 @@ import {ImportsDialogComponent} from './imports.component';
               color="primary" mat-button>
         Export
       </button>
-<!--      <button class="menu-button" *ngIf="stockState.selection.selected.length>1"-->
-<!--              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button-->
-<!--              color="primary"-->
-<!--              (click)="createGroupProduct()">-->
-<!--        Group ( {{stockState.selection.selected.length}} )-->
-<!--      </button>-->
+      <!--      <button class="menu-button" *ngIf="stockState.selection.selected.length>1"-->
+      <!--              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button-->
+      <!--              color="primary"-->
+      <!--              (click)="createGroupProduct()">-->
+      <!--        Group ( {{stockState.selection.selected.length}} )-->
+      <!--      </button>-->
       <button class="menu-button" *ngIf="stockState.selection.hasValue()"
               [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
               color="primary"
@@ -38,7 +38,9 @@ import {ImportsDialogComponent} from './imports.component';
       </button>
     </div>
   `,
-  styleUrls: ['../styles/products-options.style.scss', '../styles/stock-desktop.style.scss']
+  styleUrls: ['../styles/products-options.style.scss',
+    '../styles/stock-desktop.style.scss', '../styles/index.style.scss'
+  ]
 })
 
 export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {

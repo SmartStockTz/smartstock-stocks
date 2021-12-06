@@ -1,8 +1,8 @@
 import {Injectable} from '@angular/core';
-import {cache, database} from 'bfast';
-import {IpfsService, SecurityUtil, UserService} from '@smartstocktz/core-libs';
+import {database, functions, init} from 'bfast';
+import {getDaasAddress, getFaasAddress, SecurityUtil, UserService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
-import {StockModel} from '../models/stock.model';
+import {TransferHeader} from "../models/transfer-header";
 
 @Injectable({
   providedIn: 'root'
@@ -22,97 +22,36 @@ export class TransferService {
   async save(transfer: TransferModel): Promise<TransferModel> {
     const activeShop = await this.userService.getCurrentShop();
     transfer.id = SecurityUtil.generateUUID();
-    transfer.createdAt = new Date().toISOString();
-    const stockableItems = transfer.items.filter(x => x.product.stockable === true);
-    await database(activeShop.projectId).bulk().update(this.COLLECTION, {
-      query: {
-        id: transfer.id,
-        upsert: true,
-      },
-      update: {
-        $set: transfer
-      }
-    }).update('stocks', stockableItems.map(y => {
-      return {
-        query: {
-          id: y.product.id,
-          upsert: true,
-        },
-        update: {
-          $set: {
-            [`quantity.${transfer.id}`]: {
-              q: -y.quantity,
-              s: 'transfer',
-              d: new Date().toISOString()
-            }
-          }
-        }
-      };
-    }))
-      //   .update('stocks-tracking', stockableItems.map(y => {
-      //   return {
-      //     query: {
-      //       id: y.product.id,
-      //       upsert: true,
-      //     },
-      //     update: {
-      //       $set: {
-      //         [`quantity.${transfer.id}`]: {
-      //           q: -y.quantity,
-      //           s: 'transfer',
-      //           d: new Date().toISOString()
-      //         }
-      //       }
-      //     }
-      //   };
-      // }))
-      .commit();
-    for (const stockableItem of stockableItems) {
-      const stockCache = cache({database: activeShop.projectId, collection: 'stocks'});
-      const oSt: StockModel = await stockCache.get(stockableItem.product.id);
-      if (oSt && isNaN(Number(oSt.quantity)) && typeof oSt.quantity === 'object') {
-        oSt.quantity[transfer.id] = {
-          q: -stockableItem.quantity,
-          s: 'transfer',
-          d: new Date().toISOString()
-        };
-      }
-      if (oSt && isNaN(Number(oSt.quantity)) && typeof oSt.quantity !== 'object') {
-        oSt.quantity = {};
-        oSt.quantity[transfer.id] = {
-          q: -stockableItem.quantity,
-          s: 'transfer',
-          d: new Date().toISOString()
-        };
-      }
-      if (oSt && !isNaN(Number(oSt.quantity))) {
-        oSt.quantity = {};
-        oSt.quantity[transfer.id] = {
-          q: -stockableItem.quantity,
-          s: 'transfer',
-          d: new Date().toISOString()
-        };
-      }
-      await stockCache.set(oSt.id, oSt);
-    }
+    const a = await functions(activeShop.projectId)
+      .request(getDaasAddress(activeShop) + '/stock/transfer')
+      .post(transfer);
     return transfer;
   }
 
-  async fetch(pagination: { size?: number, skip?: number } = {size: 20, skip: 0}): Promise<TransferModel[]> {
+  async fetch(pagination: { size: number, skip: number } = {size: 20, skip: 0}): Promise<TransferModel[]> {
     const activeShop = await this.userService.getCurrentShop();
-    const cids: string[] = await database(activeShop.projectId)
-      .collection(this.COLLECTION)
-      .query()
-      .cids(true)
-      .orderBy('createdAt', 'desc')
-      .orderBy('_created_at', 'desc')
-      .size(pagination?.size)
-      .skip(pagination?.skip)
+    return database(activeShop.projectId).collection(this.COLLECTION).query()
+      .orderBy('date', 'desc').size(pagination.size).skip(pagination.skip)
       .find();
-    return await Promise.all(
-      cids.map(c => {
-        return IpfsService.getDataFromCid(c);
-      })
-    );
+  }
+
+  searchProduct(transferHeader: TransferHeader, q: string): Promise<any[]> {
+    init({
+      applicationId: transferHeader.to_shop.applicationId,
+      projectId: transferHeader.to_shop.projectId,
+      databaseURL: getDaasAddress(transferHeader.to_shop),
+      functionsURL: getFaasAddress(transferHeader.to_shop),
+      adapters: {
+        http: 'DEFAULT',
+        cache: 'DEFAULT',
+        auth: 'DEFAULT',
+      }
+    }, transferHeader.to_shop.projectId);
+    return database(transferHeader.to_shop.projectId).table('stocks').query()
+      .orderBy('product', 'desc')
+      .skip(0)
+      .size(50)
+      .searchByRegex('product', q, 'ig')
+      .find({returnFields: ['id', 'product', 'purchase', 'retailPrice', 'wholesalePrice']});
   }
 }
