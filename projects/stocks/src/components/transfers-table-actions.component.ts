@@ -1,73 +1,59 @@
 import {Component, OnInit} from '@angular/core';
 import {TransferState} from '../states/transfer.state';
+import {MatDialog} from '@angular/material/dialog';
+import {TransferHeaderDialog} from './transfer-header-dialog';
+import {firstValueFrom} from 'rxjs';
+import {Router} from '@angular/router';
 
 @Component({
   selector: 'app-stock-transfers-table-actions',
   template: `
-    <mat-card-title class="d-flex flex-row">
-      <button routerLink="/stock/transfers/create" color="primary" class="ft-button" mat-flat-button>
-        Add Transfer
-      </button>
-      <span class="toolbar-spacer"></span>
-      <span style="width: 8px; height: 8px"></span>
-      <button (click)="transferState.fetch(null,null)"
-              [disabled]="(transferState.isFetchTransfers | async) === true"
-              matTooltip="Reload from server"
-              color="primary"
-              class="ft-button" mat-flat-button>
-        <mat-icon *ngIf="(transferState.isFetchTransfers | async) === false">
-          refresh
-        </mat-icon>
-        <mat-progress-spinner *ngIf="(transferState.isFetchTransfers | async)===true" [diameter]="20"
-                              matTooltip="Fetch products from server"
-                              mode="indeterminate"
-                              color="primary">
-        </mat-progress-spinner>
-      </button>
-      <!--      <span style="width: 8px; height: 8px"></span>-->
-      <!--      <button (click)="exportStock()" [disabled]="(stockState.isExportToExcel | async)===true"-->
-      <!--              matTooltip="Export Products To Csv"-->
-      <!--              color="primary"-->
-      <!--              class="ft-button" mat-flat-button>-->
-      <!--        <mat-icon *ngIf="(stockState.isExportToExcel | async) === false">-->
-      <!--          cloud_download-->
-      <!--        </mat-icon>-->
-      <!--        <mat-progress-spinner *ngIf="(stockState.isExportToExcel | async)===true" [diameter]="20"-->
-      <!--                              matTooltip="Export Products InProgress.."-->
-      <!--                              mode="indeterminate"-->
-      <!--                              color="primary">-->
-      <!--        </mat-progress-spinner>-->
-      <!--      </button>-->
-      <!--      <span style="width: 8px; height: 8px"></span>-->
-      <!--      <button (click)="importStocks()" matTooltip="Import Products" color="primary" class="ft-button"-->
-      <!--              mat-flat-button>-->
-      <!--        <mat-icon>cloud_upload</mat-icon>-->
-      <!--      </button>-->
-    </mat-card-title>
-  `
+    <div class="table-options-container">
+      <div class="table-options">
+        <button (click)="transferDialog()" color="primary" class="menu-button" mat-button>
+          Create
+        </button>
+        <button (click)="transferState.fetch(50,0)"
+                [disabled]="(transferState.isFetchTransfers | async) === true"
+                color="primary"
+                class="menu-button" mat-button>
+          Reload
+        </button>
+        <span class="toolbar-spacer"></span>
+      </div>
+      <mat-progress-bar mode="indeterminate" color="primary"
+                        *ngIf="(transferState.isFetchTransfers | async)===true"></mat-progress-bar>
+    </div>
+  `,
+  styleUrls: ['../styles/index.style.scss']
 })
 
-export class TransfersTableActionsComponent implements OnInit {
+export class TransfersTableActionsComponent {
 
-  constructor(public readonly transferState: TransferState) {
+  constructor(public readonly transferState: TransferState,
+              private readonly router: Router,
+              private readonly matDialog: MatDialog) {
   }
 
-  ngOnInit(): void {
-
+  transferDialog(): void {
+    const obs = this.matDialog.open(TransferHeaderDialog, {
+      width: '500px',
+      closeOnNavigation: true
+    }).afterClosed();
+    firstValueFrom(obs).then(value => {
+      if (value && value.to_shop) {
+        this.router
+          .navigateByUrl('/stock/transfers/create?data=' + encodeURIComponent(JSON.stringify(value)))
+          .catch(console.log);
+      }
+    });
   }
-
-  // hotReloadStocks(size: number, skip: number): void {
-  //   this.transferState.fetch(size, skip);
-  // }
-
-  exportStock(): void {
-    // this.transferState.exportToExcel();
-  }
-
-  importStocks(): void {
-    // this.dialog.open(ImportsDialogComponent, {
-    //   closeOnNavigation: true,
-    // });
-  }
-
 }
+
+
+
+
+
+
+
+

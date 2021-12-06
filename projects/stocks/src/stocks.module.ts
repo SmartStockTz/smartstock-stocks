@@ -53,7 +53,7 @@ import {ProductsTableComponent} from './components/products-table.component';
 import {ProductsTableSubActionsComponent} from './components/products-table-sub-actions.component';
 import {TransfersTableComponent} from './components/transfers-table.component';
 import {TransfersTableActionsComponent} from './components/transfers-table-actions.component';
-import {TransferCreateComponent} from './pages/transfer-create.component';
+import {TransferCreatePage} from './pages/transfer-create.page';
 import {TransferCreateFormComponent} from './components/transfer-create-form.component';
 import {ManyShopsGuard} from './guards/many-shops.guard';
 import {ProductSearchDialogComponent} from './components/product-search-dialog.component';
@@ -85,6 +85,18 @@ import {StockQuantityTrackingHeadComponent} from './components/stock-quantity-tr
 import {StockQuantityTrackingHistogramComponent} from './components/stock-quantity-tracking-histogram.component';
 import {StockQuantityTrackingComponent} from './components/stock-quantity-tracking.component';
 import {StockQuantityTrackingTableComponent} from './components/stock-quantity-tracking-table.component';
+import {TransferDesktopUx} from "./components/transfer-desktop-ux";
+import {TransferHeaderForm} from "./components/transfer-header-form";
+import {TransferHeaderDialog} from "./components/transfer-header-dialog";
+import {TransferHeaderSheet} from "./components/transfer-header-sheet";
+import {TransferCart} from "./components/transfer-cart";
+import {MatToolbarModule} from "@angular/material/toolbar";
+import {MatBadgeModule} from "@angular/material/badge";
+import {TransferCreateDesktopUx} from "./components/transfer-create-desktop-ux";
+import {ProductTile} from "./components/product-tile";
+import {AddToCartFormComponent} from "./components/add-to-cart-form.component";
+import {AddToCartDialogComponent} from "./components/add-to-cart-dialog.component";
+import {AddToCartSheetComponent} from "./components/add-to-cart-sheet.component";
 
 const routes: Routes = [
   {path: '', component: IndexPage},
@@ -100,7 +112,7 @@ const routes: Routes = [
   {path: 'suppliers/create', component: SuppliersCreatePage},
   {path: 'suppliers/edit/:id', component: SuppliersEditPage},
   {path: 'transfers', canActivate: [PaymentGuard, ManyShopsGuard], component: TransferPage},
-  {path: 'transfers/create', canActivate: [PaymentGuard, ManyShopsGuard], component: TransferCreateComponent},
+  {path: 'transfers/create', canActivate: [PaymentGuard, ManyShopsGuard], component: TransferCreatePage},
 ];
 
 @NgModule({
@@ -146,7 +158,9 @@ const routes: Routes = [
     ScrollingModule,
     FormsModule,
     MatProgressBarModule,
-    MatSlideToggleModule
+    MatSlideToggleModule,
+    MatToolbarModule,
+    MatBadgeModule
   ],
   declarations: [
     StockQuantityTrackingHeadComponent,
@@ -202,11 +216,21 @@ const routes: Routes = [
     ProductsValueSummaryComponent,
     TransferPage,
     ProductsTableSubActionsComponent,
-    TransferCreateComponent,
+    TransferCreatePage,
     ProductSearchDialogComponent,
     CategoryCreateFormComponent,
     ProductsListComponent,
-    ImageUploadComponent
+    ImageUploadComponent,
+    TransferDesktopUx,
+    TransferHeaderDialog,
+    TransferHeaderForm,
+    TransferHeaderSheet,
+    TransferCart,
+    TransferCreateDesktopUx,
+    ProductTile,
+    AddToCartFormComponent,
+    AddToCartDialogComponent,
+    AddToCartSheetComponent
   ],
 })
 export class StocksModule {

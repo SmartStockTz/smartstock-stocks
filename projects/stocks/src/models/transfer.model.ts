@@ -1,27 +1,24 @@
-import {StockModel} from './stock.model';
+import {TransferItem} from './transfer-item';
 
-export interface TransferModel {
+export type TransferModel = {
   id?: string;
   createdAt?: any;
   updatedAt?: any;
-  date?: any;
-  note?: string;
-  from_shop?: {
+  date: string;
+  note: string;
+  from_shop: {
     name: string;
     projectId: string;
     applicationId: string;
   };
-  to_shop?: {
+  to_shop: {
     name: string;
     projectId: string;
     applicationId: string;
   };
-  transferred_by?: {
+  transferred_by: {
     username: string;
   };
-  amount?: number;
-  items?: {
-    quantity: number;
-    product: StockModel
-  }[];
-}
+  amount: number;
+  items: TransferItem[];
+};

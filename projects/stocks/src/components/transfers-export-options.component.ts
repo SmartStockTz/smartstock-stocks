@@ -2,6 +2,7 @@ import {ChangeDetectorRef, Component, Inject} from '@angular/core';
 import {MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef} from '@angular/material/bottom-sheet';
 import {MessageService, PrintService} from '@smartstocktz/core-libs';
 import {TransferModel} from '../models/transfer.model';
+import {getProductFromTransferProduct} from '../utils/stock.util';
 
 // @dynamic
 @Component({
@@ -13,18 +14,6 @@ import {TransferModel} from '../models/transfer.model';
     </div>
     <div style="margin-bottom: 50px">
       <mat-nav-list>
-        <!--        <mat-list-item>-->
-        <!--          <h1 matLine>CSV</h1>-->
-        <!--          <p matLine>Comma separated text file</p>-->
-        <!--          <mat-icon matListIcon>description</mat-icon>-->
-        <!--        </mat-list-item>-->
-        <!--        <mat-divider></mat-divider>-->
-        <!--        <mat-list-item>-->
-        <!--          <h1 matLine>PDF</h1>-->
-        <!--          <p matLine>Portable document format</p>-->
-        <!--          <mat-icon matListIcon>description</mat-icon>-->
-        <!--        </mat-list-item>-->
-        <!--        <mat-divider></mat-divider>-->
         <mat-list-item (click)="printTransfer()" [disabled]="isPrinting">
           <h1 matLine>
             Thermal Printer
@@ -53,13 +42,24 @@ export class TransfersExportOptionsComponent {
               @Inject(MAT_BOTTOM_SHEET_DATA) private readonly data: { transfer: TransferModel }) {
   }
 
+  private static getProduct(product: any): string {
+    return getProductFromTransferProduct(product);
+  }
+
+  private static getPurchase(value): number {
+    if (typeof value.product === 'object') {
+      return value.product.purchase;
+    }
+    return value.to_purchase;
+  }
+
   async printTransfer(): Promise<void> {
     let items = '';
     for (let i = 0; i < this.data.transfer.items.length; i++) {
       items += `
 ------------------------------------
-ITEM ${i + 1} : ${this.data.transfer.items[i].product.product}
-QUANTITY : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.items[i].quantity)}, PURCHASE PRICE : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.items[i].product.purchase)}
+ITEM ${i + 1} : ${TransfersExportOptionsComponent.getProduct(this.data.transfer.items[i].product)}
+QUANTITY : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(this.data.transfer.items[i].quantity)}, PURCHASE PRICE : ${Intl.NumberFormat('en-US', {maximumFractionDigits: 2}).format(TransfersExportOptionsComponent.getPurchase(this.data.transfer.items[i]))}
 `;
     }
     this.isPrinting = true;

@@ -1,6 +1,8 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef} from '@angular/material/bottom-sheet';
 import {TransferModel} from '../models/transfer.model';
+import {getProductFromTransferProduct} from "../utils/stock.util";
+
 // @dynamic
 @Component({
   selector: 'app-stock-transfer-views',
@@ -22,7 +24,7 @@ import {TransferModel} from '../models/transfer.model';
       <mat-list>
         <div *ngFor="let item of data.transfer.items">
           <mat-list-item>
-            <h1 matLine>{{item.product.product}}</h1>
+            <h1 matLine>{{getProduct(item.product)}}</h1>
             <span matLine>Quantity : {{item.quantity}}</span>
           </mat-list-item>
           <mat-divider></mat-divider>
@@ -37,5 +39,9 @@ export class TransfersItemsViewComponent {
               @Inject(MAT_BOTTOM_SHEET_DATA) public readonly data: {
                 transfer: TransferModel
               }) {
+  }
+
+  getProduct(product: any): string {
+    return getProductFromTransferProduct(product);
   }
 }

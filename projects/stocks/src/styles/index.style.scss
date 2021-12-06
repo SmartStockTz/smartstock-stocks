@@ -9,3 +9,52 @@
 .mbc {
   margin-bottom: 10px;
 }
+
+mat-paginator {
+  background: transparent !important;
+}
+
+.table-options {
+  padding: 16px 0 8px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+}
+
+.smartstock-table {
+  padding: 4px 8px;
+  margin-bottom: 24px;
+
+  table {
+    background: transparent !important;
+  }
+}
+
+.table-options-container {
+  background: #f5f5f5;
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+}
+
+.column-header {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  font-size: 14px;
+  line-height: 16px;
+  color: #000;
+}
+
+.menu-button {
+  height: 38px;
+  margin: 0 5px;
+  background: rgba(0, 170, 7, .1);
+  border-radius: 3px;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 17px;
+  line-height: 14px;
+  color: #016d05;
+}

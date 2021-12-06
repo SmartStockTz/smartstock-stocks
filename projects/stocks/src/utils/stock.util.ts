@@ -10,3 +10,12 @@ export function getStockQuantity(stock: StockModel): number {
   }
   return qty;
 }
+
+export function getProductFromTransferProduct(value: any): string {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (typeof value === 'object') {
+    return value.product;
+  }
+}
