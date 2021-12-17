@@ -54,8 +54,8 @@ import {getStockQuantity} from '../utils/stock.util';
         </ng-container>
         <ng-container matColumnDef="quantity">
           <th class="column-header" mat-header-cell *matHeaderCellDef mat-sort-header>Quantity</th>
-          <td mat-cell *matCellDef="let element">
-            <app-stock-quantity [stock]="element"></app-stock-quantity>
+          <td mat-cell *matCellDef="let stock">
+            <app-stock-quantity [stock]="stock"></app-stock-quantity>
           </td>
           <td mat-footer-cell *matFooterCellDef>
             {{totalQuantity() | number}}
@@ -260,5 +260,9 @@ export class ProductsTableComponent implements OnInit, OnDestroy, AfterViewInit 
 
   doneInSubMenu(): void {
     this.stockState.getStocks();
+  }
+
+  getQ(stock): number {
+    return getStockQuantity(stock);
   }
 }

@@ -216,4 +216,12 @@ export class StockService {
       }
     }, 120000);
   }
+
+  async positiveStockValue(): Promise<number> {
+    const shop = await this.userService.getCurrentShop();
+    return StockService.withWorker(async stockWorker => {
+      return await stockWorker.positiveStockValue(shop);
+    });
+  }
 }
+

@@ -21,16 +21,6 @@ export class StockWorker {
     return value;
   }
 
-  getStockQuantity(stock: StockModel): number {
-    if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {
-      // @ts-ignore
-      return Object.values(stock.quantity).reduce<any>((a, b) => a + b.q, 0);
-    }
-    if (stock && !isNaN(Number(stock.quantity)) && typeof stock.quantity === 'number') {
-      return stock.quantity as number;
-    }
-    return 0;
-  }
 
   private csvToJSON(csv: string): StockModel[] {
     const csvContents = csv.split('\n');
@@ -117,7 +107,11 @@ export class StockWorker {
   }
 
   sort(stocks: StockModel[]): StockModel[] {
-    stocks.sort((a, b) => {
+    stocks.map(x => {
+      x.quantity = this.getStockQuantity(x);
+      // x.quantity_track = x.quantity;
+      return x;
+    }).sort((a, b) => {
       if (a && !a.product) {
         return 0;
       }
@@ -218,6 +212,48 @@ export class StockWorker {
         // console.log('not ready for compact');
       }
     }
+  }
+
+  // private getStockQuantity(stock: StockModel): number {
+  //   let qty = 0;
+  //   if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {
+  //     qty = Object.values(stock.quantity).reduce((a, b) => a + b.q, 0);
+  //   }
+  //   if (stock && !isNaN(Number(stock.quantity)) && typeof stock.quantity === 'number') {
+  //     qty = stock.quantity as number;
+  //   }
+  //   return qty;
+  // }
+
+  getStockQuantity(stock: StockModel): number {
+    if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {
+      // @ts-ignore
+      return Object.values(stock.quantity).reduce<any>((a, b) => a + b.q, 0);
+    }
+    if (stock && !isNaN(Number(stock.quantity)) && typeof stock.quantity === 'number') {
+      return stock.quantity as number;
+    }
+    return 0;
+  }
+
+  async positiveStockValue(shop: ShopModel): Promise<number> {
+    init({
+      applicationId: shop.applicationId,
+      projectId: shop.projectId,
+      databaseURL: getDaasAddress(shop),
+      functionsURL: getFaasAddress(shop)
+    }, shop.projectId);
+    const stocks = await database(shop.projectId).table('stocks').getAll<any>(null, {
+      returnFields: ['quantity', 'purchase']
+    });
+    return stocks.map(x => {
+      const q = this.getStockQuantity(x);
+      if (q > 0) {
+        return q * x.purchase;
+      } else {
+        return 0;
+      }
+    }).reduce((a, b) => a + b, 0);
   }
 
 }

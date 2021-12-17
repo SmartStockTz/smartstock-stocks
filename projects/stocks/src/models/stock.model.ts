@@ -2,6 +2,7 @@ import {MetasModel} from './metas.model';
 import {FileModel} from '@smartstocktz/core-libs';
 
 export interface StockModel {
+  quantity_track?: any;
   createdAt?: any;
   catalog?: any[];
   updatedAt?: any;

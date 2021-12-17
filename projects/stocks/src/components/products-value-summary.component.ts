@@ -1,8 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {StockState} from '../states/stock.state';
 import {Subject} from 'rxjs';
-import {takeUntil} from 'rxjs/operators';
-import {getStockQuantity} from '../utils/stock.util';
+import {MatSnackBar} from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-products-value-summary',
@@ -13,9 +12,14 @@ import {getStockQuantity} from '../utils/stock.util';
                    [content]="content">
       <ng-template #content>
         <div class="summary-container">
-          <h1 style="font-size: 34px">
+          <h1 *ngIf="totalLoad===false" style="font-size: 34px">
             {{total | number}}
           </h1>
+          <button (click)="refresh()" *ngIf="totalLoad===false" mat-button>Refresh</button>
+          <mat-progress-spinner *ngIf="totalLoad === true" diameter="30"
+                                color="primary" mode="indeterminate"
+                                style="display: inline-block">
+          </mat-progress-spinner>
         </div>
       </ng-template>
     </app-dash-card>
@@ -27,19 +31,8 @@ export class ProductsValueSummaryComponent implements OnInit, OnDestroy {
   total = 0;
   destroyer: Subject<any> = new Subject<any>();
 
-  constructor(public readonly stockState: StockState) {
-    this.stockState.stocks.pipe(
-      takeUntil(this.destroyer)
-    ).subscribe(value => {
-      this.total = value.map(x => {
-        const q = getStockQuantity(x);
-        if (q > 0) {
-          return q * x.purchase;
-        } else {
-          return 0;
-        }
-      }).reduce((a, b) => a + b, 0);
-    });
+  constructor(public readonly stockState: StockState,
+              private readonly snack: MatSnackBar) {
   }
 
   ngOnDestroy(): void {
@@ -48,5 +41,17 @@ export class ProductsValueSummaryComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.stockState.getStocks();
+    this.refresh();
+  }
+
+  refresh(): void {
+    this.totalLoad = true;
+    this.stockState.positiveStockValue().then(value => {
+      this.total = value;
+    }).catch(reason => {
+      this.snack.open(reason && reason.message ? reason.message : reason.toString());
+    }).finally(() => {
+      this.totalLoad = false;
+    });
   }
 }

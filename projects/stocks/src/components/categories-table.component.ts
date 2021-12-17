@@ -12,59 +12,52 @@ import {Subject} from 'rxjs';
 @Component({
   selector: 'app-categories-table',
   template: `
-    <table class="my-input" mat-table [dataSource]="categoriesDatasource.connect() | async">
-      <!--      <ng-container matColumnDef="check">-->
-      <!--        <th mat-header-cell *matHeaderCellDef>-->
-      <!--          <mat-checkbox></mat-checkbox>-->
-      <!--        </th>-->
-      <!--        <td class="editable" matRipple mat-cell-->
-      <!--            *matCellDef="let element">-->
-      <!--          <mat-checkbox></mat-checkbox>-->
-      <!--        </td>-->
-      <!--      </ng-container>-->
+    <div class="smartstock-table">
+      <table class="my-input" mat-table [dataSource]="categoriesDatasource.connect() | async">
 
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td class="editable" matRipple mat-cell
-            *matCellDef="let element">{{element.name}}
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td class="editable" matRipple mat-cell
+              *matCellDef="let element">{{element.name}}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef>Description</th>
-        <td class="editable" matRipple mat-cell
-            *matCellDef="let element">{{element.description}}
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef>Description</th>
+          <td class="editable" matRipple mat-cell
+              *matCellDef="let element">{{element.description}}
+          </td>
+        </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef>
-          <div class="d-flex justify-content-end align-items-end">
-            Actions
-          </div>
-        </th>
-        <td mat-cell *matCellDef="let element">
-          <div class="d-flex justify-content-end align-items-end">
-            <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
-              <mat-icon>more_horiz</mat-icon>
-            </button>
-            <mat-menu #opts>
-              <button (click)="editCategory(element)" mat-menu-item>
-                Edit
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="d-flex justify-content-end align-items-end">
+              Actions
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex justify-content-end align-items-end">
+              <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
+                <mat-icon>more_horiz</mat-icon>
               </button>
-              <button (click)="deleteCategory(element)" mat-menu-item>
-                Delete
-              </button>
-            </mat-menu>
-          </div>
-        </td>
-      </ng-container>
+              <mat-menu #opts>
+                <button (click)="editCategory(element)" mat-menu-item>
+                  Edit
+                </button>
+                <button (click)="deleteCategory(element)" mat-menu-item>
+                  Delete
+                </button>
+              </mat-menu>
+            </div>
+          </td>
+        </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="categoriesTableColumns"></tr>
-      <tr mat-row class="table-data-row" *matRowDef="let row; columns: categoriesTableColumns;"></tr>
-    </table>
+        <tr mat-header-row *matHeaderRowDef="categoriesTableColumns"></tr>
+        <tr mat-row class="table-data-row" *matRowDef="let row; columns: categoriesTableColumns;"></tr>
+      </table>
+    </div>
   `,
-  styleUrls: ['../styles/categories.style.scss']
+  styleUrls: ['../styles/categories.style.scss', '../styles/index.style.scss']
 })
 
 export class CategoriesTableComponent implements OnInit, OnDestroy, AfterViewInit {
