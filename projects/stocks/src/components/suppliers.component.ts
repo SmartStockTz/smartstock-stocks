@@ -13,103 +13,94 @@ import {DeviceState, UserService} from '@smartstocktz/core-libs';
 @Component({
   selector: 'app-suppliers',
   template: `
-    <mat-card-title class="d-flex flex-row"
-                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
-      <button routerLink="/stock/suppliers/create" color="primary" class="ft-button" mat-flat-button>
+    <div class="table-options">
+      <button routerLink="/stock/suppliers/create" color="primary" class="menu-button" mat-button>
         Add Supplier
       </button>
-      <span class="toolbar-spacer"></span>
-      <button [matMenuTriggerFor]="menuSuppliers" mat-icon-button>
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #menuSuppliers>
-        <button (click)="reload()" mat-menu-item>Reload Suppliers</button>
-      </mat-menu>
-    </mat-card-title>
-    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
-      <mat-card-content>
-        <table style="margin-top: 16px" class="my-input"
-               *ngIf="!fetchSuppliersFlag && suppliersArray && suppliersArray.length > 0"
-               mat-table
-               [dataSource]="suppliersDatasource">
+      <button (click)="reload()" mat-button class="menu-button">Reload Suppliers</button>
+    </div>
+    <div class="smartstock-table">
+      <table style="margin-top: 16px" class="my-input"
+             *ngIf="!fetchSuppliersFlag && suppliersArray && suppliersArray.length > 0"
+             mat-table
+             [dataSource]="suppliersDatasource">
 
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let element">
-              {{element.name}}
-            </td>
-          </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.name}}
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="mobile">
-            <th mat-header-cell *matHeaderCellDef>Mobile</th>
-            <td mat-cell *matCellDef="let element">
-              {{element.number}}
-            </td>
-          </ng-container>
+        <ng-container matColumnDef="mobile">
+          <th mat-header-cell *matHeaderCellDef>Mobile</th>
+          <td mat-cell *matCellDef="let element">
+            {{element.number}}
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef>Email</th>
-            <td mat-cell
-                *matCellDef="let element">
-              {{element.email}}
-            </td>
-          </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell
+              *matCellDef="let element">
+            {{element.email}}
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="address">
-            <th mat-header-cell *matHeaderCellDef>Address</th>
-            <td mat-cell
-                *matCellDef="let element">
-              {{element.address}}
-            </td>
-          </ng-container>
+        <ng-container matColumnDef="address">
+          <th mat-header-cell *matHeaderCellDef>Address</th>
+          <td mat-cell
+              *matCellDef="let element">
+            {{element.address}}
+          </td>
+        </ng-container>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>
-              <!--          <div class="d-flex justify-content-end align-items-end">-->
-              <!--            Actions-->
-              <!--          </div>-->
-            </th>
-            <td mat-cell *matCellDef="let element">
-              <div class="d-flex justify-content-end align-items-end">
-                <button color="primary" mat-icon-button>
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-              </div>
-            </td>
-          </ng-container>
-
-          <tr mat-header-row
-              *matHeaderRowDef="(deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums"></tr>
-          <tr mat-row [matMenuTriggerFor]="opts" class="table-data-row"
-              *matRowDef="let element; columns: (deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums;">
-            <div style="display: flex;">
-              <div style="flex-grow: 1"></div>
-              <mat-menu #opts [xPosition]="'after'">
-                <!--                  <button (click)="viewSupplier(element)" mat-menu-item>-->
-                <!--                    View-->
-                <!--                  </button>-->
-                <button (click)="editSupplier(element)" mat-menu-item>
-                  Edit
-                </button>
-                <button (click)="deleteSupplier(element)" mat-menu-item>
-                  Delete
-                </button>
-              </mat-menu>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>
+            <!--          <div class="d-flex justify-content-end align-items-end">-->
+            <!--            Actions-->
+            <!--          </div>-->
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex justify-content-end align-items-end">
+              <button color="primary" mat-icon-button>
+                <mat-icon>more_vert</mat-icon>
+              </button>
             </div>
-          </tr>
+          </td>
+        </ng-container>
 
-        </table>
-        <div *ngIf="fetchSuppliersFlag">
-          <mat-progress-spinner matTooltip="fetch suppliers"
-                                [diameter]="30" mode="indeterminate"
-                                color="primary">
-          </mat-progress-spinner>
-        </div>
-        <mat-paginator #matPaginator [pageSize]="10" [pageSizeOptions]="[5,10,50]" showFirstLastButtons></mat-paginator>
-      </mat-card-content>
-    </mat-card>
+        <tr mat-header-row
+            *matHeaderRowDef="(deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums"></tr>
+        <tr mat-row [matMenuTriggerFor]="opts" class="table-data-row"
+            *matRowDef="let element; columns: (deviceState.isSmallScreen | async)===true?suppliersTableColumsMobile:suppliersTableColums;">
+          <div style="display: flex;">
+            <div style="flex-grow: 1"></div>
+            <mat-menu #opts [xPosition]="'after'">
+              <!--                  <button (click)="viewSupplier(element)" mat-menu-item>-->
+              <!--                    View-->
+              <!--                  </button>-->
+              <button (click)="editSupplier(element)" mat-menu-item>
+                Edit
+              </button>
+              <button (click)="deleteSupplier(element)" mat-menu-item>
+                Delete
+              </button>
+            </mat-menu>
+          </div>
+        </tr>
+
+      </table>
+      <div *ngIf="fetchSuppliersFlag">
+        <mat-progress-spinner matTooltip="fetch suppliers"
+                              [diameter]="30" mode="indeterminate"
+                              color="primary">
+        </mat-progress-spinner>
+      </div>
+      <mat-paginator #matPaginator [pageSize]="10" [pageSizeOptions]="[5,10,50]" showFirstLastButtons></mat-paginator>
+    </div>
   `,
-  styleUrls: ['../styles/suppliers.style.scss']
+  styleUrls: ['../styles/suppliers.style.scss', '../styles/index.style.scss']
 })
 export class SuppliersComponent implements OnInit, OnDestroy {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
@@ -119,7 +110,6 @@ export class SuppliersComponent implements OnInit, OnDestroy {
   suppliersArray: SupplierModel[] = [];
   fetchSuppliersFlag = false;
   private sig = false;
-  private obfn;
 
   constructor(private readonly supplierService: SupplierService,
               private readonly formBuilder: FormBuilder,
