@@ -23,11 +23,9 @@ import {CategoryState} from '../states/category.state';
         <app-drawer></app-drawer>
       </ng-template>
       <ng-template #body>
-        <div>
-          <div class="container-fluid categories-container">
-            <app-categories></app-categories>
-          </div>
-        </div>
+<!--        <div class="categories-container">-->
+          <app-categories></app-categories>
+<!--        </div>-->
       </ng-template>
     </app-layout-sidenav>
   `,

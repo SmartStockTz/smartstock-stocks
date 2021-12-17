@@ -46,31 +46,9 @@ export class StockState {
     });
   }
 
-  // private _updateTotalAvailableStocks(total: number): void {
-  //   this.totalValidStocks.next(total);
-  // }
-  //
-  // private _updateStocksValue(total: number): void {
-  //   this.totalValueOfStocks.next(total);
-  // }
-
-  // getStocksSummary(): void {
-  //   this.isFetchStocks.next(true);
-  //   this.stockService.getProducts().then(localStocks => {
-  //     if (localStocks && Array.isArray(localStocks) && localStocks.length > 0) {
-  //       this._updateTotalAvailableStocks(localStocks.length);
-  //       this._updateStocksValue(localStocks.map(x => {
-  //         if (x.quantity > 0) {
-  //           return x.quantity * x.purchase;
-  //         } else {
-  //           return 0;
-  //         }
-  //       }).reduce((a, b) => a + b, 0));
-  //     }
-  //   }).catch(this.message).finally(() => {
-  //     this.isFetchStocks.next(false);
-  //   });
-  // }
+  positiveStockValue(): Promise<number> {
+    return this.stockService.positiveStockValue();
+  }
 
   getStocksFromRemote(): void {
     this.isFetchStocks.next(true);

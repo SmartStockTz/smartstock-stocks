@@ -12,126 +12,121 @@ import {DeviceState, UserService} from '@smartstocktz/core-libs';
 @Component({
   selector: 'app-units',
   template: `
-    <mat-card-title class="d-flex flex-row"
-                    [style]="(deviceState.isSmallScreen | async)===true?'padding: 16px 5px 5px 5px':''">
-      <button (click)="openAddUnitDialog()" color="primary" class="ft-button" mat-flat-button>Add Unit</button>
-      <span class="toolbar-spacer"></span>
-      <button mat-icon-button color="primary" [matMenuTriggerFor]="unitsMenu">
-        <mat-icon>more_vert</mat-icon>
-      </button>
-      <mat-menu #unitsMenu>
-        <button (click)="reload()" mat-menu-item>Reload Units</button>
-      </mat-menu>
-    </mat-card-title>
-    <mat-card [class]="(deviceState.isSmallScreen | async)===true?'mat-elevation-z0':'mat-elevation-z2'">
-      <mat-card-content>
-        <table style="margin-top: 16px" class="my-input"
-               *ngIf="!fetchUnitsFlag && unitsArray && unitsArray.length > 0"
-               mat-table
-               [dataSource]="unitsDatasource">
-          <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td class="editable" [matMenuTriggerFor]="nameMenu"
-                #nameMenuTrigger="matMenuTrigger"
-                [matMenuTriggerData]="{id: element.id, data: element.name}" matRipple mat-cell
-                *matCellDef="let element">{{element.name}}
-              <mat-menu #nameMenu>
-                <ng-template matMenuContent let-id="id" let-data="data">
-                  <div (click)="$event.stopPropagation()" style="padding: 16px">
-                    <mat-form-field class="my-input" appearance="outline">
-                      <mat-label>Name</mat-label>
-                      <input [value]="data" [formControl]="nameFormControl" matInput>
-                    </mat-form-field>
-                    <button
-                      (click)="updateUnitName({id: id, value: nameFormControl.value}, nameMenuTrigger)"
-                      mat-button>Update
-                    </button>
-                  </div>
-                </ng-template>
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="abbreviation">
-            <th mat-header-cell *matHeaderCellDef>Abbreviation</th>
-            <td class="editable" [matMenuTriggerFor]="abbreviationMenu"
-                #nameMenuTrigger="matMenuTrigger"
-                [matMenuTriggerData]="{id: element.id, data: element.abbreviation}" matRipple mat-cell
-                *matCellDef="let element">{{element.abbreviation}}
-              <mat-menu #abbreviationMenu>
-                <ng-template matMenuContent let-id="id" let-data="data">
-                  <div (click)="$event.stopPropagation()" style="padding: 16px">
-                    <mat-form-field class="my-input" appearance="outline">
-                      <mat-label>Abbreviation</mat-label>
-                      <input [value]="data" [formControl]="abbreviationFormControl" matInput>
-                    </mat-form-field>
-                    <button
-                      (click)="updateUnitAbbreviation({id: id, value: abbreviationFormControl.value}, nameMenuTrigger)"
-                      mat-button>Update
-                    </button>
-                  </div>
-                </ng-template>
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="description">
-            <th mat-header-cell *matHeaderCellDef>Description</th>
-            <td class="editable" [matMenuTriggerFor]="descriptionMenu"
-                #descriptionMenuTrigger="matMenuTrigger"
-                [matMenuTriggerData]="{id: element.id, data: element.description}" matRipple mat-cell
-                *matCellDef="let element">{{element.description}}
-              <mat-menu #descriptionMenu>
-                <ng-template style="padding: 16px" matMenuContent let-id="id" let-data="data">
-                  <div (click)="$event.stopPropagation()" style="padding: 16px">
-                    <mat-form-field class="my-input" appearance="outline">
-                      <mat-label>Description</mat-label>
-                      <textarea [value]="data" [formControl]="descriptionFormControl" matInput></textarea>
-                    </mat-form-field>
-                    <button
-                      (click)="updateUnitDescription({id: id, value: descriptionFormControl.value},
-                     descriptionMenuTrigger)"
-                      mat-button>Update
-                    </button>
-                  </div>
-                </ng-template>
-              </mat-menu>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>
-              <div class="d-flex justify-content-end align-items-end">
-                Actions
-              </div>
-            </th>
-            <td mat-cell *matCellDef="let element">
-              <div class="d-flex justify-content-end align-items-end">
-                <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-                <mat-menu #opts>
-                  <button (click)="deleteUnit(element)" mat-menu-item>
-                    Delete
+    <div class="table-options-container">
+      <div class="table-options">
+        <button (click)="openAddUnitDialog()" color="primary"
+                class="menu-button" mat-button>Add Unit
+        </button>
+        <button (click)="reload()" mat-button class="menu-button">Reload Units</button>
+      </div>
+    </div>
+    <div class="smartstock-table">
+      <table style="margin-top: 16px" class="my-input"
+             *ngIf="!fetchUnitsFlag && unitsArray && unitsArray.length > 0"
+             mat-table
+             [dataSource]="unitsDatasource">
+        <ng-container matColumnDef="name">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>Name</th>
+          <td class="editable" [matMenuTriggerFor]="nameMenu"
+              #nameMenuTrigger="matMenuTrigger"
+              [matMenuTriggerData]="{id: element.id, data: element.name}" matRipple mat-cell
+              *matCellDef="let element">{{element.name}}
+            <mat-menu #nameMenu>
+              <ng-template matMenuContent let-id="id" let-data="data">
+                <div (click)="$event.stopPropagation()" style="padding: 16px">
+                  <mat-form-field class="my-input" appearance="outline">
+                    <mat-label>Name</mat-label>
+                    <input [value]="data" [formControl]="nameFormControl" matInput>
+                  </mat-form-field>
+                  <button
+                    (click)="updateUnitName({id: id, value: nameFormControl.value}, nameMenuTrigger)"
+                    mat-button>Update
                   </button>
-                </mat-menu>
-              </div>
-            </td>
-          </ng-container>
+                </div>
+              </ng-template>
+            </mat-menu>
+          </td>
+        </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="unitsTableColums"></tr>
-          <tr mat-row class="table-data-row" *matRowDef="let row; columns: unitsTableColums;"></tr>
-        </table>
-        <div *ngIf="fetchUnitsFlag">
-          <mat-progress-spinner matTooltip="fetch units" [diameter]="30" mode="indeterminate"
-                                color="primary">
-          </mat-progress-spinner>
-        </div>
-        <mat-paginator #matPaginator [pageSize]="10" [pageSizeOptions]="[5,10,50]" showFirstLastButtons></mat-paginator>
-      </mat-card-content>
-    </mat-card>
+        <ng-container matColumnDef="abbreviation">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>Abbreviation</th>
+          <td class="editable" [matMenuTriggerFor]="abbreviationMenu"
+              #nameMenuTrigger="matMenuTrigger"
+              [matMenuTriggerData]="{id: element.id, data: element.abbreviation}" matRipple mat-cell
+              *matCellDef="let element">{{element.abbreviation}}
+            <mat-menu #abbreviationMenu>
+              <ng-template matMenuContent let-id="id" let-data="data">
+                <div (click)="$event.stopPropagation()" style="padding: 16px">
+                  <mat-form-field class="my-input" appearance="outline">
+                    <mat-label>Abbreviation</mat-label>
+                    <input [value]="data" [formControl]="abbreviationFormControl" matInput>
+                  </mat-form-field>
+                  <button
+                    (click)="updateUnitAbbreviation({id: id, value: abbreviationFormControl.value}, nameMenuTrigger)"
+                    mat-button>Update
+                  </button>
+                </div>
+              </ng-template>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="description">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>Description</th>
+          <td class="editable" [matMenuTriggerFor]="descriptionMenu"
+              #descriptionMenuTrigger="matMenuTrigger"
+              [matMenuTriggerData]="{id: element.id, data: element.description}" matRipple mat-cell
+              *matCellDef="let element">{{element.description}}
+            <mat-menu #descriptionMenu>
+              <ng-template style="padding: 16px" matMenuContent let-id="id" let-data="data">
+                <div (click)="$event.stopPropagation()" style="padding: 16px">
+                  <mat-form-field class="my-input" appearance="outline">
+                    <mat-label>Description</mat-label>
+                    <textarea [value]="data" [formControl]="descriptionFormControl" matInput></textarea>
+                  </mat-form-field>
+                  <button
+                    (click)="updateUnitDescription({id: id, value: descriptionFormControl.value},
+                     descriptionMenuTrigger)"
+                    mat-button>Update
+                  </button>
+                </div>
+              </ng-template>
+            </mat-menu>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th class="column-header" mat-header-cell *matHeaderCellDef>
+            <div class="d-flex justify-content-end align-items-end">
+              Actions
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <div class="d-flex justify-content-end align-items-end">
+              <button [matMenuTriggerFor]="opts" color="primary" mat-icon-button>
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #opts>
+                <button (click)="deleteUnit(element)" mat-menu-item>
+                  Delete
+                </button>
+              </mat-menu>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="unitsTableColums"></tr>
+        <tr mat-row class="table-data-row" *matRowDef="let row; columns: unitsTableColums;"></tr>
+      </table>
+      <div *ngIf="fetchUnitsFlag">
+        <mat-progress-spinner matTooltip="fetch units" [diameter]="30" mode="indeterminate"
+                              color="primary">
+        </mat-progress-spinner>
+      </div>
+      <mat-paginator #matPaginator [pageSize]="10" [pageSizeOptions]="[5,10,50]" showFirstLastButtons></mat-paginator>
+    </div>
   `,
-  styleUrls: ['../styles/units.style.scss']
+  styleUrls: ['../styles/units.style.scss', '../styles/index.style.scss']
 })
 export class UnitsComponent implements OnInit, OnDestroy {
   @ViewChild('matPaginator') matPaginator: MatPaginator;
