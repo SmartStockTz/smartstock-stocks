@@ -163,12 +163,10 @@ export class StockService {
 
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).table('stocks').getAll().then((products: StockModel[]) => {
-      return StockService.withWorker(async stockWorker => stockWorker.sort(products));
-    }).then(async stocks => {
+    return database(shop.projectId).table('stocks').getAll<any>().then(async stocks => {
       await cache({database: shop.projectId, collection: 'stocks'}).clearAll();
       await cache({database: shop.projectId, collection: 'stocks'}).setBulk(stocks.map(s => s.id), stocks);
-      return stocks;
+      return StockService.withWorker(async stockWorker => stockWorker.sort(stocks));
     });
   }
 
