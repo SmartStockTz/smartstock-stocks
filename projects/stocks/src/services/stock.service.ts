@@ -196,7 +196,7 @@ export class StockService {
 
   async compactStockQuantity(): Promise<any> {
     console.log('start compact is running');
-    const intV = setInterval(async _ => {
+    return setInterval(async _ => {
       try {
         if (this.isRunning === true) {
           console.log('another compact is running');

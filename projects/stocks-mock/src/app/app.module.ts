@@ -1,5 +1,5 @@
 import {BrowserModule} from '@angular/platform-browser';
-import {NgModule} from '@angular/core';
+import {NgModule, OnDestroy} from '@angular/core';
 import {AppComponent} from './app.component';
 import {HttpClientModule} from '@angular/common/http';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
@@ -71,7 +71,7 @@ export class AppModule {
   constructor(private readonly syncService: SyncsService,
               private readonly stockService: StockService) {
     syncService.startWorker().catch(console.log);
-    // stockService.compactStockQuantity().catch(console.log);
+    stockService.compactStockQuantity().catch(console.log);
     IpfsService.getVersion().then(value => {
       console.log('ipfs version : ', value.version);
     });
