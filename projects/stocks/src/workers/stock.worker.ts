@@ -1,9 +1,8 @@
 import {expose} from 'comlink';
 import {StockModel} from '../models/stock.model';
 import {getDaasAddress, getFaasAddress, SecurityUtil} from '@smartstocktz/core-libs';
-import {cache, database, init} from 'bfast';
+import {cache, database, functions, init} from 'bfast';
 import {ShopModel} from '../models/shop.model';
-import {sha1} from 'crypto-hash';
 
 export class StockWorker {
 
@@ -20,7 +19,6 @@ export class StockWorker {
     }
     return value;
   }
-
 
   private csvToJSON(csv: string): StockModel[] {
     const csvContents = csv.split('\n');
@@ -175,55 +173,43 @@ export class StockWorker {
       const stock: any = await stockCache.get(key);
       const is = await this.qualifyForCompact(stock);
       if (is) {
-        for (const x of Object.keys(is)) {
-          if (is[x].length > 1) {
-            const unset = is[x].map(y => `quantity.${y._id}`);
-            const set = {
-              ['quantity.' + await sha1(JSON.stringify(unset))]: {
-                d: new Date(),
-                s: x,
-                q: is[x].reduce((a2, b2) => a2 + b2.q, 0)
+        await functions(shop.projectId).request(getDaasAddress(shop) + '/v2').post({
+          applicationId: shop.applicationId,
+          updatestocks: {
+            id: stock.id,
+            update: [
+              {
+                $set: {
+                  quantity: {
+                    $reduce: {
+                      input: {$objectToArray: '$quantity'},
+                      initialValue: {
+                        total: {
+                          q: 0,
+                          s: 'system_total',
+                          d: '$$NOW'
+                        }
+                      },
+                      in: {
+                        total: {
+                          q: {$add: ['$$value.total.q', '$$this.v.q']},
+                          s: '$$value.total.s',
+                          d: '$$value.total.d'
+                        }
+                      }
+                    }
+                  }
+                }
               }
-            };
-            const b = {
-              $unset: unset.reduce((a1, b1) => {
-                a1[b1] = 1;
-                return a1;
-              }, {}),
-              $set: set
-            };
-            // console.log(stock.product);
-            // console.log(JSON.stringify(b, null, 4));
-            const update = database(shop.projectId).table('stocks').query().byId(stock.id).updateBuilder();
-            for (const k2 of Object.keys(b.$unset)) {
-              update.unset(k2);
-            }
-            for (const k3 of Object.keys(b.$set)) {
-              update.set(k3, b.$set[k3]);
-            }
-            await update.update({returnFields: ['id']});
-            // console.log(n);
-            // return;
-          } else {
-            // JSON.stringify('fuck');
+            ],
+            return: ['id']
           }
-        }
+        });
       } else {
         // console.log('not ready for compact');
       }
     }
   }
-
-  // private getStockQuantity(stock: StockModel): number {
-  //   let qty = 0;
-  //   if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {
-  //     qty = Object.values(stock.quantity).reduce((a, b) => a + b.q, 0);
-  //   }
-  //   if (stock && !isNaN(Number(stock.quantity)) && typeof stock.quantity === 'number') {
-  //     qty = stock.quantity as number;
-  //   }
-  //   return qty;
-  // }
 
   getStockQuantity(stock: StockModel): number {
     if (stock && isNaN(Number(stock.quantity)) && typeof stock.quantity === 'object') {

@@ -1596,10 +1596,10 @@
   dependencies:
     tslib "^2.0.0"
 
-"@smartstocktz/core-libs@^0.5.1":
-  version "0.5.1"
-  resolved "https://npm.pkg.github.com/download/@smartstocktz/core-libs/0.5.1/dcbd3e79c42d623eca21bcddf2c887fe4913b3402e3a838d8752646f79231d02#7a72c5ef97961a4df03598cc643b6a8f3990b98b"
-  integrity sha512-Bc5zx3aB1xVEncjxG7gyl2dsk2ook/Qycf4qTIkNzXJP01vIAFgXjGAo67+NZxfyLzj57RQoi3QufZQ5dcPRKA==
+"@smartstocktz/core-libs@^0.5.3":
+  version "0.5.3"
+  resolved "https://npm.pkg.github.com/download/@smartstocktz/core-libs/0.5.3/7600a2f5da1204ba22c96e5dab6ada74ebecc436a7986859199e3b4a76715f32#5ecd1195e7aae48bd9da99fbc3027e00eb2a1881"
+  integrity sha512-jqfVlTc5pWQv5OZCPJ8PYE/u+mIbYCnYnaFEODUVVA7rXNcRp9x1M2+VigtOHj6vktj3pbSUz6u1uoSYwNRF6g==
   dependencies:
     tslib "^2.0.0"
 
