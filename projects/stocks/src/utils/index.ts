@@ -12,10 +12,7 @@ export function getStockQuantity(stock: StockModel): number {
 }
 
 export function getProductFromTransferProduct(value: any): string {
-  if (typeof value === 'string') {
-    return value;
-  }
-  if (typeof value === 'object') {
-    return value.product;
-  }
+  if (typeof value === 'string') { return value; }
+  if (typeof value === 'object' && typeof value.product === 'string') { return value.product; }
+  throw {message: 'value must be string or object with product field'};
 }

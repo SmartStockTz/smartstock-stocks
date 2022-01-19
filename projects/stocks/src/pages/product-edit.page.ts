@@ -3,7 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockModel} from '../models/stock.model';
 import {StockState} from '../states/stock.state';
-import {getStockQuantity} from '../utils/stock.util';
+import {getStockQuantity} from '../utils';
 
 @Component({
   selector: 'app-stock-edit',
@@ -31,32 +31,35 @@ export class EditPageComponent implements OnInit {
 
   getStock(): void {
     this.loadStock = true;
-    this.activatedRouter.params.subscribe(async value => {
-      if (value && value.id) {
-        return this.stockState.getStock(value.id).then(value1 => {
-          if (value1) {
-            value1.quantity = getStockQuantity(value1);
-            this.stock = value1;
-          } else {
-            throw new Error('no product');
-          }
-        }).catch(_ => {
-          // console.log(_);
-          this.snack.open('Fails to get stock for update, try again', 'Ok', {
-            duration: 3000
+    this.activatedRouter.params.subscribe({
+      next: async value => {
+        if (value && value.id) {
+          return this.stockState.getStock(value.id).then(value1 => {
+            if (value1) {
+              value1.quantity = getStockQuantity(value1);
+              this.stock = value1;
+            } else {
+              throw new Error('no product');
+            }
+          }).catch(_ => {
+            // console.log(_);
+            this.snack.open('Fails to get stock for update, try again', 'Ok', {
+              duration: 3000
+            });
+            this.router.navigateByUrl('/stock/products').catch();
+          }).finally(() => {
+            this.loadStock = false;
           });
-          this.router.navigateByUrl('/stock/products').catch();
-        }).finally(() => {
-          this.loadStock = false;
+        } else {
+          throw new Error('no id');
+        }
+      },
+      error: error => {
+        this.snack.open('Fails to get stock for update, try again', 'Ok', {
+          duration: 3000
         });
-      } else {
-        throw new Error('no id');
+        this.router.navigateByUrl('/stock/products').catch();
       }
-    }, error => {
-      this.snack.open('Fails to get stock for update, try again', 'Ok', {
-        duration: 3000
-      });
-      this.router.navigateByUrl('/stock/products').catch();
     });
   }
 }

@@ -3,6 +3,7 @@ import {StockModel} from '../models/stock.model';
 import {getDaasAddress, getFaasAddress, SecurityUtil} from '@smartstocktz/core-libs';
 import {cache, database, functions, init} from 'bfast';
 import {ShopModel} from '../models/shop.model';
+import {sha1} from 'crypto-hash';
 
 export class StockWorker {
 
@@ -46,26 +47,39 @@ export class StockWorker {
     return result;
   }
 
-  async import(csv: string): Promise<StockModel[]> {
+  async prepareStockForImportFromCsv(csv: string): Promise<StockModel[]> {
+    if (typeof csv !== 'string') {
+      throw {message: 'csv must be a string with , delimiter'};
+    }
     return this.csvToJSON(csv).map((x) => {
       if (x && x.hasOwnProperty('canExpire')) {
         x.canExpire = (x.canExpire.toString().toLowerCase().trim() === 'true');
+      } else {
+        x.canExpire = false;
       }
       if (x && x.hasOwnProperty('downloadable')) {
         x.downloadable = (x.downloadable.toString().toLowerCase().trim() === 'true');
+      } else {
+        x.downloadable = false;
       }
       if (x && x.hasOwnProperty('saleable')) {
         x.saleable = (x.saleable.toString().toLowerCase().trim() === 'true');
+      } else {
+        x.saleable = true;
       }
       if (x && x.hasOwnProperty('purchasable')) {
         x.purchasable = (x.purchasable.toString().toLowerCase().trim() === 'true');
+      } else {
+        x.purchasable = true;
       }
       if (x && x.hasOwnProperty('stockable')) {
         x.stockable = (x.stockable.toString().toLowerCase().trim() === 'true');
+      } else {
+        x.stockable = true;
       }
       x.id = SecurityUtil.generateUUID();
-      x.createdAt = new Date().toISOString();
-      x.updatedAt = new Date().toISOString();
+      x.createdAt = new Date();
+      x.updatedAt = new Date();
       return x;
     });
   }
@@ -74,6 +88,14 @@ export class StockWorker {
     return stocks.filter(x => {
       return x && x.product ? x.product.toString().toLowerCase().includes(query.toLowerCase()) : false;
     });
+  }
+
+  async localStocksHashes(stocks: StockModel[]): Promise<string[]> {
+    if (!Array.isArray(stocks)) { return []; }
+    return await Promise.all(stocks.map(x => {
+      delete x.quantity;
+      return sha1(JSON.stringify(x));
+    }));
   }
 
   async export(stocks: StockModel[]): Promise<string> {

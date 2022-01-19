@@ -5,14 +5,24 @@ import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockState} from '../states/stock.state';
+import {StockService} from '../services/stock.service';
 
 @Component({
   selector: 'app-stock-quantity-tracking',
   template: `
     <div *ngIf="stock" style="margin-bottom: 100px">
-      <app-stock-quantity-head [stock]="stock"></app-stock-quantity-head>
-      <app-stock-quantity-histogram [stock]="stock"></app-stock-quantity-histogram>
-      <app-stock-quantity-tracking-table [stock]="stock"></app-stock-quantity-tracking-table>
+      <div *ngIf="loadQuantity === false && quantityError===false">
+        <app-stock-quantity-head [stock]="stock"></app-stock-quantity-head>
+        <app-stock-quantity-histogram [stock]="stock"></app-stock-quantity-histogram>
+        <app-stock-quantity-tracking-table [stock]="stock"></app-stock-quantity-tracking-table>
+      </div>
+      <span *ngIf="loadQuantity===true && quantityError === false" class="d-flex-center">
+        Loading...
+      </span>
+      <a href="#" (click)="refreshQuantity($event)" *ngIf="loadQuantity===false && quantityError === true"
+         class="d-flex-center">
+        Refresh
+      </a>
     </div>
   `,
   styleUrls: []
@@ -21,10 +31,13 @@ import {StockState} from '../states/stock.state';
 export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
   stock: StockModel;
   destroyer = new Subject();
+  loadQuantity = false;
+  quantityError = false;
 
   constructor(private readonly activatedRoute: ActivatedRoute,
               private readonly snack: MatSnackBar,
               private readonly stockState: StockState,
+              private readonly stockService: StockService,
               private readonly router: Router) {
   }
 
@@ -39,7 +52,10 @@ export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
         this.router.navigateByUrl('/stock/products').catch(console.log);
       };
       if (value && value.id) {
-        this.stockState.getStock(value.id).then(value1 => this.stock = value1).catch(_ => {
+        this.stockState.getStock(value.id).then(value1 => {
+          this.stock = value1;
+          this.fetchQuantity();
+        }).catch(_ => {
           console.log(_);
           err();
         });
@@ -48,4 +64,22 @@ export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  fetchQuantity(): void {
+    this.loadQuantity = true;
+    this.quantityError = false;
+    this.stockService.getProductQuantityObject(this.stock.id).then(value => {
+      this.stock.quantity = value.quantity;
+    }).catch(_ => {
+      this.quantityError = true;
+    }).finally(() => {
+      this.loadQuantity = false;
+    });
+  }
+
+  refreshQuantity($event: MouseEvent): void {
+    $event.preventDefault();
+    this.fetchQuantity();
+  }
+
 }

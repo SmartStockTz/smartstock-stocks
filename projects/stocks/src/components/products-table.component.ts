@@ -13,7 +13,7 @@ import {MatSidenav} from '@angular/material/sidenav';
 import {MatPaginator} from '@angular/material/paginator';
 import {MatSort} from '@angular/material/sort';
 import {DialogDeleteComponent, StockDetailsComponent} from './stock.component';
-import {getStockQuantity} from '../utils/stock.util';
+import {getStockQuantity} from '../utils';
 
 @Component({
   selector: 'app-products-table',
