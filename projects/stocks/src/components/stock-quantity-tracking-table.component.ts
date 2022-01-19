@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {StockModel} from '../models/stock.model';
 import {MatTableDataSource} from '@angular/material/table';
-import {getStockQuantity} from '../utils';
+import {getStockQuantity} from '../utils/util';
 import {MatPaginator} from '@angular/material/paginator';
 import {StockService} from '../services/stock.service';
 

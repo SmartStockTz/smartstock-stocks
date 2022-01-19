@@ -1,4 +1,4 @@
-import {getProductFromTransferProduct, getStockQuantity} from './index';
+import {getProductFromTransferProduct, getStockQuantity} from './util';
 
 describe('Utils', () => {
   describe('getStockQuantity', () => {

@@ -3,7 +3,7 @@ import {ActivatedRoute, Router} from '@angular/router';
 import {MatSnackBar} from '@angular/material/snack-bar';
 import {StockModel} from '../models/stock.model';
 import {StockState} from '../states/stock.state';
-import {getStockQuantity} from '../utils';
+import {getStockQuantity} from '../utils/util';
 
 @Component({
   selector: 'app-stock-edit',

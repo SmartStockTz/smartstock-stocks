@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import {StockModel} from '../models/stock.model';
-import {getStockQuantity} from '../utils';
+import {getStockQuantity} from '../utils/util';
 import {StockService} from '../services/stock.service';
 
 @Component({

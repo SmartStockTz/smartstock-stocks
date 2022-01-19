@@ -165,14 +165,15 @@ export class StockService {
     const shop = await this.userService.getCurrentShop();
     const stockCache = cache({database: shop.projectId, collection: 'stocks'});
     const st = await stockCache.getAll();
-    const hashes = await StockService.withWorker(stockWorker => {
-      return stockWorker.localStocksHashes(st);
+    const hashes = await StockService.withWorker(async stockWorker => {
+      return await stockWorker.localStocksHashes(st);
     });
     const url = `/shop/${shop.projectId}/${shop.applicationId}/stock/products`;
     return functions(shop.projectId).request(url).post(hashes).then(async (stocks: StockModel[]) => {
       // await cache({database: shop.projectId, collection: 'stocks'}).clearAll();
       await stockCache.setBulk(stocks.map(s => s.id), stocks);
-      return StockService.withWorker(async stockWorker => stockWorker.sort(await stockCache.getAll()));
+      const stok = await stockCache.getAll();
+      return StockService.withWorker(async stockWorker => stockWorker.sort(stok));
     });
   }
 
