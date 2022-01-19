@@ -91,11 +91,14 @@ export class StockWorker {
   }
 
   async localStocksHashes(stocks: StockModel[]): Promise<string[]> {
-    if (!Array.isArray(stocks)) { return []; }
-    return await Promise.all(stocks.map(x => {
-      delete x.quantity;
-      return sha1(JSON.stringify(x));
-    }));
+    if (!Array.isArray(stocks)) {
+      return [];
+    }
+    const hashes: string[] = [];
+    for (const stock of stocks) {
+      hashes.push(await sha1(JSON.stringify(stock)));
+    }
+    return hashes;
   }
 
   async export(stocks: StockModel[]): Promise<string> {
