@@ -1,7 +1,7 @@
 import {Component, Inject} from '@angular/core';
 import {MAT_BOTTOM_SHEET_DATA, MatBottomSheetRef} from '@angular/material/bottom-sheet';
 import {TransferModel} from '../models/transfer.model';
-import {getProductFromTransferProduct} from "../utils/stock.util";
+import {getProductFromTransferProduct} from "../utils";
 
 // @dynamic
 @Component({

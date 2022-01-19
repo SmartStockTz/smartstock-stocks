@@ -72,9 +72,6 @@ export class AppModule {
               private readonly stockService: StockService) {
     syncService.startWorker().catch(console.log);
     stockService.compactStockQuantity().catch(console.log);
-    IpfsService.getVersion().then(value => {
-      console.log('ipfs version : ', value.version);
-    });
     init({
       applicationId: 'smartstock_lb',
       projectId: 'smartstock'

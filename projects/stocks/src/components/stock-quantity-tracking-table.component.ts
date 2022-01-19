@@ -1,8 +1,9 @@
 import {AfterViewInit, Component, Input, OnInit, ViewChild} from '@angular/core';
 import {StockModel} from '../models/stock.model';
 import {MatTableDataSource} from '@angular/material/table';
-import {getStockQuantity} from '../utils/stock.util';
+import {getStockQuantity} from '../utils';
 import {MatPaginator} from '@angular/material/paginator';
+import {StockService} from '../services/stock.service';
 
 @Component({
   selector: 'app-stock-quantity-tracking-table',
@@ -50,7 +51,6 @@ export class StockQuantityTrackingTableComponent implements OnInit, AfterViewIni
   }
 
   ngOnInit(): void {
-    this.tableDataSource.data = Object.values(this.stock.quantity);
     this.total = getStockQuantity(this.stock);
   }
 

@@ -44,9 +44,7 @@ export class StockService {
       () => {
         console.log('connected on stocks changes');
         this.changes.emit({
-          auth: {
-            masterKey: shop.masterKey
-          },
+          auth: {masterKey: shop.masterKey},
           body: {
             projectId: shop.projectId,
             applicationId: shop.applicationId,
@@ -58,18 +56,19 @@ export class StockService {
       () => console.log('disconnected on stocks changes')
     );
     this.changes.listener(async response => {
-      // console.log(response);
       const stockCache = cache({database: shop.projectId, collection: 'stocks'});
       if (response && response.body && response.body.change) {
         switch (response.body.change.name) {
           case 'create':
             const data = response.body.change.snapshot;
+            delete data.quantity;
             await stockCache.set(data.id, data);
             return;
           case 'update':
             let updateData = response.body.change.snapshot;
             const oldData = await stockCache.get(updateData.id);
             updateData = Object.assign(typeof oldData === 'object' ? oldData : {}, updateData);
+            delete updateData.quantity;
             await stockCache.set(updateData.id, updateData);
             return;
           case 'delete':
@@ -109,7 +108,7 @@ export class StockService {
     return csv;
   }
 
-  private mapStockQuantity(stock: StockModel): StockModel {
+  private mapStockQuantityFromNumberToObject(stock: StockModel): StockModel {
     const s = JSON.parse(JSON.stringify(stock));
     const q = s.quantity as number;
     s.quantity = {};
@@ -124,9 +123,9 @@ export class StockService {
   async importStocks(csv: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     let st = await StockService.withWorker(stockWorker => {
-      return stockWorker.import(csv);
+      return stockWorker.prepareStockForImportFromCsv(csv);
     });
-    st = st.map(x => this.mapStockQuantity(x));
+    st = st.map(x => this.mapStockQuantityFromNumberToObject(x));
     await database(shop.projectId).table('stocks').save(st);
     await cache({database: shop.projectId, collection: 'stocks'}).setBulk(st.map(z => z.id), st);
     return st;
@@ -136,13 +135,14 @@ export class StockService {
     stock.id = stock.id ? stock.id : SecurityUtil.generateUUID();
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
-    stock = await this.mapStockQuantity(stock);
+    stock = await this.mapStockQuantityFromNumberToObject(stock);
     const shop = await this.userService.getCurrentShop();
     await database(shop.projectId).table('stocks').query().byId(stock.id)
       .updateBuilder()
       .upsert(true)
       .doc(stock)
       .update();
+    delete stock.quantity;
     cache({database: shop.projectId, collection: 'stocks'}).set(stock.id, stock).catch(console.log);
     return stock;
   }
@@ -163,10 +163,16 @@ export class StockService {
 
   async getProductsRemote(): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).table('stocks').getAll<any>().then(async stocks => {
-      await cache({database: shop.projectId, collection: 'stocks'}).clearAll();
-      await cache({database: shop.projectId, collection: 'stocks'}).setBulk(stocks.map(s => s.id), stocks);
-      return StockService.withWorker(async stockWorker => stockWorker.sort(stocks));
+    const stockCache = cache({database: shop.projectId, collection: 'stocks'});
+    const st = await stockCache.getAll();
+    const hashes = await StockService.withWorker(stockWorker => {
+      return stockWorker.localStocksHashes(st);
+    });
+    const url = `/shop/${shop.projectId}/${shop.applicationId}/stock/products`;
+    return functions(shop.projectId).request(url).post(hashes).then(async (stocks: StockModel[]) => {
+      // await cache({database: shop.projectId, collection: 'stocks'}).clearAll();
+      await stockCache.setBulk(stocks.map(s => s.id), stocks);
+      return StockService.withWorker(async stockWorker => stockWorker.sort(await stockCache.getAll()));
     });
   }
 
@@ -219,6 +225,13 @@ export class StockService {
     const shop = await this.userService.getCurrentShop();
     return StockService.withWorker(async stockWorker => {
       return await stockWorker.positiveStockValue(shop);
+    });
+  }
+
+  async getProductQuantityObject(stockId): Promise<any> {
+    const shop = await this.userService.getCurrentShop();
+    return database(shop.projectId).table('stocks').get(stockId, {
+      returnFields: ['quantity']
     });
   }
 }
