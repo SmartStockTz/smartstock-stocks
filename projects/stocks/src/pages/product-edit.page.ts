@@ -11,7 +11,7 @@ import {getStockQuantity} from '../utils/util';
   template: `
     <app-stock-new *ngIf="stock" [isLoadingData]="loadStock" [isUpdateMode]="true"
                    [initialStock]="stock"></app-stock-new>
-    <div style="display: flex; justify-content: center; align-items: center; height: 200px; flex-direction: column">
+    <div *ngIf="!stock" style="display: flex; justify-content: center; align-items: center; height: 200px; flex-direction: column">
       <mat-progress-spinner [diameter]="30" mode="indeterminate" color="primary"></mat-progress-spinner>
       <span>Loading...</span>
     </div>
