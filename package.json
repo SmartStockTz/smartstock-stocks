@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
+    "box": "npm install -f && npm start",
     "start": "ng serve stocks-mock",
     "build": "ng build -c production stocks && node copy-worker.js",
     "publish": "npm run build && cd dist/stocks && npm publish --ignore-script",
