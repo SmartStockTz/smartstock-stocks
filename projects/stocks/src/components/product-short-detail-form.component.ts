@@ -1,9 +1,9 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
 import {
   AbstractControl,
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   ValidationErrors,
   ValidatorFn,
   Validators
@@ -526,13 +526,13 @@ import { Subject } from "rxjs";
 export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   @Input() isUpdateMode = false;
   @Input() initialStock: StockModel;
-  productForm: FormGroup;
+  productForm: UntypedFormGroup;
   isLoadingData = false;
   mainProgress = false;
   destroy = new Subject();
 
   constructor(
-    private readonly formBuilder: FormBuilder,
+    private readonly formBuilder: UntypedFormBuilder,
     private readonly snack: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly router: Router,
@@ -749,8 +749,8 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
     this.productForm.get("images").setValue(images);
   }
 
-  getPurchasableFormControl(): FormControl {
-    return this.productForm.get("purchasable") as FormControl;
+  getPurchasableFormControl(): UntypedFormControl {
+    return this.productForm.get("purchasable") as UntypedFormControl;
   }
 
   addFiles($event: FileModel[]): void {

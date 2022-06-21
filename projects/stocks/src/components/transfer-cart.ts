@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { FormControl, Validators } from "@angular/forms";
+import { UntypedFormControl, Validators } from "@angular/forms";
 import { MatSidenav } from "@angular/material/sidenav";
 import { CartDrawerState, DeviceState, UserService } from "smartstock-core";
 import { CartState } from "../states/cart.state";
@@ -105,7 +105,7 @@ import { TransferHeader } from "../models/transfer-header";
 })
 export class TransferCart implements OnInit, OnDestroy {
   drawer: MatSidenav;
-  supplierFormControl = new FormControl("", [
+  supplierFormControl = new UntypedFormControl("", [
     Validators.nullValidator,
     Validators.required,
     Validators.minLength(1)

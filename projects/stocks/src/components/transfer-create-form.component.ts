@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TransferState} from '../states/transfer.state';
 import {MessageService, UserService} from 'smartstock-core';
 import {ShopModel} from '../models/shop.model';
@@ -91,7 +91,7 @@ export class TransferCreateFormComponent implements OnInit {
   selectedProducts: { quantity: number, product: StockModel }[] = [];
   totalCost = 0;
 
-  constructor(private readonly formBuilder: FormBuilder,
+  constructor(private readonly formBuilder: UntypedFormBuilder,
               private readonly message: MessageService,
               private readonly userService: UserService,
               private readonly dialog: MatDialog,
