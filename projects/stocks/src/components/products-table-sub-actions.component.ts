@@ -1,27 +1,53 @@
-import {Component, EventEmitter, OnDestroy, OnInit, Output} from '@angular/core';
-import {DeviceState, MessageService} from '@smartstocktz/core-libs';
-import {MatDialog} from '@angular/material/dialog';
-import {StockState} from '../states/stock.state';
-import {DialogDeleteComponent} from './stock.component';
-import {ImportsDialogComponent} from './imports.component';
+import {
+  Component,
+  EventEmitter,
+  OnDestroy,
+  OnInit,
+  Output
+} from "@angular/core";
+import { DeviceState, MessageService } from "smartstock-core";
+import { MatDialog } from "@angular/material/dialog";
+import { StockState } from "../states/stock.state";
+import { DialogDeleteComponent } from "./stock.component";
+import { ImportsDialogComponent } from "./imports.component";
 
 @Component({
-  selector: 'app-stock-products-table-sub-actions',
+  selector: "app-stock-products-table-sub-actions",
   template: `
     <div class="product-options-container">
-      <button routerLink="/stock/products/create" color="primary" mat-button class="menu-button">
+      <button
+        routerLink="/stock/products/create"
+        color="primary"
+        mat-button
+        class="menu-button"
+      >
         Create
       </button>
-      <button class="menu-button" [disabled]="stockState.isFetchStocks | async" (click)="reload()" color="primary"
-              mat-button>
+      <button
+        class="menu-button"
+        [disabled]="stockState.isFetchStocks | async"
+        (click)="reload()"
+        color="primary"
+        mat-button
+      >
         Reload
       </button>
-      <button class="menu-button" [disabled]="stockState.isImportProducts | async" (click)="importProducts()"
-              color="primary" mat-button>
+      <button
+        class="menu-button"
+        [disabled]="stockState.isImportProducts | async"
+        (click)="importProducts()"
+        color="primary"
+        mat-button
+      >
         Import
       </button>
-      <button class="menu-button" [disabled]="stockState.isExportToExcel | async" (click)="exportProducts()"
-              color="primary" mat-button>
+      <button
+        class="menu-button"
+        [disabled]="stockState.isExportToExcel | async"
+        (click)="exportProducts()"
+        color="primary"
+        mat-button
+      >
         Export
       </button>
       <!--      <button class="menu-button" *ngIf="stockState.selection.selected.length>1"-->
@@ -30,49 +56,59 @@ import {ImportsDialogComponent} from './imports.component';
       <!--              (click)="createGroupProduct()">-->
       <!--        Group ( {{stockState.selection.selected.length}} )-->
       <!--      </button>-->
-      <button class="menu-button" *ngIf="stockState.selection.hasValue()"
-              [disabled]="(stockState.isDeleteStocks | async)===true" mat-button
-              color="primary"
-              (click)="deleteMany()">
-        Delete ( {{stockState.selection.selected.length}} )
+      <button
+        class="menu-button"
+        *ngIf="stockState.selection.hasValue()"
+        [disabled]="(stockState.isDeleteStocks | async) === true"
+        mat-button
+        color="primary"
+        (click)="deleteMany()"
+      >
+        Delete ( {{ stockState.selection.selected.length }} )
       </button>
     </div>
   `,
-  styleUrls: ['../styles/products-options.style.scss',
-    '../styles/stock-desktop.style.scss', '../styles/index.style.scss'
+  styleUrls: [
+    "../styles/products-options.style.scss",
+    "../styles/stock-desktop.style.scss",
+    "../styles/index.style.scss"
   ]
 })
-
 export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
-
   @Output() done = new EventEmitter();
 
-  constructor(private readonly dialog: MatDialog,
-              private readonly messageService: MessageService,
-              public readonly deviceState: DeviceState,
-              public readonly stockState: StockState) {
-  }
+  constructor(
+    private readonly dialog: MatDialog,
+    private readonly messageService: MessageService,
+    public readonly deviceState: DeviceState,
+    public readonly stockState: StockState
+  ) {}
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   deleteMany(): void {
     if (this.stockState.selection.isEmpty()) {
       this.messageService.showMobileInfoMessage(
-        'Please select at least one item',
+        "Please select at least one item",
         1000,
-        'bottom'
+        "bottom"
       );
     } else {
-      this.dialog.open(DialogDeleteComponent, {
-        width: '350',
-        data: {title: 'Products'}
-      }).afterClosed()
-        .subscribe(value => {
-          if (value === 'yes') {
+      this.dialog
+        .open(DialogDeleteComponent, {
+          width: "350",
+          data: { title: "Products" }
+        })
+        .afterClosed()
+        .subscribe((value) => {
+          if (value === "yes") {
             this.stockState.deleteManyStocks(this.stockState.selection);
           } else {
-            this.messageService.showMobileInfoMessage('Process cancelled', 3000, 'bottom');
+            this.messageService.showMobileInfoMessage(
+              "Process cancelled",
+              3000,
+              "bottom"
+            );
           }
         });
     }
@@ -83,21 +119,21 @@ export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
   }
 
   importProducts(): void {
-    this.dialog.open(ImportsDialogComponent, {
-      closeOnNavigation: true,
-    }).afterClosed().subscribe(value => {
-      this.done.emit();
-    });
+    this.dialog
+      .open(ImportsDialogComponent, {
+        closeOnNavigation: true
+      })
+      .afterClosed()
+      .subscribe((value) => {
+        this.done.emit();
+      });
   }
 
   exportProducts(): void {
     this.stockState.exportToExcel();
   }
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 
-  createGroupProduct(): void {
-
-  }
+  createGroupProduct(): void {}
 }

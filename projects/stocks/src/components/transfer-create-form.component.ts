@@ -1,7 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {FormBuilder, FormGroup, Validators} from '@angular/forms';
 import {TransferState} from '../states/transfer.state';
-import {MessageService, UserService} from '@smartstocktz/core-libs';
+import {MessageService, UserService} from 'smartstock-core';
 import {ShopModel} from '../models/shop.model';
 import {MatDialog} from '@angular/material/dialog';
 import {ProductSearchDialogComponent} from './product-search-dialog.component';
