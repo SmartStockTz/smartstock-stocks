@@ -1,35 +1,45 @@
-import {Component, OnInit} from '@angular/core';
-import {MatDialogRef} from '@angular/material/dialog';
-import {MatSnackBar} from '@angular/material/snack-bar';
-import {LogService} from '@smartstocktz/core-libs';
-import {StockState} from '../states/stock.state';
-import {DomSanitizer} from '@angular/platform-browser';
+import { Component, OnInit } from "@angular/core";
+import { MatDialogRef } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
+import { LogService } from "smartstock-core";
+import { StockState } from "../states/stock.state";
+import { DomSanitizer } from "@angular/platform-browser";
 
 @Component({
-  selector: 'app-upload-products',
+  selector: "app-upload-products",
   template: `
     <div>
       <div class="d-flex flex-row flex-wrap align-items-center">
         <!--        <span style="flex-grow: 1"></span>-->
-        <a download="stock.csv" style="margin: 5px; flex-grow: 1" [href]="stocksBlob">Download sample</a>
-        <button (click)="fileU.click()"
-                style="margin: 5px"
-                [disabled]="(stockState.isImportProducts | async)===true"
-                color="primary" mat-flat-button>
+        <a
+          download="stock.csv"
+          style="margin: 5px; flex-grow: 1"
+          [href]="stocksBlob"
+          >Download sample</a
+        >
+        <button
+          (click)="fileU.click()"
+          style="margin: 5px"
+          [disabled]="(stockState.isImportProducts | async) === true"
+          color="primary"
+          mat-flat-button
+        >
           Upload CSV
-          <mat-progress-spinner *ngIf="(stockState.isImportProducts | async)===true"
-                                style="display: inline-block"
-                                diameter="30"
-                                mode="indeterminate">
+          <mat-progress-spinner
+            *ngIf="(stockState.isImportProducts | async) === true"
+            style="display: inline-block"
+            diameter="30"
+            mode="indeterminate"
+          >
           </mat-progress-spinner>
         </button>
       </div>
       <mat-divider></mat-divider>
       <div mat-dialog-content>
         <p>
-          <br>
-          Prepare your excel sheet and change it to CSV then upload it here.<br>
-          Your excel sheet must contain the following columns<br>
+          <br />
+          Prepare your excel sheet and change it to CSV then upload it here.<br />
+          Your excel sheet must contain the following columns<br />
           <u>Note: CSV delimiter must be </u> ( , )
         </p>
         <div>
@@ -64,7 +74,10 @@ import {DomSanitizer} from '@angular/platform-browser';
             </tr>
             <tr>
               <td>wholesaleQuantity</td>
-              <td>how many unit quantity of product to be reduced when product sold as a whole <u>e.g 3</u></td>
+              <td>
+                how many unit quantity of product to be reduced when product
+                sold as a whole <u>e.g 3</u>
+              </td>
             </tr>
             <tr>
               <td>quantity</td>
@@ -91,26 +104,31 @@ import {DomSanitizer} from '@angular/platform-browser';
       </div>
     </div>
 
-    <input #fileU style="display: none" (change)="csvUploaded($event)" type="file" accept=".csv">
+    <input
+      #fileU
+      style="display: none"
+      (change)="csvUploaded($event)"
+      type="file"
+      accept=".csv"
+    />
   `,
-  styleUrls: ['../styles/imports.style.scss']
+  styleUrls: ["../styles/imports.style.scss"]
 })
 export class ImportsDialogComponent implements OnInit {
-
-  constructor(private dialogRef: MatDialogRef<ImportsDialogComponent>,
-              private snack: MatSnackBar,
-              private readonly logger: LogService,
-              private domSanitizer: DomSanitizer,
-              public readonly stockState: StockState) {
-  }
+  constructor(
+    private dialogRef: MatDialogRef<ImportsDialogComponent>,
+    private snack: MatSnackBar,
+    private readonly logger: LogService,
+    private domSanitizer: DomSanitizer,
+    public readonly stockState: StockState
+  ) {}
 
   stocksBlob = this.domSanitizer.bypassSecurityTrustUrl(
     `data:text/csv,product,saleable,stockable,purchasable,description,purchase,retailPrice,wholesalePrice,wholesaleQuantity,quantity,reorder,unit,category,supplier
-tshirt,TRUE,TRUE,TRUE,form six,8000,12000,100000,10,41,10,Pieces,male,gervas`);
+tshirt,TRUE,TRUE,TRUE,form six,8000,12000,100000,10,41,10,Pieces,male,gervas`
+  );
 
-
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   csvUploaded($event: Event): void {
     // @ts-ignore
@@ -118,11 +136,14 @@ tshirt,TRUE,TRUE,TRUE,form six,8000,12000,100000,10,41,10,Pieces,male,gervas`);
     if (file) {
       const fileReader = new FileReader();
       fileReader.onload = (evt) => {
-        this.stockState.importProducts(evt.target.result.toString(), this.dialogRef);
+        this.stockState.importProducts(
+          evt.target.result.toString(),
+          this.dialogRef
+        );
       };
-      fileReader.readAsText(file, 'UTF-8');
+      fileReader.readAsText(file, "UTF-8");
     } else {
-      this.snack.open('Error while read csv', 'Ok', {
+      this.snack.open("Error while read csv", "Ok", {
         duration: 3000
       });
     }

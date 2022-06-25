@@ -1,18 +1,21 @@
-import {Component} from '@angular/core';
-import {DeviceState} from '@smartstocktz/core-libs';
+import { Component } from "@angular/core";
+import { DeviceState } from "smartstock-core";
 
 @Component({
-  selector: 'app-product-quantity-track-page',
+  selector: "app-product-quantity-track-page",
   template: `
     <app-layout-sidenav
       [heading]="'Quantity tracking'"
       [leftDrawer]="side"
       [body]="body"
       backLink="/stock/products"
-      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
-      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [leftDrawerMode]="
+        (deviceState.enoughWidth | async) === true ? 'side' : 'over'
+      "
+      [leftDrawerOpened]="(deviceState.enoughWidth | async) === true"
       [hasBackRoute]="true"
-      [showProgress]="false">
+      [showProgress]="false"
+    >
       <ng-template #side>
         <app-drawer></app-drawer>
       </ng-template>
@@ -23,9 +26,6 @@ import {DeviceState} from '@smartstocktz/core-libs';
   `,
   styleUrls: []
 })
-
 export class ProductQuantityTrackPage {
-  constructor(public readonly deviceState: DeviceState) {
-  }
+  constructor(public readonly deviceState: DeviceState) {}
 }
-
