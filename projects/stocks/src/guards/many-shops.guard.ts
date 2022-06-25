@@ -1,19 +1,32 @@
-import {Injectable} from '@angular/core';
-import {ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree} from '@angular/router';
-import {Observable} from 'rxjs';
-import {MessageService, UserService} from '@smartstocktz/core-libs';
+import { Injectable } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+  UrlTree
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { MessageService, UserService } from "smartstock-core";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class ManyShopsGuard implements CanActivate {
-  constructor(private readonly userService: UserService,
-              private readonly message: MessageService,
-              private readonly router: Router) {
-  }
+  constructor(
+    private readonly userService: UserService,
+    private readonly message: MessageService,
+    private readonly router: Router
+  ) {}
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot)
-    : Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ):
+    | Observable<boolean | UrlTree>
+    | Promise<boolean | UrlTree>
+    | boolean
+    | UrlTree {
     return new Promise(async (resolve, reject) => {
       const user = await this.userService.currentUser();
       const shops = await this.userService.getShops(user as any);
@@ -21,13 +34,13 @@ export class ManyShopsGuard implements CanActivate {
         resolve(true);
       } else {
         this.message.showMobileInfoMessage(
-          'Stock transfer require more than one shop, current you have one shop',
+          "Stock transfer require more than one shop, current you have one shop",
           4000,
-          'bottom');
-        this.router.navigateByUrl('/stock').catch();
+          "bottom"
+        );
+        this.router.navigateByUrl("/stock").catch();
         resolve(false);
       }
     });
   }
-
 }

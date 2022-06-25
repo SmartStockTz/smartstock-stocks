@@ -1,18 +1,21 @@
-import {Component, OnDestroy} from '@angular/core';
-import {DeviceState} from '@smartstocktz/core-libs';
-import {TransferState} from '../states/transfer.state';
+import { Component, OnDestroy } from "@angular/core";
+import { DeviceState } from "smartstock-core";
+import { TransferState } from "../states/transfer.state";
 
 @Component({
-  selector: 'app-stocks-index',
+  selector: "app-stocks-index",
   template: `
     <app-layout-sidenav
       [body]="body"
       [leftDrawer]="leftDrawer"
-      [leftDrawerMode]="(deviceState.enoughWidth | async)===true?'side':'over'"
-      [leftDrawerOpened]="(deviceState.enoughWidth | async)===true"
+      [leftDrawerMode]="
+        (deviceState.enoughWidth | async) === true ? 'side' : 'over'
+      "
+      [leftDrawerOpened]="(deviceState.enoughWidth | async) === true"
       backLink="/stock"
       [hasBackRoute]="true"
-      [heading]="'Transfer'">
+      [heading]="'Transfer'"
+    >
       <ng-template #leftDrawer>
         <app-drawer></app-drawer>
       </ng-template>
@@ -22,16 +25,15 @@ import {TransferState} from '../states/transfer.state';
     </app-layout-sidenav>
   `
 })
-
 export class TransferPage implements OnDestroy {
-
-  constructor(public readonly deviceState: DeviceState,
-              private readonly transferState: TransferState) {
-    document.title = 'SmartStock - Stock Transfers';
+  constructor(
+    public readonly deviceState: DeviceState,
+    private readonly transferState: TransferState
+  ) {
+    document.title = "SmartStock - Stock Transfers";
   }
 
   ngOnDestroy(): void {
     this.transferState.dispose();
   }
-
 }

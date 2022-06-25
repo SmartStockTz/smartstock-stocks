@@ -1,5 +1,5 @@
-import {MetasModel} from './metas.model';
-import {FileModel} from '@smartstocktz/core-libs';
+import { MetasModel } from "./metas.model";
+import { FileModel } from "smartstock-core";
 
 export interface StockModel {
   quantity_track?: any;
@@ -16,22 +16,24 @@ export interface StockModel {
   description?: string;
   unit?: string;
   category?: string;
-  type?: 'simple' | 'subscription';
+  type?: "simple" | "subscription";
   subscription?: {
-    duration: number,
-    grace: number
+    duration: number;
+    grace: number;
   };
   downloadable?: boolean | false;
   downloads?: FileModel[];
   stockable?: boolean | true;
   purchasable?: boolean | true;
-  quantity?: number | {
-    [key: string]: {
-      q: number,
-      s: string,
-      d: string
-    }
-  };
+  quantity?:
+    | number
+    | {
+        [key: string]: {
+          q: number;
+          s: string;
+          d: string;
+        };
+      };
   wholesaleQuantity?: number;
   reorder?: number;
   purchase?: number;
