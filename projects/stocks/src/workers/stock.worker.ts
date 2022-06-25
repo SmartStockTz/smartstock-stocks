@@ -268,19 +268,15 @@ export class StockWorker {
   }
 
   getStockQuantity(stock: StockModel): number {
-    if (
-      stock &&
-      isNaN(Number(stock.quantity)) &&
-      typeof stock.quantity === "object"
-    ) {
+    if (stock && typeof stock.quantity === "object") {
       // @ts-ignore
-      return Object.values(stock.quantity).reduce<any>((a, b) => a + b.q, 0);
+      try {
+        return Object.values(stock.quantity).reduce<any>((a, b) => a + b.q, 0);
+      } catch (_123) {
+        return 0;
+      }
     }
-    if (
-      stock &&
-      !isNaN(Number(stock.quantity)) &&
-      typeof stock.quantity === "number"
-    ) {
+    if (stock && typeof stock.quantity === "number") {
       return stock.quantity as number;
     }
     return 0;
