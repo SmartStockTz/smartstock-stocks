@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { CategoryCreateFormBottomSheetComponent } from "./category-create-form-bottom-sheet.component";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
 import { CategoryState } from "../states/category.state";
@@ -60,7 +60,7 @@ import { UserService } from "smartstock-core";
   `
 })
 export class CategoryFormFieldComponent implements OnInit, OnDestroy {
-  @Input() formGroup: FormGroup;
+  @Input() formGroup: UntypedFormGroup;
   private sig = false;
   private obfn;
 

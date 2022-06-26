@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { SupplierService } from "../services/supplier.service";
 import { MatBottomSheet } from "@angular/material/bottom-sheet";
@@ -57,7 +57,7 @@ import { UserService } from "smartstock-core";
   `
 })
 export class SuppliersFormFieldComponent implements OnInit, OnDestroy {
-  @Input() formGroup: FormGroup;
+  @Input() formGroup: UntypedFormGroup;
   @Input() purchasable = true;
   suppliers: Observable<any[]>;
   suppliersFetching = true;

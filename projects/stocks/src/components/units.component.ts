@@ -8,9 +8,9 @@ import { MatMenuTrigger } from "@angular/material/menu";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTableDataSource } from "@angular/material/table";
 import {
-  FormBuilder,
-  FormControl,
-  FormGroup,
+  UntypedFormBuilder,
+  UntypedFormControl,
+  UntypedFormGroup,
   Validators
 } from "@angular/forms";
 import { UnitsModel } from "../models/units.model";
@@ -234,13 +234,13 @@ export class UnitsComponent implements OnInit, OnDestroy {
   unitsTableColums = ["name", "abbreviation", "description", "actions"];
   unitsArray: UnitsModel[] = [];
   fetchUnitsFlag = false;
-  nameFormControl = new FormControl();
-  abbreviationFormControl = new FormControl();
-  descriptionFormControl = new FormControl();
+  nameFormControl = new UntypedFormControl();
+  abbreviationFormControl = new UntypedFormControl();
+  descriptionFormControl = new UntypedFormControl();
 
   constructor(
     private readonly unitsService: UnitsService,
-    private readonly formBuilder: FormBuilder,
+    private readonly formBuilder: UntypedFormBuilder,
     private readonly dialog: MatDialog,
     public readonly deviceState: DeviceState,
     private readonly userService: UserService,
@@ -521,11 +521,11 @@ export class DialogUnitDeleteComponent {
   `
 })
 export class DialogUnitNewComponent implements OnInit {
-  newUnitForm: FormGroup;
+  newUnitForm: UntypedFormGroup;
   createUnitProgress = false;
 
   constructor(
-    private readonly formBuilder: FormBuilder,
+    private readonly formBuilder: UntypedFormBuilder,
     private readonly snack: MatSnackBar,
     private readonly unitsService: UnitsService,
     public dialogRef: MatDialogRef<DialogUnitDeleteComponent>

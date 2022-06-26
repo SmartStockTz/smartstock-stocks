@@ -1,5 +1,5 @@
 import { Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { FormGroup } from "@angular/forms";
+import { UntypedFormGroup } from "@angular/forms";
 import { Observable, of } from "rxjs";
 import { MatDialog } from "@angular/material/dialog";
 import { DialogUnitNewComponent } from "./units.component";
@@ -49,7 +49,7 @@ import { UserService } from "smartstock-core";
   `
 })
 export class UnitsFormFieldComponent implements OnInit, OnDestroy {
-  @Input() formGroup: FormGroup;
+  @Input() formGroup: UntypedFormGroup;
   units: Observable<[any]>;
   unitsFetching = true;
   @Input() stockable = false;
