@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { SupplierService } from "../services/supplier.service";
 import { MatDialog } from "@angular/material/dialog";
@@ -98,7 +98,7 @@ import { MatBottomSheetRef } from "@angular/material/bottom-sheet";
   `
 })
 export class SupplierCreateFormComponent implements OnInit {
-  newSupplierForm: FormGroup;
+  newSupplierForm: UntypedFormGroup;
   createSupplierProgress = false;
   @Input() supplier: SupplierModel;
   @Input() bottomRef: MatBottomSheetRef;
@@ -106,7 +106,7 @@ export class SupplierCreateFormComponent implements OnInit {
   // metasModel: BehaviorSubject<MetasModel[]> = new BehaviorSubject([]);
 
   constructor(
-    private readonly formBuilder: FormBuilder,
+    private readonly formBuilder: UntypedFormBuilder,
     private readonly snack: MatSnackBar,
     private readonly dialog: MatDialog,
     private readonly router: Router,

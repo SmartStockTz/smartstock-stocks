@@ -1,6 +1,6 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {StockModel} from '../models/stock.model';
-import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {UntypedFormBuilder, UntypedFormGroup, Validators} from '@angular/forms';
 import {CartState} from '../states/cart.state';
 import {StockState} from '../states/stock.state';
 import {TransferHeader} from '../models/transfer-header';
@@ -48,7 +48,7 @@ import {MatSnackBar} from '@angular/material/snack-bar';
 })
 
 export class AddToCartFormComponent implements OnInit, OnDestroy {
-  addToCartForm: FormGroup;
+  addToCartForm: UntypedFormGroup;
   @Input() product: StockModel;
   @Input() transferHeader: TransferHeader;
   @Output() done = new EventEmitter();
@@ -60,7 +60,7 @@ export class AddToCartFormComponent implements OnInit, OnDestroy {
               private readonly stockState: StockState,
               private readonly snack: MatSnackBar,
               public readonly transferState: TransferState,
-              private readonly formBuilder: FormBuilder) {
+              private readonly formBuilder: UntypedFormBuilder) {
   }
 
   ngOnInit(): void {

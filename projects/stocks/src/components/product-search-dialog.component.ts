@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatDialogRef } from "@angular/material/dialog";
 import { StockState } from "../states/stock.state";
-import { FormControl } from "@angular/forms";
+import { UntypedFormControl } from "@angular/forms";
 import { StockModel } from "../models/stock.model";
 import { debounceTime } from "rxjs/operators";
 import { database } from "bfast";
@@ -71,7 +71,7 @@ import { UserService } from "smartstock-core";
   styleUrls: ["../styles/product-search-dialog.style.scss"]
 })
 export class ProductSearchDialogComponent implements OnInit, OnDestroy {
-  searchFormControl = new FormControl("");
+  searchFormControl = new UntypedFormControl("");
 
   constructor(
     public readonly dialogRef: MatDialogRef<ProductSearchDialogComponent>,

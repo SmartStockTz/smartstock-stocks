@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from "@angular/core";
 import { UserService } from "smartstock-core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from "@angular/forms";
 import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
@@ -41,14 +41,14 @@ import { MatSnackBar } from "@angular/material/snack-bar";
   styleUrls: []
 })
 export class TransferHeaderForm implements OnInit {
-  headerForm: FormGroup;
+  headerForm: UntypedFormGroup;
   shops = [];
   @Output() done = new EventEmitter();
 
   constructor(
     private readonly userService: UserService,
     private readonly snack: MatSnackBar,
-    private readonly formBuilder: FormBuilder
+    private readonly formBuilder: UntypedFormBuilder
   ) {}
 
   ngOnInit(): void {

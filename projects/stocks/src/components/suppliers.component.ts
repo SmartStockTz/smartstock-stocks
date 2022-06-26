@@ -6,7 +6,7 @@ import {
 } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { MatTableDataSource } from "@angular/material/table";
-import { FormBuilder } from "@angular/forms";
+import { UntypedFormBuilder } from "@angular/forms";
 import { SupplierModel } from "../models/supplier.model";
 import { MatPaginator } from "@angular/material/paginator";
 import { SupplierService } from "../services/supplier.service";
@@ -150,7 +150,7 @@ export class SuppliersComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly supplierService: SupplierService,
-    private readonly formBuilder: FormBuilder,
+    private readonly formBuilder: UntypedFormBuilder,
     private readonly dialog: MatDialog,
     private readonly router: Router,
     public readonly deviceState: DeviceState,
