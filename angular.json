@@ -64,7 +64,8 @@
             "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "webWorkerTsConfig": "projects/stocks-mock/tsconfig.worker.json"
           },
           "configurations": {
             "production": {
@@ -129,7 +130,8 @@
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "projects/stocks-mock/src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "webWorkerTsConfig": "projects/stocks-mock/tsconfig.worker.json"
           }
         },
         "e2e": {
