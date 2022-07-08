@@ -79,10 +79,9 @@ import { StockState } from "../states/stock.state";
             </app-libs-rbac>
           </mat-nav-list>
         </div>
-
         <div
           class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3"
-          style=""
+          style="margin-bottom: 50px"
         >
           <div style="padding: 0" class="d-flex flex-row flex-wrap">
             <app-total-products-summary
@@ -92,6 +91,16 @@ import { StockState } from "../states/stock.state";
             <app-products-value-summary
               class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12 mbc"
             ></app-products-value-summary>
+          </div>
+          <div style="padding: 0" class="d-flex flex-row flex-wrap">
+            <retail-value
+              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12 mbc"
+            >
+            </retail-value>
+            <whole-value
+              class="col-sm-12 col-md-6 col-lg-6 col-xl-6 col-12 mbc"
+            >
+            </whole-value>
           </div>
         </div>
       </ng-template>

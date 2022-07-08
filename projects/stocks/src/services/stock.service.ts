@@ -277,6 +277,28 @@ export class StockService {
     });
   }
 
+  async positiveStockItems(): Promise<number> {
+    const shop = await this.userService.getCurrentShop();
+    return StockService.withWorker(async (stockWorker) => {
+      return await stockWorker.positiveStockItems(shop);
+    });
+  }
+
+  async positiveStockRetail(): Promise<number> {
+    const shop = await this.userService.getCurrentShop();
+    return StockService.withWorker(async (stockWorker) => {
+      return await stockWorker.positiveStockRetail(shop);
+    });
+  }
+
+  async positiveStockWhole(): Promise<number> {
+    const shop = await this.userService.getCurrentShop();
+    return StockService.withWorker(async (stockWorker) => {
+      return await stockWorker.positiveStockWhole(shop);
+    });
+  }
+
+
   async getProductQuantityObject(stockId): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     return database(shop.projectId)

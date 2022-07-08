@@ -292,21 +292,58 @@ export class StockWorker {
       },
       shop.projectId
     );
-    const stocks = await database(shop.projectId)
-      .table("stocks")
-      .getAll<any>(null, {
-        returnFields: ["quantity", "purchase"]
-      });
-    return stocks
-      .map((x) => {
-        const q = this.getStockQuantity(x);
-        if (q > 0) {
-          return q * x.purchase;
-        } else {
-          return 0;
-        }
-      })
-      .reduce((a, b) => a + b, 0);
+    const r: {total: number} = await functions(shop.projectId).request(
+      `/shop/${shop.projectId}/${shop.applicationId}/stock/value/purchase`
+      ).get();
+    return r && r.total?r.total:0;
+  }
+
+  async positiveStockItems(shop: ShopModel): Promise<number> {
+    init(
+      {
+        applicationId: shop.applicationId,
+        projectId: shop.projectId,
+        databaseURL: getDaasAddress(shop),
+        functionsURL: getFaasAddress(shop)
+      },
+      shop.projectId
+    );
+    const r: {total: number} = await functions(shop.projectId).request(
+      `/shop/${shop.projectId}/${shop.applicationId}/stock/value/items`
+      ).get();
+    return r && r.total?r.total:0;
+  }
+
+  async positiveStockRetail(shop: ShopModel): Promise<number> {
+    init(
+      {
+        applicationId: shop.applicationId,
+        projectId: shop.projectId,
+        databaseURL: getDaasAddress(shop),
+        functionsURL: getFaasAddress(shop)
+      },
+      shop.projectId
+    );
+    const r: {total: number} = await functions(shop.projectId).request(
+      `/shop/${shop.projectId}/${shop.applicationId}/stock/value/retail`
+      ).get();
+    return r && r.total?r.total:0;
+  }
+
+  async positiveStockWhole(shop: ShopModel): Promise<number> {
+    init(
+      {
+        applicationId: shop.applicationId,
+        projectId: shop.projectId,
+        databaseURL: getDaasAddress(shop),
+        functionsURL: getFaasAddress(shop)
+      },
+      shop.projectId
+    );
+    const r: {total: number} = await functions(shop.projectId).request(
+      `/shop/${shop.projectId}/${shop.applicationId}/stock/value/whole`
+      ).get();
+    return r && r.total?r.total:0;
   }
 }
 

@@ -50,6 +50,18 @@ export class StockState {
     return this.stockService.positiveStockValue();
   }
 
+  positiveStockItems(): Promise<number> {
+    return this.stockService.positiveStockItems();
+  }
+
+  positiveStockRetail(): Promise<number> {
+    return this.stockService.positiveStockRetail();
+  }
+
+  positiveStockWhole(): Promise<number> {
+    return this.stockService.positiveStockWhole();
+  }
+
   getStocksFromRemote(): void {
     this.isFetchStocks.next(true);
     this.stockService.getProductsRemote().then(remoteStocks => {

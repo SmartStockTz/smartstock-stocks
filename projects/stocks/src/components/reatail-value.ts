@@ -1,17 +1,17 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {StockState} from '../states/stock.state';
 import {Subject} from 'rxjs';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-products-value-summary',
+  selector: 'retail-value',
   template: `
-    <app-dash-card [description]="'non zeros stock values currently'"
-                   [title]="'Positive Products Value'"
+    <app-dash-card [description]="''"
+                   [title]="'Retail sale value'"
                    height="200"
                    [content]="content">
       <ng-template #content>
-        <div class="summary-container">
+      <div class="summary-container">
           <h1 *ngIf="totalLoad===false" style="font-size: 34px">
             {{total | number}}
           </h1>
@@ -26,27 +26,26 @@ import {MatSnackBar} from '@angular/material/snack-bar';
   `,
   styleUrls: ['../styles/index.style.scss']
 })
-export class ProductsValueSummaryComponent implements OnInit, OnDestroy {
+export class RetailValue implements OnInit, OnDestroy {
   totalLoad = false;
   total = 0;
   destroyer: Subject<any> = new Subject<any>();
 
   constructor(public readonly stockState: StockState,
-              private readonly snack: MatSnackBar) {
+    public readonly snack: MatSnackBar) {
+  }
+
+  ngOnInit(): void {
+    this.refresh();
   }
 
   ngOnDestroy(): void {
     this.destroyer.next('done');
   }
 
-  ngOnInit(): void {
-    this.stockState.getStocks();
-    this.refresh();
-  }
-
   refresh(): void {
     this.totalLoad = true;
-    this.stockState.positiveStockValue().then(value => {
+    this.stockState.positiveStockRetail().then(value => {
       this.total = value;
     }).catch(reason => {
       this.snack.open(reason && reason.message ? reason.message : reason.toString(),'OK',{duration:2000});

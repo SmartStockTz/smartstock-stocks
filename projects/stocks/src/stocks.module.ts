@@ -107,6 +107,8 @@ import { ProductTile } from "./components/product-tile";
 import { AddToCartFormComponent } from "./components/add-to-cart-form.component";
 import { AddToCartDialogComponent } from "./components/add-to-cart-dialog.component";
 import { AddToCartSheetComponent } from "./components/add-to-cart-sheet.component";
+import { RetailValue } from "./components/reatail-value";
+import { WholeValue } from "./components/whole-value";
 
 const routes: Routes = [
   { path: "", component: IndexPage },
@@ -178,7 +180,7 @@ const routes: Routes = [
     MatProgressBarModule,
     MatSlideToggleModule,
     MatToolbarModule,
-    MatBadgeModule
+    MatBadgeModule,
   ],
   declarations: [
     StockQuantityTrackingHeadComponent,
@@ -248,7 +250,9 @@ const routes: Routes = [
     ProductTile,
     AddToCartFormComponent,
     AddToCartDialogComponent,
-    AddToCartSheetComponent
+    AddToCartSheetComponent,
+    RetailValue,
+    WholeValue
   ]
 })
 export class StocksModule {
