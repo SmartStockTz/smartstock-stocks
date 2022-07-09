@@ -1,5 +1,5 @@
 import { Injectable } from "@angular/core";
-import { SecurityUtil, UserService } from "smartstock-core";
+import { getFaasAddress, SecurityUtil, UserService } from "smartstock-core";
 import { cache, database, functions } from "bfast";
 import { StockModel } from "../models/stock.model";
 import { StockWorker } from "../workers/stock.worker";
@@ -158,7 +158,7 @@ export class StockService {
       .upsert(true)
       .doc(stock)
       .update();
-    delete stock.quantity;
+    // stock.quantity;
     cache({ database: shop.projectId, collection: "stocks" })
       .set(stock.id, stock)
       .catch(console.log);
@@ -185,25 +185,32 @@ export class StockService {
     });
   }
 
-  async getProductsRemote(): Promise<StockModel[]> {
+  async getProductsRemote(hard=true): Promise<StockModel[]> {
     const shop = await this.userService.getCurrentShop();
     const stockCache = cache({
       database: shop.projectId,
       collection: "stocks"
     });
-    // const st = await stockCache.getAll();
-    // const hashes = await StockService.withWorker(async (stockWorker) => {
-    //   return await stockWorker.localStocksHashes(st);
-    // });
+    let hashes = [];
+    if(hard===false){
+      const st = await stockCache.getAll();
+      hashes = await StockService.withWorker(async (stockWorker) => {
+        return await stockWorker.localStocksHashes(st);
+      });
+    }
     const url = `/shop/${shop.projectId}/${shop.applicationId}/stock/products`;
+  //  console.log(hashes);
     return functions(shop.projectId)
       .request(url)
-      .post([])
+      .post(hashes)
       .then(async (stocks: StockModel[]) => {
-        await cache({
-          database: shop.projectId,
-          collection: "stocks"
-        }).clearAll();
+        // console.log(stocks);
+        if(hard===true){
+          await cache({
+            database: shop.projectId,
+            collection: "stocks"
+          }).clearAll();
+        }
         await stockCache.setBulk(
           stocks.map((s) => s.id),
           stocks
@@ -213,6 +220,22 @@ export class StockService {
           stockWorker.sort(stok)
         );
       });
+  }
+
+  async maybeRefreshStocks() {
+    const shop = await this.userService.getCurrentShop();
+    const stockCache = cache({
+      database: shop.projectId,
+      collection: "stocks"
+    });
+    const stocks = await stockCache.getAll();
+    const a = await StockService.withWorker(async (stockWorker)=>{
+     return await stockWorker.hasProductsChanges(shop,stocks);
+    });
+    console.log(a);
+    if(a && a.a===1){
+      await this.getProductsRemote(false);
+    }
   }
 
   async deleteMany(stocksId: string[]): Promise<any> {

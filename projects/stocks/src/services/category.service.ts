@@ -87,9 +87,10 @@ export class CategoryService {
         }
         return this.remoteAllCategories(shop);
       })
-      .then((c) => {
-        cache({ database: shop.projectId, collection: "categories" })
-          .setBulk(
+      .then(async (c) => {
+        const ca = cache({ database: shop.projectId, collection: "categories" });
+        await ca.clearAll();
+          ca.setBulk(
             c.map((x) => x.id),
             c
           )

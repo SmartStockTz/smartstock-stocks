@@ -48,7 +48,7 @@ import { CategoryFormFieldComponent } from "./components/category-form-field.com
 import { SuppliersFormFieldComponent } from "./components/suppliers-form-field.component";
 import { UnitsFormFieldComponent } from "./components/units-form-field.component";
 import { ProductShortDetailFormComponent } from "./components/product-short-detail-form.component";
-import { IndexPage } from "./pages/index.page";
+import { IndexPage } from "./pages";
 import { UnitsPage } from "./pages/units.page";
 import { SuppliersPage } from "./pages/suppliers.page";
 import { CategoriesPage } from "./pages/categories.page";
@@ -109,6 +109,7 @@ import { AddToCartDialogComponent } from "./components/add-to-cart-dialog.compon
 import { AddToCartSheetComponent } from "./components/add-to-cart-sheet.component";
 import { RetailValue } from "./components/reatail-value";
 import { WholeValue } from "./components/whole-value";
+import { IndexDesktopPage } from "./components/index_desktop";
 
 const routes: Routes = [
   { path: "", component: IndexPage },
@@ -252,7 +253,8 @@ const routes: Routes = [
     AddToCartDialogComponent,
     AddToCartSheetComponent,
     RetailValue,
-    WholeValue
+    WholeValue,
+    IndexDesktopPage
   ]
 })
 export class StocksModule {
