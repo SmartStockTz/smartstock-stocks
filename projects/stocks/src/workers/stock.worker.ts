@@ -345,6 +345,26 @@ export class StockWorker {
       ).get();
     return r && r.total?r.total:0;
   }
+
+  async hasProductsChanges(shop: ShopModel, stocks: StockModel[]): Promise<{a: number}>{
+    init({
+      applicationId: shop.applicationId,
+      projectId: shop.projectId,
+      databaseURL: getDaasAddress(shop),
+      functionsURL: getFaasAddress(shop)
+    },shop.projectId);
+    stocks = JSON.parse(JSON.stringify(stocks));
+    const url = getDaasAddress(shop)+'/stock/sync/products';
+    const stocksNumbers = stocks.map(x=>{return new Date(x.updatedAt?x.updatedAt:'2022-01-01').getTime()}).sort((a,b)=>a-b);
+    // console.log(JSON.stringify(stocksNumbers,null,2));
+    const hash =  await sha1(JSON.stringify(stocksNumbers));
+    // console.log(hash);
+    return functions(shop.projectId).request(url).get({
+      params: {
+        hash: hash
+      }
+    });
+  }
 }
 
 expose(StockWorker);

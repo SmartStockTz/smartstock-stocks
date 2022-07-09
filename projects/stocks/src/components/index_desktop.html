@@ -1,0 +1,19 @@
+<div class="container col-xl-10 col-lg-10 col-sm-9 col-md-9 col-sm-12 col-12 pt-3" style="margin-top: 30px;">
+    <div class="d-flex flex-row flex-wrap"
+        style="padding: 0 10px">
+        <app-libs-rbac [groups]="['admin', 'manager']" [pagePath]="page.path" *ngFor="let page of pages">
+            <ng-template>
+                <div routerLink="{{ page.path }}" style="margin: 5px; cursor: pointer">
+                    <mat-card matRipple style="display: flex;
+                    justify-content: center; align-items: center;
+                    flex-direction: column">
+                        <mat-icon color="primary" style="font-size: 60px; height: 60px; width: 60px">
+                            {{ page.icon }}
+                        </mat-icon>
+                    </mat-card>
+                    <p>{{ page.name }}</p>
+                </div>
+            </ng-template>
+        </app-libs-rbac>
+    </div>
+</div>
