@@ -232,7 +232,7 @@ export class StockService {
     const a = await StockService.withWorker(async (stockWorker)=>{
      return await stockWorker.hasProductsChanges(shop,stocks);
     });
-    console.log(a);
+    // console.log(a);
     if(a && a.a===1){
       await this.getProductsRemote(false);
     }
