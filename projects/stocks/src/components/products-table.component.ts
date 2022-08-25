@@ -52,26 +52,26 @@ import { getStockQuantity } from "../utils/util";
     </div>
     <div class="product-table">
       <table mat-table matSort [dataSource]="stockDatasource">
-        <ng-container matColumnDef="select">
-          <th class="column-header" mat-header-cell *matHeaderCellDef>
-            <mat-checkbox
-              (change)="$event ? masterToggle() : null"
-              [checked]="stockState.selection.hasValue()"
-            >
-            </mat-checkbox>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox
-              (click)="$event.stopPropagation()"
-              (change)="$event ? stockState.selection.toggle(row) : null"
-              [checked]="stockState.selection.isSelected(row)"
-            >
-            </mat-checkbox>
-          </td>
-          <td mat-footer-cell *matFooterCellDef>
-            TOTAL
-          </td>
-        </ng-container>
+<!--        <ng-container matColumnDef="select">-->
+<!--          <th class="column-header" mat-header-cell *matHeaderCellDef>-->
+<!--            <mat-checkbox-->
+<!--              (change)="$event ? masterToggle() : null"-->
+<!--              [checked]="stockState.selection.hasValue()"-->
+<!--            >-->
+<!--            </mat-checkbox>-->
+<!--          </th>-->
+<!--          <td mat-cell *matCellDef="let row">-->
+<!--            <mat-checkbox-->
+<!--              (click)="$event.stopPropagation()"-->
+<!--              (change)="$event ? stockState.selection.toggle(row) : null"-->
+<!--              [checked]="stockState.selection.isSelected(row)"-->
+<!--            >-->
+<!--            </mat-checkbox>-->
+<!--          </td>-->
+<!--&lt;!&ndash;          <td mat-footer-cell *matFooterCellDef>&ndash;&gt;-->
+<!--&lt;!&ndash;            TOTAL&ndash;&gt;-->
+<!--&lt;!&ndash;          </td>&ndash;&gt;-->
+<!--        </ng-container>-->
         <ng-container matColumnDef="product">
           <th
             class="column-header"
@@ -82,7 +82,7 @@ import { getStockQuantity } from "../utils/util";
             Product
           </th>
           <td mat-cell *matCellDef="let element">{{ element.product }}</td>
-          <td mat-footer-cell *matFooterCellDef></td>
+<!--          <td mat-footer-cell *matFooterCellDef></td>-->
         </ng-container>
         <ng-container matColumnDef="quantity">
           <th
@@ -94,11 +94,12 @@ import { getStockQuantity } from "../utils/util";
             Quantity
           </th>
           <td mat-cell *matCellDef="let stock">
-            <app-stock-quantity [stock]="stock"></app-stock-quantity>
+            {{stock.quantity}}
+<!--            <app-stock-quantity [stock]="stock"></app-stock-quantity>-->
           </td>
-          <td mat-footer-cell *matFooterCellDef>
-            {{ totalQuantity() | number }}
-          </td>
+<!--          <td mat-footer-cell *matFooterCellDef>-->
+<!--            {{ totalQuantity() | number }}-->
+<!--          </td>-->
         </ng-container>
         <ng-container matColumnDef="purchase">
           <th
@@ -112,9 +113,9 @@ import { getStockQuantity } from "../utils/util";
           <td mat-cell *matCellDef="let element">
             {{ element.purchasable ? (element.purchase | number) : "N/A" }}
           </td>
-          <td mat-footer-cell *matFooterCellDef="let element">
-            {{ productValue() | number }}
-          </td>
+<!--          <td mat-footer-cell *matFooterCellDef="let element">-->
+<!--            {{ productValue() | number }}-->
+<!--          </td>-->
         </ng-container>
         <ng-container matColumnDef="retailPrice">
           <th
@@ -128,9 +129,9 @@ import { getStockQuantity } from "../utils/util";
           <td matRipple mat-cell *matCellDef="let element">
             {{ element.saleable ? (element.retailPrice | number) : "N/A" }}
           </td>
-          <td mat-footer-cell *matFooterCellDef="let element">
-            {{ salesRetailValue() | number }}
-          </td>
+<!--          <td mat-footer-cell *matFooterCellDef="let element">-->
+<!--            {{ salesRetailValue() | number }}-->
+<!--          </td>-->
         </ng-container>
         <ng-container matColumnDef="wholesalePrice">
           <th
@@ -144,9 +145,9 @@ import { getStockQuantity } from "../utils/util";
           <td mat-cell *matCellDef="let element">
             {{ element.saleable ? (element.wholesalePrice | number) : "N/A" }}
           </td>
-          <td mat-footer-cell *matFooterCellDef="let element">
-            {{ salesWholeValue() | number }}
-          </td>
+<!--          <td mat-footer-cell *matFooterCellDef="let element">-->
+<!--            {{ salesWholeValue() | number }}-->
+<!--          </td>-->
         </ng-container>
         <ng-container matColumnDef="action">
           <th class="column-header" mat-header-cell *matHeaderCellDef>
@@ -186,7 +187,7 @@ import { getStockQuantity } from "../utils/util";
               </mat-menu>
             </div>
           </td>
-          <td mat-footer-cell *matFooterCellDef></td>
+<!--          <td mat-footer-cell *matFooterCellDef></td>-->
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="stockColumns"></tr>
         <tr
@@ -194,11 +195,11 @@ import { getStockQuantity } from "../utils/util";
           mat-row
           *matRowDef="let row; columns: stockColumns"
         ></tr>
-        <tr
-          mat-footer-row
-          style="font-size: 36px"
-          *matFooterRowDef="stockColumns"
-        ></tr>
+<!--        <tr-->
+<!--          mat-footer-row-->
+<!--          style="font-size: 36px"-->
+<!--          *matFooterRowDef="stockColumns"-->
+<!--        ></tr>-->
       </table>
     </div>
   `,
@@ -234,14 +235,14 @@ export class ProductsTableComponent
 
   async ngOnInit(): Promise<void> {}
 
-  isAllSelected(): boolean {
-    if (!this.stockDatasource.data) {
-      return false;
-    }
-    const numSelected = this.stockState.selection.selected.length;
-    const numRows = this.stockDatasource.data.length;
-    return numSelected === numRows;
-  }
+  // isAllSelected(): boolean {
+  //   if (!this.stockDatasource.data) {
+  //     return false;
+  //   }
+  //   const numSelected = this.stockState.selection.selected.length;
+  //   const numRows = this.stockDatasource.data.length;
+  //   return numSelected === numRows;
+  // }
 
   masterToggle(): void {
     const skip = this.paginator.pageSize * this.paginator.pageIndex;
@@ -305,50 +306,50 @@ export class ProductsTableComponent
     this.onDestroy.next();
   }
 
-  createGroupProduct(): void {}
+  // createGroupProduct(): void {}
 
-  productValue(): number {
-    if (!this.stockDatasource.data) {
-      return 0;
-    }
-    return this.stockState.stocks.value
-      .filter((x) => x.stockable === true && x.quantity > 0)
-      .map((x) => x.purchase * getStockQuantity(x))
-      .reduce((a, b) => a + b, 0);
-  }
+  // productValue(): number {
+  //   if (!this.stockDatasource.data) {
+  //     return 0;
+  //   }
+  //   return this.stockState.stocks.value
+  //     .filter((x) => x.stockable === true && x.quantity > 0)
+  //     .map((x) => x.purchase * getStockQuantity(x))
+  //     .reduce((a, b) => a + b, 0);
+  // }
 
-  salesRetailValue(): number {
-    if (!this.stockDatasource.data) {
-      return 0;
-    }
-    return this.stockState.stocks.value
-      .filter((x) => x.stockable === true && x.quantity > 0)
-      .map((x) => x.retailPrice * getStockQuantity(x))
-      .reduce((a, b) => a + b, 0);
-  }
+  // salesRetailValue(): number {
+  //   if (!this.stockDatasource.data) {
+  //     return 0;
+  //   }
+  //   return this.stockState.stocks.value
+  //     .filter((x) => x.stockable === true && x.quantity > 0)
+  //     .map((x) => x.retailPrice * getStockQuantity(x))
+  //     .reduce((a, b) => a + b, 0);
+  // }
 
-  salesWholeValue(): number {
-    if (!this.stockDatasource.data) {
-      return 0;
-    }
-    return this.stockState.stocks.value
-      .filter(
-        (x) => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity > 0
-      )
-      .map(
-        (x) => (x.wholesalePrice / x.wholesaleQuantity) * getStockQuantity(x)
-      )
-      .reduce((a, b) => a + b, 0);
-  }
+  // salesWholeValue(): number {
+  //   if (!this.stockDatasource.data) {
+  //     return 0;
+  //   }
+  //   return this.stockState.stocks.value
+  //     .filter(
+  //       (x) => x.stockable === true && x.quantity > 0 && x.wholesaleQuantity > 0
+  //     )
+  //     .map(
+  //       (x) => (x.wholesalePrice / x.wholesaleQuantity) * getStockQuantity(x)
+  //     )
+  //     .reduce((a, b) => a + b, 0);
+  // }
 
-  totalQuantity(): number {
-    if (!this.stockDatasource.data) {
-      return 0;
-    }
-    return this.stockState.stocks.value
-      .filter((x) => x.stockable === true && x.quantity > 0)
-      .reduce((a, b) => a + getStockQuantity(b), 0);
-  }
+  // totalQuantity(): number {
+  //   if (!this.stockDatasource.data) {
+  //     return 0;
+  //   }
+  //   return this.stockState.stocks.value
+  //     .filter((x) => x.stockable === true && x.quantity > 0)
+  //     .reduce((a, b) => a + getStockQuantity(b), 0);
+  // }
 
   ngAfterViewInit(): void {
     this.stockDatasource.paginator = this.paginator;
@@ -368,7 +369,7 @@ export class ProductsTableComponent
     this.stockState.getStocks();
   }
 
-  getQ(stock): number {
-    return getStockQuantity(stock);
-  }
+  // getQ(stock): number {
+  //   return getStockQuantity(stock);
+  // }
 }

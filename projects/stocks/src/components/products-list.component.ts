@@ -40,13 +40,13 @@ import { Subject } from "rxjs";
               >
                 Details
               </button>
-              <button
-                mat-menu-item
-                [matTooltip]="'change product information'"
-                (click)="trackQuantity(element)"
-              >
-                Quantity Tracking
-              </button>
+<!--              <button-->
+<!--                mat-menu-item-->
+<!--                [matTooltip]="'change product information'"-->
+<!--                (click)="trackQuantity(element)"-->
+<!--              >-->
+<!--                Quantity Tracking-->
+<!--              </button>-->
               <button
                 mat-menu-item
                 [matTooltip]="'change product information'"
@@ -122,9 +122,9 @@ export class ProductsListComponent implements OnInit, OnDestroy {
     this.onDestroy.next("done");
   }
 
-  trackQuantity(element: StockModel): void {
-    this.router
-      .navigateByUrl(`/stock/products/${element.id}/quantity`)
-      .catch(console.log);
-  }
+  // trackQuantity(element: StockModel): void {
+  //   this.router
+  //     .navigateByUrl(`/stock/products/${element.id}/quantity`)
+  //     .catch(console.log);
+  // }
 }

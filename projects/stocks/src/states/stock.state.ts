@@ -112,18 +112,18 @@ export class StockState {
     });
   }
 
-  deleteManyStocks(selectionModel: SelectionModel<StockModel>): void {
-    this.isDeleteStocks.next(true);
-    this.stockService.deleteMany(selectionModel.selected.map(x => x.id)).then(_ => {
-      this.message('Products deleted');
-      this.stocks.next(_);
-      selectionModel.clear();
-    }).catch(reason => {
-      this.message(reason);
-    }).finally(() => {
-      this.isDeleteStocks.next(false);
-    });
-  }
+  // deleteManyStocks(selectionModel: SelectionModel<StockModel>): void {
+  //   this.isDeleteStocks.next(true);
+  //   this.stockService.deleteMany(selectionModel.selected.map(x => x.id)).then(_ => {
+  //     this.message('Products deleted');
+  //     this.stocks.next(_);
+  //     selectionModel.clear();
+  //   }).catch(reason => {
+  //     this.message(reason);
+  //   }).finally(() => {
+  //     this.isDeleteStocks.next(false);
+  //   });
+  // }
 
   private message(reason): void {
     this.snack.open(reason && reason.message ? reason.message : reason.toString(), 'Ok', {

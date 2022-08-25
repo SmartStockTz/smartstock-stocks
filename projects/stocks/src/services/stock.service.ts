@@ -34,58 +34,58 @@ export class StockService {
   }
 
   async stocksListeningStop(): Promise<void> {
-    if (this.changes && this.changes.close) {
-      this.changes.close();
-    }
+    // if (this.changes && this.changes.close) {
+    //   this.changes.close();
+    // }
   }
 
   async stocksListening(): Promise<void> {
-    const shop = await this.userService.getCurrentShop();
-    this.changes = functions(shop.projectId).event(
-      "/daas-changes",
-      () => {
-        console.log("connected on stocks changes");
-        this.changes.emit({
-          auth: { masterKey: shop.masterKey },
-          body: {
-            projectId: shop.projectId,
-            applicationId: shop.applicationId,
-            pipeline: [],
-            domain: "stocks"
-          }
-        });
-      },
-      () => console.log("disconnected on stocks changes")
-    );
-    this.changes.listener(async (response) => {
-      const stockCache = cache({
-        database: shop.projectId,
-        collection: "stocks"
-      });
-      if (response && response.body && response.body.change) {
-        switch (response.body.change.name) {
-          case "create":
-            const data = response.body.change.snapshot;
-            delete data.quantity;
-            await stockCache.set(data.id, data);
-            return;
-          case "update":
-            let updateData = response.body.change.snapshot;
-            const oldData = await stockCache.get(updateData.id);
-            updateData = Object.assign(
-              typeof oldData === "object" ? oldData : {},
-              updateData
-            );
-            delete updateData.quantity;
-            await stockCache.set(updateData.id, updateData);
-            return;
-          case "delete":
-            const deletedData = response.body.change.snapshot;
-            await stockCache.remove(deletedData.id);
-            return;
-        }
-      }
-    });
+    // const shop = await this.userService.getCurrentShop();
+    // this.changes = functions(shop.projectId).event(
+    //   "/daas-changes",
+    //   () => {
+    //     console.log("connected on stocks changes");
+    //     this.changes.emit({
+    //       auth: { masterKey: shop.masterKey },
+    //       body: {
+    //         projectId: shop.projectId,
+    //         applicationId: shop.applicationId,
+    //         pipeline: [],
+    //         domain: "stocks"
+    //       }
+    //     });
+    //   },
+    //   () => console.log("disconnected on stocks changes")
+    // );
+    // this.changes.listener(async (response) => {
+    //   const stockCache = cache({
+    //     database: shop.projectId,
+    //     collection: "stocks"
+    //   });
+    //   if (response && response.body && response.body.change) {
+    //     switch (response.body.change.name) {
+    //       case "create":
+    //         const data = response.body.change.snapshot;
+    //         delete data.quantity;
+    //         await stockCache.set(data.id, data);
+    //         return;
+    //       case "update":
+    //         let updateData = response.body.change.snapshot;
+    //         const oldData = await stockCache.get(updateData.id);
+    //         updateData = Object.assign(
+    //           typeof oldData === "object" ? oldData : {},
+    //           updateData
+    //         );
+    //         delete updateData.quantity;
+    //         await stockCache.set(updateData.id, updateData);
+    //         return;
+    //       case "delete":
+    //         const deletedData = response.body.change.snapshot;
+    //         await stockCache.remove(deletedData.id);
+    //         return;
+    //     }
+    //   }
+    // });
   }
 
   async stocksFromLocal(): Promise<StockModel[]> {
@@ -145,19 +145,23 @@ export class StockService {
   }
 
   async addStock(stock: StockModel): Promise<StockModel> {
-    stock.id = stock.id ? stock.id : SecurityUtil.generateUUID();
+    stock.id = stock.product.toLowerCase().replace(new RegExp('\\s+', 'ig'), '_');
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
-    stock = await this.mapStockQuantityFromNumberToObject(stock);
+    // stock = await this.mapStockQuantityFromNumberToObject(stock);
     const shop = await this.userService.getCurrentShop();
-    await database(shop.projectId)
-      .table("stocks")
-      .query()
-      .byId(stock.id)
-      .updateBuilder()
-      .upsert(true)
-      .doc(stock)
-      .update();
+
+    await functions(shop.projectId).request(getFaasAddress(shop)+'/stock/products').put(stock);
+    // return stock;
+
+    // await database(shop.projectId)
+    //   .table("stocks")
+    //   .query()
+    //   .byId(stock.id)
+    //   .updateBuilder()
+    //   .upsert(true)
+    //   .doc(stock)
+    //   .update();
     // stock.quantity;
     cache({ database: shop.projectId, collection: "stocks" })
       .set(stock.id, stock)
@@ -167,11 +171,12 @@ export class StockService {
 
   async deleteStock(stock: StockModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await database(shop.projectId)
-      .table("stocks")
-      .query()
-      .byId(stock.id)
-      .delete();
+    await functions(shop.projectId).request(getFaasAddress(shop)+'/stock/products/'+stock.id).delete()
+    // await database(shop.projectId)
+    //   .table("stocks")
+    //   .query()
+    //   .byId(stock.id)
+    //   .delete();
     cache({ database: shop.projectId, collection: "stocks" })
       .remove(stock.id)
       .catch(console.log);
@@ -238,18 +243,18 @@ export class StockService {
     }
   }
 
-  async deleteMany(stocksId: string[]): Promise<any> {
-    const shop = await this.userService.getCurrentShop();
-    await database(shop.projectId)
-      .table("stocks")
-      .query()
-      .includesIn("_id", stocksId)
-      .delete();
-    for (const k of stocksId) {
-      await cache({ database: shop.projectId, collection: "stocks" }).remove(k);
-    }
-    return this.getProducts();
-  }
+  // async deleteMany(stocksId: string[]): Promise<any> {
+  //   const shop = await this.userService.getCurrentShop();
+  //   await database(shop.projectId)
+  //     .table("stocks")
+  //     .query()
+  //     .includesIn("_id", stocksId)
+  //     .delete();
+  //   for (const k of stocksId) {
+  //     await cache({ database: shop.projectId, collection: "stocks" }).remove(k);
+  //   }
+  //   return this.getProducts();
+  // }
 
   async search(query: string): Promise<any> {
     const s = await this.getProducts();
@@ -271,26 +276,26 @@ export class StockService {
   }
 
   async compactStockQuantity(): Promise<any> {
-    console.log("start compact is running");
-    return setInterval(async (_) => {
-      try {
-        if (this.isRunning === true) {
-          console.log("another compact is running");
-          return;
-        }
-        this.isRunning = true;
-        console.log("compact stock quantity now");
-        const shop = await this.userService.getCurrentShop();
-        await StockService.withWorker((stockWorker) =>
-          stockWorker.compactQuantity(shop)
-        );
-      } catch (e) {
-        console.log(e, " :COMPACT ERROR");
-      } finally {
-        this.isRunning = false;
-        console.log("compact is finish");
-      }
-    }, 120000);
+    // console.log("start compact is running");
+    // return setInterval(async (_) => {
+    //   try {
+    //     if (this.isRunning === true) {
+    //       console.log("another compact is running");
+    //       return;
+    //     }
+    //     this.isRunning = true;
+    //     console.log("compact stock quantity now");
+    //     const shop = await this.userService.getCurrentShop();
+    //     await StockService.withWorker((stockWorker) =>
+    //       stockWorker.compactQuantity(shop)
+    //     );
+    //   } catch (e) {
+    //     console.log(e, " :COMPACT ERROR");
+    //   } finally {
+    //     this.isRunning = false;
+    //     console.log("compact is finish");
+    //   }
+    // }, 120000);
   }
 
   async positiveStockValue(): Promise<number> {

@@ -183,88 +183,88 @@ export class StockWorker {
       _id: string;
     }[];
   }> {
-    if (stock && typeof stock.quantity === "object") {
-      const keys = Object.keys(stock.quantity);
-      const grouped = keys.reduce((a, b) => {
-        const quantityValue = stock.quantity[b];
-        quantityValue._id = b;
-        if (a[quantityValue.s]) {
-          a[quantityValue.s].push(quantityValue);
-        } else {
-          a[quantityValue.s] = [quantityValue];
-        }
-        return a;
-      }, {});
-      for (const k of Object.keys(grouped)) {
-        if (grouped[k].length > 1) {
-          return grouped;
-        }
-      }
-    }
+    // if (stock && typeof stock.quantity === "object") {
+    //   const keys = Object.keys(stock.quantity);
+    //   const grouped = keys.reduce((a, b) => {
+    //     const quantityValue = stock.quantity[b];
+    //     quantityValue._id = b;
+    //     if (a[quantityValue.s]) {
+    //       a[quantityValue.s].push(quantityValue);
+    //     } else {
+    //       a[quantityValue.s] = [quantityValue];
+    //     }
+    //     return a;
+    //   }, {});
+    //   for (const k of Object.keys(grouped)) {
+    //     if (grouped[k].length > 1) {
+    //       return grouped;
+    //     }
+    //   }
+    // }
     return null;
   }
 
   async compactQuantity(shop: ShopModel): Promise<any> {
-    init({
-      applicationId: "smartstock_lb",
-      projectId: "smartstock"
-    });
-    init(
-      {
-        applicationId: shop.applicationId,
-        projectId: shop.projectId,
-        databaseURL: getDaasAddress(shop),
-        functionsURL: getFaasAddress(shop)
-      },
-      shop.projectId
-    );
-    const stockCache = cache({
-      database: shop.projectId,
-      collection: "stocks"
-    });
-    const keys = await stockCache.keys();
-    for (const key of keys) {
-      const stock: any = await stockCache.get(key);
-      const is = await this.qualifyForCompact(stock);
-      if (is) {
-        await functions(shop.projectId)
-          .request(getDaasAddress(shop) + "/v2")
-          .post({
-            applicationId: shop.applicationId,
-            updatestocks: {
-              id: stock.id,
-              update: [
-                {
-                  $set: {
-                    quantity: {
-                      $reduce: {
-                        input: { $objectToArray: "$quantity" },
-                        initialValue: {
-                          total: {
-                            q: 0,
-                            s: "system_total",
-                            d: "$$NOW"
-                          }
-                        },
-                        in: {
-                          total: {
-                            q: { $add: ["$$value.total.q", "$$this.v.q"] },
-                            s: "$$value.total.s",
-                            d: "$$value.total.d"
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              ],
-              return: ["id"]
-            }
-          });
-      } else {
-        // console.log('not ready for compact');
-      }
-    }
+    // init({
+    //   applicationId: "smartstock_lb",
+    //   projectId: "smartstock"
+    // });
+    // init(
+    //   {
+    //     applicationId: shop.applicationId,
+    //     projectId: shop.projectId,
+    //     databaseURL: getDaasAddress(shop),
+    //     functionsURL: getFaasAddress(shop)
+    //   },
+    //   shop.projectId
+    // );
+    // const stockCache = cache({
+    //   database: shop.projectId,
+    //   collection: "stocks"
+    // });
+    // const keys = await stockCache.keys();
+    // for (const key of keys) {
+    //   const stock: any = await stockCache.get(key);
+    //   const is = await this.qualifyForCompact(stock);
+    //   if (is) {
+    //     await functions(shop.projectId)
+    //       .request(getDaasAddress(shop) + "/v2")
+    //       .post({
+    //         applicationId: shop.applicationId,
+    //         updatestocks: {
+    //           id: stock.id,
+    //           update: [
+    //             {
+    //               $set: {
+    //                 quantity: {
+    //                   $reduce: {
+    //                     input: { $objectToArray: "$quantity" },
+    //                     initialValue: {
+    //                       total: {
+    //                         q: 0,
+    //                         s: "system_total",
+    //                         d: "$$NOW"
+    //                       }
+    //                     },
+    //                     in: {
+    //                       total: {
+    //                         q: { $add: ["$$value.total.q", "$$this.v.q"] },
+    //                         s: "$$value.total.s",
+    //                         d: "$$value.total.d"
+    //                       }
+    //                     }
+    //                   }
+    //                 }
+    //               }
+    //             }
+    //           ],
+    //           return: ["id"]
+    //         }
+    //       });
+    //   } else {
+    //     // console.log('not ready for compact');
+    //   }
+    // }
   }
 
   getStockQuantity(stock: StockModel): number {
