@@ -87,31 +87,31 @@ export class ProductsTableSubActionsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {}
 
   deleteMany(): void {
-    if (this.stockState.selection.isEmpty()) {
-      this.messageService.showMobileInfoMessage(
-        "Please select at least one item",
-        1000,
-        "bottom"
-      );
-    } else {
-      this.dialog
-        .open(DialogDeleteComponent, {
-          width: "350",
-          data: { title: "Products" }
-        })
-        .afterClosed()
-        .subscribe((value) => {
-          if (value === "yes") {
-            this.stockState.deleteManyStocks(this.stockState.selection);
-          } else {
-            this.messageService.showMobileInfoMessage(
-              "Process cancelled",
-              3000,
-              "bottom"
-            );
-          }
-        });
-    }
+    // if (this.stockState.selection.isEmpty()) {
+    //   this.messageService.showMobileInfoMessage(
+    //     "Please select at least one item",
+    //     1000,
+    //     "bottom"
+    //   );
+    // } else {
+    //   this.dialog
+    //     .open(DialogDeleteComponent, {
+    //       width: "350",
+    //       data: { title: "Products" }
+    //     })
+    //     .afterClosed()
+    //     .subscribe((value) => {
+    //       if (value === "yes") {
+    //         this.stockState.deleteManyStocks(this.stockState.selection);
+    //       } else {
+    //         this.messageService.showMobileInfoMessage(
+    //           "Process cancelled",
+    //           3000,
+    //           "bottom"
+    //         );
+    //       }
+    //     });
+    // }
   }
 
   reload(): void {
