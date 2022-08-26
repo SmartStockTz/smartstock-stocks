@@ -94,7 +94,8 @@ export class StockService {
   }
 
   async addStock(stock: StockModel): Promise<StockModel> {
-    stock.id = stock.product.toLowerCase().replace(new RegExp('\\s+', 'ig'), '_');
+    stock.id = stock.product.replace(new RegExp('\\s+', 'ig'), '_');
+    stock.product = stock.product.trim();
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
     stock.wholesaleQuantity = stock.wholesaleQuantity ? stock.wholesaleQuantity : 1;
