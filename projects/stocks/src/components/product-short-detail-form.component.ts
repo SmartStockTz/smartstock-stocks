@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import {
   AbstractControl,
   UntypedFormBuilder,
@@ -7,23 +7,23 @@ import {
   ValidationErrors,
   ValidatorFn,
   Validators
-} from "@angular/forms";
-import { StockModel } from "../models/stock.model";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { MatDialog } from "@angular/material/dialog";
-import { Router } from "@angular/router";
+} from '@angular/forms';
+import { StockModel } from '../models/stock.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import {
   DeviceState,
   FileModel,
   FilesService,
   UserService
-} from "smartstock-core";
-import { StockService } from "../services/stock.service";
-import { takeUntil } from "rxjs/operators";
-import { Subject } from "rxjs";
+} from 'smartstock-core';
+import { StockService } from '../services/stock.service';
+import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Component({
-  selector: "app-product-short-detail-form",
+  selector: 'app-product-short-detail-form',
   template: `
     <div class="stock-new-wrapper">
       <form
@@ -66,14 +66,33 @@ import { Subject } from "rxjs";
               </mat-error>
             </div>
             <div class="form-field">
-              <textarea
+              <p class="form-control-title">Barcode</p>
+              <input
                 class="form-field-input"
-                placeholder="Description ( Optional )"
                 type="text"
-                formControlName="description"
+                formControlName="barcode"
+              />
+              <mat-hint
+                class="hint-text"
+                *ngIf="
+                  !(
+                    productForm.get('barcode').invalid &&
+                    productForm.get('barcode').touched
+                  )
+                "
               >
-              </textarea>
+                Enter barcode
+              </mat-hint>
             </div>
+<!--            <div class="form-field">-->
+<!--              <textarea-->
+<!--                class="form-field-input"-->
+<!--                placeholder="Description ( Optional )"-->
+<!--                type="text"-->
+<!--                formControlName="description"-->
+<!--              >-->
+<!--              </textarea>-->
+<!--            </div>-->
 
             <div class="form-field">
               <p class="form-control-title">
@@ -85,105 +104,104 @@ import { Subject } from "rxjs";
               ></app-image-upload>
             </div>
 
-            <p class="form-control-title">
-              Product type
-            </p>
-            <mat-form-field appearance="outline">
-              <mat-select formControlName="type" value="simple">
-                <mat-option value="simple">Simple</mat-option>
-                <mat-option value="subscription">Subscription</mat-option>
-              </mat-select>
-              <mat-error>Product type required</mat-error>
-              <mat-hint
-                >Choose type of product
-                <!--                <a target="_blank" href="/help/product#type">more info</a>-->
-              </mat-hint>
-            </mat-form-field>
-            <div
-              *ngIf="productForm.get('type').value === 'subscription'"
-              formGroupName="subscription"
-            >
-              <div class="form-field">
-                <input
-                  min="1"
-                  formControlName="duration"
-                  class="form-field-input"
-                  type="number"
-                  placeholder="Duration"
-                />
-                <mat-hint
-                  class="hint-text"
-                  *ngIf="
-                    !(
-                      productForm.get('subscription').get('duration').invalid &&
-                      productForm.get('subscription').get('duration').touched
-                    )
-                  "
-                >
-                  How many days for subscription to be active
-                  <!--                  <a target="_blank" href="/help/product#subscription">more info</a>-->
-                </mat-hint>
-                <mat-error
-                  *ngIf="
-                    productForm.get('subscription').get('duration').invalid &&
-                    productForm.get('subscription').get('duration').touched
-                  "
-                  class="error-text"
-                >
-                  Subscription duration required
-                </mat-error>
-              </div>
-              <div class="form-field">
-                <input
-                  min="0"
-                  formControlName="grace"
-                  class="form-field-input"
-                  type="number"
-                  placeholder="Grace period"
-                />
-                <mat-hint
-                  class="hint-text"
-                  *ngIf="
-                    !(
-                      productForm.get('subscription').get('grace').invalid &&
-                      productForm.get('subscription').get('grace').touched
-                    )
-                  "
-                >
-                  Extra days before subscription expire
-                  <!--                  <a target="_blank" href="/help/product#subscription">more info</a>-->
-                </mat-hint>
-                <mat-error
-                  *ngIf="
-                    productForm.get('subscription').get('grace').invalid &&
-                    productForm.get('subscription').get('grace').touched
-                  "
-                  class="error-text"
-                >
-                  Grace period required
-                </mat-error>
-              </div>
-            </div>
+<!--            <p class="form-control-title">-->
+<!--              Product type-->
+<!--            </p>-->
+<!--            <mat-form-field appearance="outline">-->
+<!--              <mat-select formControlName="type" value="simple">-->
+<!--                <mat-option value="simple">Simple</mat-option>-->
+<!--                <mat-option value="subscription">Subscription</mat-option>-->
+<!--              </mat-select>-->
+<!--              <mat-error>Product type required</mat-error>-->
+<!--              <mat-hint-->
+<!--                >Choose type of product-->
+<!--                &lt;!&ndash;                <a target="_blank" href="/help/product#type">more info</a>&ndash;&gt;-->
+<!--              </mat-hint>-->
+<!--            </mat-form-field>-->
+<!--            <div-->
+<!--              *ngIf="productForm.get('type').value === 'subscription'"-->
+<!--              formGroupName="subscription"-->
+<!--            >-->
+<!--              <div class="form-field">-->
+<!--                <input-->
+<!--                  min="1"-->
+<!--                  formControlName="duration"-->
+<!--                  class="form-field-input"-->
+<!--                  type="number"-->
+<!--                  placeholder="Duration"-->
+<!--                />-->
+<!--                <mat-hint-->
+<!--                  class="hint-text"-->
+<!--                  *ngIf="-->
+<!--                    !(-->
+<!--                      productForm.get('subscription').get('duration').invalid &&-->
+<!--                      productForm.get('subscription').get('duration').touched-->
+<!--                    )-->
+<!--                  "-->
+<!--                >-->
+<!--                  How many days for subscription to be active-->
+<!--                  &lt;!&ndash;                  <a target="_blank" href="/help/product#subscription">more info</a>&ndash;&gt;-->
+<!--                </mat-hint>-->
+<!--                <mat-error-->
+<!--                  *ngIf="-->
+<!--                    productForm.get('subscription').get('duration').invalid &&-->
+<!--                    productForm.get('subscription').get('duration').touched-->
+<!--                  "-->
+<!--                  class="error-text"-->
+<!--                >-->
+<!--                  Subscription duration required-->
+<!--                </mat-error>-->
+<!--              </div>-->
+<!--              <div class="form-field">-->
+<!--                <input-->
+<!--                  min="0"-->
+<!--                  formControlName="grace"-->
+<!--                  class="form-field-input"-->
+<!--                  type="number"-->
+<!--                  placeholder="Grace period"-->
+<!--                />-->
+<!--                <mat-hint-->
+<!--                  class="hint-text"-->
+<!--                  *ngIf="-->
+<!--                    !(-->
+<!--                      productForm.get('subscription').get('grace').invalid &&-->
+<!--                      productForm.get('subscription').get('grace').touched-->
+<!--                    )-->
+<!--                  "-->
+<!--                >-->
+<!--                  Extra days before subscription expire-->
+<!--                  &lt;!&ndash;                  <a target="_blank" href="/help/product#subscription">more info</a>&ndash;&gt;-->
+<!--                </mat-hint>-->
+<!--                <mat-error-->
+<!--                  *ngIf="-->
+<!--                    productForm.get('subscription').get('grace').invalid &&-->
+<!--                    productForm.get('subscription').get('grace').touched-->
+<!--                  "-->
+<!--                  class="error-text"-->
+<!--                >-->
+<!--                  Grace period required-->
+<!--                </mat-error>-->
+<!--              </div>-->
+<!--            </div>-->
             <div class="form-field">
               <app-category-form-field
                 [formGroup]="productForm"
               ></app-category-form-field>
             </div>
 
-            <div class="status-item">
-              <div class="status-text text-wrap">
-                Is this product for sale?
-              </div>
-              <div class="status-checker">
-                <span>{{
-                  productForm.get("saleable").value === true ? "YES" : "NO"
-                }}</span>
-                <mat-slide-toggle formControlName="saleable"></mat-slide-toggle>
-              </div>
-            </div>
+<!--            <div class="status-item">-->
+<!--              <div class="status-text text-wrap">-->
+<!--                Is this product for sale?-->
+<!--              </div>-->
+<!--              <div class="status-checker">-->
+<!--                <span>{{-->
+<!--                  productForm.get("saleable").value === true ? "YES" : "NO"-->
+<!--                }}</span>-->
+<!--                <mat-slide-toggle formControlName="saleable"></mat-slide-toggle>-->
+<!--              </div>-->
+<!--            </div>-->
 
             <div
-              *ngIf="productForm.get('saleable').value === true"
               class="form-field"
             >
               <p class="form-control-title">Retail price</p>
@@ -254,25 +272,25 @@ import { Subject } from "rxjs";
               *ngIf="productForm.get('saleable').value === true"
               class="form-field"
             >
-              <p class="form-control-title">Wholesale quantity</p>
-              <input
-                class="form-field-input"
-                min="0"
-                type="number"
-                formControlName="wholesaleQuantity"
-              />
-              <mat-hint
-                class="hint-text"
-                *ngIf="
-                  !(
-                    productForm.get('wholesaleQuantity').invalid &&
-                    productForm.get('wholesaleQuantity').touched
-                  )
-                "
-              >
-                How many unity quantity correspond to wholesale price
-                <!--                <a href="/help/product#price">more info</a>-->
-              </mat-hint>
+<!--              <p class="form-control-title">Wholesale quantity</p>-->
+<!--              <input-->
+<!--                class="form-field-input"-->
+<!--                min="0"-->
+<!--                type="number"-->
+<!--                formControlName="wholesaleQuantity"-->
+<!--              />-->
+<!--              <mat-hint-->
+<!--                class="hint-text"-->
+<!--                *ngIf="-->
+<!--                  !(-->
+<!--                    productForm.get('wholesaleQuantity').invalid &&-->
+<!--                    productForm.get('wholesaleQuantity').touched-->
+<!--                  )-->
+<!--                "-->
+<!--              >-->
+<!--                How many unity quantity correspond to wholesale price-->
+<!--                &lt;!&ndash;                <a href="/help/product#price">more info</a>&ndash;&gt;-->
+<!--              </mat-hint>-->
               <mat-error
                 *ngIf="
                   productForm.get('wholesaleQuantity').invalid &&
@@ -284,49 +302,49 @@ import { Subject } from "rxjs";
               </mat-error>
             </div>
 
-            <div class="status-item">
-              <div class="status-text">
-                Is this a digital product that someone might download it?
-              </div>
-              <div class="status-checker">
-                <span>{{
-                  productForm.get("downloadable").value === true ? "YES" : "NO"
-                }}</span>
-                <mat-slide-toggle
-                  formControlName="downloadable"
-                ></mat-slide-toggle>
-              </div>
-            </div>
+<!--            <div class="status-item">-->
+<!--              <div class="status-text">-->
+<!--                Is this a digital product that someone might download it?-->
+<!--              </div>-->
+<!--              <div class="status-checker">-->
+<!--                <span>{{-->
+<!--                  productForm.get("downloadable").value === true ? "YES" : "NO"-->
+<!--                }}</span>-->
+<!--                <mat-slide-toggle-->
+<!--                  formControlName="downloadable"-->
+<!--                ></mat-slide-toggle>-->
+<!--              </div>-->
+<!--            </div>-->
 
-            <div
-              *ngIf="productForm.get('downloadable').value === true"
-              class="card-wrapper"
-            >
-              <p class="form-control-title">Downloadable items</p>
-              <app-stock-downloadable
-                (filesReady)="addFiles($event)"
-                [files]="isUpdateMode ? initialStock.downloads : []"
-              >
-              </app-stock-downloadable>
-            </div>
+<!--            <div-->
+<!--              *ngIf="productForm.get('downloadable').value === true"-->
+<!--              class="card-wrapper"-->
+<!--            >-->
+<!--              <p class="form-control-title">Downloadable items</p>-->
+<!--              <app-stock-downloadable-->
+<!--                (filesReady)="addFiles($event)"-->
+<!--                [files]="isUpdateMode ? initialStock.downloads : []"-->
+<!--              >-->
+<!--              </app-stock-downloadable>-->
+<!--            </div>-->
 
-            <div class="status-item">
-              <div class="status-text">
-                Do you buy this product from external supplier?
-              </div>
-              <div class="status-checker">
-                <span>{{
-                  productForm.get("purchasable").value === true ? "YES" : "NO"
-                }}</span>
-                <mat-slide-toggle
-                  formControlName="purchasable"
-                ></mat-slide-toggle>
-              </div>
-            </div>
+<!--            <div class="status-item">-->
+<!--              <div class="status-text">-->
+<!--                Do you buy this product from external supplier?-->
+<!--              </div>-->
+<!--              <div class="status-checker">-->
+<!--                <span>{{-->
+<!--                  productForm.get("purchasable").value === true ? "YES" : "NO"-->
+<!--                }}</span>-->
+<!--                <mat-slide-toggle-->
+<!--                  formControlName="purchasable"-->
+<!--                ></mat-slide-toggle>-->
+<!--              </div>-->
+<!--            </div>-->
 
             <app-suppliers-form-field
               [formGroup]="productForm"
-              [purchasable]="productForm.get('purchasable').value === true"
+              [purchasable]="true"
             >
             </app-suppliers-form-field>
 
@@ -364,60 +382,60 @@ import { Subject } from "rxjs";
               </mat-error>
             </div>
 
-            <div
-              *ngIf="productForm.get('purchasable').value === true"
-              class="form-field"
-            >
-              <p class="form-control-title">Reorder Level</p>
-              <input
-                class="form-field-input"
-                min="0"
-                matInput
-                type="number"
-                formControlName="reorder"
-              />
-              <mat-hint
-                class="hint-text"
-                *ngIf="
-                  !(
-                    productForm.get('reorder').invalid &&
-                    productForm.get('reorder').touched
-                  )
-                "
-              >
-                Minimum quantity for reorder notification
-                <!--                <a href="/help/product#purchase">more info</a>-->
-              </mat-hint>
-              <mat-error
-                *ngIf="
-                  productForm.get('reorder').invalid &&
-                  productForm.get('reorder').touched
-                "
-                class="error-text"
-              >
-                Reorder level quantity required
-              </mat-error>
-            </div>
+<!--            <div-->
+<!--              *ngIf="productForm.get('purchasable').value === true"-->
+<!--              class="form-field"-->
+<!--            >-->
+<!--              <p class="form-control-title">Reorder Level</p>-->
+<!--              <input-->
+<!--                class="form-field-input"-->
+<!--                min="0"-->
+<!--                matInput-->
+<!--                type="number"-->
+<!--                formControlName="reorder"-->
+<!--              />-->
+<!--              <mat-hint-->
+<!--                class="hint-text"-->
+<!--                *ngIf="-->
+<!--                  !(-->
+<!--                    productForm.get('reorder').invalid &&-->
+<!--                    productForm.get('reorder').touched-->
+<!--                  )-->
+<!--                "-->
+<!--              >-->
+<!--                Minimum quantity for reorder notification-->
+<!--                &lt;!&ndash;                <a href="/help/product#purchase">more info</a>&ndash;&gt;-->
+<!--              </mat-hint>-->
+<!--              <mat-error-->
+<!--                *ngIf="-->
+<!--                  productForm.get('reorder').invalid &&-->
+<!--                  productForm.get('reorder').touched-->
+<!--                "-->
+<!--                class="error-text"-->
+<!--              >-->
+<!--                Reorder level quantity required-->
+<!--              </mat-error>-->
+<!--            </div>-->
 
-            <div class="status-item">
-              <div class="status-text">
-                Do you track quantity for this product?
-              </div>
-              <div class="status-checker">
-                <span>{{
-                  productForm.get("stockable").value === true ? "YES" : "NO"
-                }}</span>
-                <mat-slide-toggle
-                  formControlName="stockable"
-                ></mat-slide-toggle>
-              </div>
-            </div>
+<!--            <div class="status-item">-->
+<!--              <div class="status-text">-->
+<!--                Do you track quantity for this product?-->
+<!--              </div>-->
+<!--              <div class="status-checker">-->
+<!--                <span>{{-->
+<!--                  productForm.get("stockable").value === true ? "YES" : "NO"-->
+<!--                }}</span>-->
+<!--                <mat-slide-toggle-->
+<!--                  formControlName="stockable"-->
+<!--                ></mat-slide-toggle>-->
+<!--              </div>-->
+<!--            </div>-->
 
-            <app-units-form-field
-              [stockable]="this.productForm.get('stockable').value === true"
-              [formGroup]="productForm"
-            >
-            </app-units-form-field>
+<!--            <app-units-form-field-->
+<!--              [stockable]="true"-->
+<!--              [formGroup]="productForm"-->
+<!--            >-->
+<!--            </app-units-form-field>-->
 
             <div
               *ngIf="productForm.get('stockable').value === true"
@@ -454,23 +472,22 @@ import { Subject } from "rxjs";
               </mat-error>
             </div>
 
-            <div class="status-item">
-              <div class="status-text">
-                Can this product expire?
-              </div>
-              <div class="status-checker">
-                <span>{{
-                  productForm.get("canExpire").value === true ? "YES" : "NO"
-                }}</span>
-                <mat-slide-toggle
-                  formControlName="canExpire"
-                ></mat-slide-toggle>
-              </div>
-            </div>
+<!--            <div class="status-item">-->
+<!--              <div class="status-text">-->
+<!--                Can this product expire?-->
+<!--              </div>-->
+<!--              <div class="status-checker">-->
+<!--                <span>{{-->
+<!--                  productForm.get("canExpire").value === true ? "YES" : "NO"-->
+<!--                }}</span>-->
+<!--                <mat-slide-toggle-->
+<!--                  formControlName="canExpire"-->
+<!--                ></mat-slide-toggle>-->
+<!--              </div>-->
+<!--            </div>-->
 
             <mat-form-field
               appearance="outline"
-              *ngIf="productForm.get('canExpire').value === true"
               class="full-width"
             >
               <mat-label>Expire Date</mat-label>
@@ -521,7 +538,7 @@ import { Subject } from "rxjs";
       </form>
     </div>
   `,
-  styleUrls: ["../styles/create.style.scss"]
+  styleUrls: ['../styles/create.style.scss']
 })
 export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   @Input() isUpdateMode = false;
@@ -548,77 +565,38 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
 
   initializeForm(stock?: StockModel): void {
     this.productForm = this.formBuilder.group({
-      type: [
-        stock && stock.type ? stock.type : "simple",
-        [Validators.nullValidator, Validators.required]
-      ],
-      subscription: this.formBuilder.group({
-        duration: [
-          stock?.subscription?.duration,
-          // [this.productValidator.pass()],
-          [this.durationValidator()]
-        ],
-        grace: [
-          stock?.subscription?.grace,
-          // [this.productValidator.pass()],
-          [this.graceValidator()]
-        ]
-      }),
+      barcode: [stock && stock.barcode ? stock.barcode : ''],
       images: [stock?.images],
       product: [
         stock?.product,
         [Validators.nullValidator, Validators.required]
       ],
-      // barcode: [stock?.barcode],
       saleable: [stock && stock.saleable !== undefined ? stock.saleable : true],
-      downloadable: [
-        stock && stock.downloadable !== undefined ? stock.downloadable : false
-      ],
-      downloads: [stock && stock.downloads ? stock.downloads : []],
       stockable: [
         stock && stock.stockable !== undefined ? stock.stockable : true
       ],
       purchasable: [
         stock && stock.purchasable !== undefined ? stock.purchasable : true
       ],
-      description: [stock?.description],
       purchase: [
         stock?.purchase,
-        // [this.productValidator.pass()],
         [this.purchaseValidator()]
       ],
       retailPrice: [
         stock?.retailPrice,
-        // [this.productValidator.pass()],
         [this.priceValidator()]
       ],
       wholesalePrice: [
         stock?.wholesalePrice,
-        // [this.productValidator.pass()],
         [this.priceValidator()]
       ],
       wholesaleQuantity: [
         stock && stock.wholesaleQuantity ? stock.wholesaleQuantity : 1,
-        // [this.productValidator.pass()],
-        [this.priceValidator()]
+        []
       ],
       quantity: [
         stock?.quantity,
-        // [this.productValidator.pass()],
         [this.stockValidator()]
-      ],
-      reorder: [
-        stock?.reorder,
-        // [this.productValidator.pass()],
-        [this.purchaseValidator()]
-      ],
-      unit: [
-        stock?.unit,
-        // [this.productValidator.pass()],
-        [this.unitValidator()]
-      ],
-      canExpire: [
-        stock && stock.canExpire !== undefined ? stock.canExpire : false
       ],
       expire: [stock?.expire],
       category: [
@@ -627,70 +605,49 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
       ],
       supplier: [
         stock?.supplier,
-        // [this.productValidator.pass()],
         [this.supplierValidator()]
       ]
     });
     this.productForm
-      .get("saleable")
+      .get('saleable')
       .valueChanges.pipe(takeUntil(this.destroy))
       .subscribe((value) => {
         if (value === false) {
-          this.productForm.get("retailPrice").updateValueAndValidity();
-          this.productForm.get("wholesalePrice").updateValueAndValidity();
-          this.productForm.get("wholesaleQuantity").updateValueAndValidity();
+          this.productForm.get('retailPrice').updateValueAndValidity();
+          this.productForm.get('wholesalePrice').updateValueAndValidity();
+          this.productForm.get('wholesaleQuantity').updateValueAndValidity();
         }
       });
     this.productForm
-      .get("purchasable")
+      .get('purchasable')
       .valueChanges.pipe(takeUntil(this.destroy))
       .subscribe((value) => {
         if (value === false) {
-          this.productForm.get("purchase").updateValueAndValidity();
-          this.productForm.get("supplier").updateValueAndValidity();
-          this.productForm.get("reorder").updateValueAndValidity();
+          this.productForm.get('purchase').updateValueAndValidity();
+          this.productForm.get('supplier').updateValueAndValidity();
+          this.productForm.get('reorder').updateValueAndValidity();
         }
       });
     this.productForm
-      .get("stockable")
+      .get('stockable')
       .valueChanges.pipe(takeUntil(this.destroy))
       .subscribe((value) => {
         if (value === false) {
-          this.productForm.get("quantity").updateValueAndValidity();
-          this.productForm.get("unit").updateValueAndValidity();
+          this.productForm.get('quantity').updateValueAndValidity();
+          this.productForm.get('unit').updateValueAndValidity();
         }
-      });
-    this.productForm
-      .get("type")
-      .valueChanges.pipe(takeUntil(this.destroy))
-      .subscribe((value) => {
-        // console.log(value);
-        // if (value === 'subscription') {
-        this.productForm
-          .get("subscription")
-          .get("duration")
-          .updateValueAndValidity();
-        this.productForm
-          .get("subscription")
-          .get("grace")
-          .updateValueAndValidity();
-        // }
       });
   }
 
   addProduct(inUpdateMode = false): void {
-    // this.productForm.markAsTouched();
-    // return;
     this.productForm.updateValueAndValidity();
     this.productForm.markAllAsTouched();
-    // console.log(this.productForm.controls);
     if (!this.productForm.valid) {
-      this.snack.open("Fill all required fields", "Ok", {
+      this.snack.open('Fill all required fields', 'Ok', {
         duration: 3000
       });
       return;
     }
-
     if (
       this.getPurchasableFormControl().value === true &&
       (this.productForm.value.purchase >= this.productForm.value.retailPrice ||
@@ -698,8 +655,8 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
           this.productForm.value.wholesalePrice)
     ) {
       this.snack.open(
-        "Purchase price must not be greater than retailPrice/wholesalePrice",
-        "Ok",
+        'Purchase price must not be greater than retailPrice/wholesalePrice',
+        'Ok',
         {
           duration: 3000
         }
@@ -707,15 +664,15 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      this.productForm.get("canExpire").value &&
-      !this.productForm.get("expire").value
-    ) {
-      this.snack.open("Please enter expire date", "Ok", {
-        duration: 3000
-      });
-      return;
-    }
+    // if (
+    //   this.productForm.get('canExpire').value &&
+    //   !this.productForm.get('expire').value
+    // ) {
+    //   this.snack.open('Please enter expire date', 'Ok', {
+    //     duration: 3000
+    //   });
+    //   return;
+    // }
 
     this.mainProgress = true;
     if (inUpdateMode) {
@@ -725,17 +682,17 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
       .addStock(this.productForm.value)
       .then((_) => {
         this.mainProgress = false;
-        this.snack.open("Product added", "Ok", {
+        this.snack.open('Product added', 'Ok', {
           duration: 3000
         });
         this.productForm.reset();
         // formElement.resetForm();
-        this.router.navigateByUrl("/stock/products").catch(console.log);
+        this.router.navigateByUrl('/stock/products').catch(console.log);
         // });
       })
       .catch((reason) => {
         this.mainProgress = false;
-        this.snack.open(reason.message ? reason.message : "Unknown", "Ok", {
+        this.snack.open(reason.message ? reason.message : 'Unknown', 'Ok', {
           duration: 3000
         });
       });
@@ -746,23 +703,23 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   addImages(images: string[]): void {
-    this.productForm.get("images").setValue(images);
+    this.productForm.get('images').setValue(images);
   }
 
   getPurchasableFormControl(): UntypedFormControl {
-    return this.productForm.get("purchasable") as UntypedFormControl;
+    return this.productForm.get('purchasable') as UntypedFormControl;
   }
 
   addFiles($event: FileModel[]): void {
-    this.productForm.get("downloads").setValue($event);
+    this.productForm.get('downloads').setValue($event);
   }
 
   priceValidator(): ValidatorFn {
-    const message = { message: "error" };
+    const message = { message: 'error' };
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const saleable = control?.parent?.get("saleable")?.value;
+      const saleable = control?.parent?.get('saleable')?.value;
       if (!!saleable === false) {
         return null;
       }
@@ -783,7 +740,7 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const purchasable = control?.parent?.get("purchasable")?.value;
+      const purchasable = control?.parent?.get('purchasable')?.value;
       if (purchasable === false) {
         return null;
       }
@@ -806,7 +763,7 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const purchasable = control?.parent?.get("purchasable")?.value;
+      const purchasable = control?.parent?.get('purchasable')?.value;
       // console.log(purchasable, 'PURCHASABLE');
       if (purchasable === false) {
         return null;
@@ -826,11 +783,11 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   stockValidator(): ValidatorFn {
-    const message = { message: "error" };
+    const message = { message: 'error' };
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const stockable = control?.parent?.get("stockable")?.value;
+      const stockable = control?.parent?.get('stockable')?.value;
       if (!!stockable === false) {
         return null;
       }
@@ -847,11 +804,11 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   unitValidator(): ValidatorFn {
-    const message = { message: "error" };
+    const message = { message: 'error' };
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const stockable = control?.parent?.get("stockable")?.value;
+      const stockable = control?.parent?.get('stockable')?.value;
       if (stockable === false) {
         return null;
       }
@@ -868,12 +825,12 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   durationValidator(): ValidatorFn {
-    const message = { message: "error" };
+    const message = { message: 'error' };
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const type = control?.parent?.parent?.get("type")?.value;
-      if (type === "subscription") {
+      const type = control?.parent?.parent?.get('type')?.value;
+      if (type === 'subscription') {
         if (parseInt(control.value, 10) > 0) {
           return null;
         }
@@ -890,13 +847,13 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   graceValidator(): ValidatorFn {
-    const message = { message: "error" };
+    const message = { message: 'error' };
     return (control: AbstractControl): ValidationErrors | null => {
       // return of(control.value).pipe(
       //   map(value => {
-      const type = control?.parent?.parent?.get("type")?.value;
+      const type = control?.parent?.parent?.get('type')?.value;
       // console.log(type);
-      if (type === "subscription") {
+      if (type === 'subscription') {
         if (parseInt(control.value, 10) > -1) {
           return null;
         }
@@ -913,6 +870,6 @@ export class ProductShortDetailFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy.next("done");
+    this.destroy.next('done');
   }
 }
