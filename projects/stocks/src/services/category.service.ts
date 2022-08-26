@@ -1,13 +1,13 @@
-import { Injectable } from "@angular/core";
-import { SecurityUtil, UserService } from "smartstock-core";
-import { CategoryModel } from "../models/category.model";
-import { CategoryWorker } from "../workers/category.worker";
-import { ShopModel } from "../models/shop.model";
-import { wrap } from "comlink";
-import { cache, database } from "bfast";
+import { Injectable } from '@angular/core';
+import { SecurityUtil, UserService } from 'smartstock-core';
+import { CategoryModel } from '../models/category.model';
+import { CategoryWorker } from '../workers/category.worker';
+import { ShopModel } from '../models/shop.model';
+import { wrap } from 'comlink';
+import { cache, database } from 'bfast';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root'
 })
 export class CategoryService {
   constructor(private readonly userService: UserService) {}
@@ -18,7 +18,7 @@ export class CategoryService {
     let categoryWorkerNative: Worker;
     try {
       categoryWorkerNative = new Worker(
-        new URL("../workers/category.worker", import.meta.url)
+        new URL('../workers/category.worker', import .meta.url)
       );
       const SW = (wrap(categoryWorkerNative) as unknown) as any;
       const categoryWorker = await new SW();
@@ -51,14 +51,14 @@ export class CategoryService {
     category.createdAt = new Date().toISOString();
     category.updatedAt = new Date().toISOString();
     await database(shop.projectId)
-      .table("categories")
+      .table('categories')
       .query()
       .byId(category.id)
       .updateBuilder()
       .upsert(true)
       .doc(category)
       .update();
-    cache({ database: shop.projectId, collection: "categories" })
+    cache({ database: shop.projectId, collection: 'categories' })
       .set(category.id, category)
       .catch(console.log);
     return category;
@@ -67,11 +67,11 @@ export class CategoryService {
   async deleteCategory(category: CategoryModel): Promise<any> {
     const shop = await this.userService.getCurrentShop();
     await database(shop.projectId)
-      .table("categories")
+      .table('categories')
       .query()
       .byId(category.id)
       .delete();
-    cache({ database: shop.projectId, collection: "categories" })
+    cache({ database: shop.projectId, collection: 'categories' })
       .remove(category.id)
       .catch(console.log);
     return category;
@@ -79,7 +79,7 @@ export class CategoryService {
 
   async getAllCategory(): Promise<CategoryModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return cache({ database: shop.projectId, collection: "categories" })
+    return cache({ database: shop.projectId, collection: 'categories' })
       .getAll()
       .then((categories) => {
         if (Array.isArray(categories) && categories.length > 0) {
@@ -88,9 +88,9 @@ export class CategoryService {
         return this.remoteAllCategories(shop);
       })
       .then(async (c) => {
-        const ca = cache({ database: shop.projectId, collection: "categories" });
+        const ca = cache({ database: shop.projectId, collection: 'categories' });
         await ca.clearAll();
-          ca.setBulk(
+        ca.setBulk(
             c.map((x) => x.id),
             c
           )
@@ -100,7 +100,7 @@ export class CategoryService {
   }
 
   private async remoteAllCategories(shop: ShopModel): Promise<CategoryModel[]> {
-    return await database(shop.projectId).table("categories").getAll();
+    return await database(shop.projectId).table('categories').getAll();
   }
 
   async getAllCategoryRemote(): Promise<CategoryModel[]> {
@@ -110,13 +110,13 @@ export class CategoryService {
 
   async getCategory(id: string): Promise<CategoryModel> {
     const shop = await this.userService.getCurrentShop();
-    return cache({ database: shop.projectId, collection: "categories" })
+    return cache({ database: shop.projectId, collection: 'categories' })
       .get<any>(id)
       .then((category) => {
         if (category) {
           return category;
         }
-        return database(shop.projectId).table("categories").get(id);
+        return database(shop.projectId).table('categories').get(id);
       });
   }
 

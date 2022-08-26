@@ -211,7 +211,6 @@ export class ProductsTableComponent
   totalPurchase: Observable<number> = of(0);
   stockDatasource = new MatTableDataSource<StockModel>([]);
   stockColumns = [
-    "select",
     "product",
     "quantity",
     "purchase",
@@ -244,17 +243,17 @@ export class ProductsTableComponent
   //   return numSelected === numRows;
   // }
 
-  masterToggle(): void {
-    const skip = this.paginator.pageSize * this.paginator.pageIndex;
-    const pagedData = this.stockDatasource.data
-      .filter((u, i) => i >= skip)
-      .filter((u, i) => i < this.paginator.pageSize);
-    if (this.stockState.selection.selected.length === pagedData.length) {
-      this.stockState.selection.clear();
-    } else {
-      pagedData.forEach((row) => this.stockState.selection.select(row));
-    }
-  }
+  // masterToggle(): void {
+  //   const skip = this.paginator.pageSize * this.paginator.pageIndex;
+  //   const pagedData = this.stockDatasource.data
+  //     .filter((u, i) => i >= skip)
+  //     .filter((u, i) => i < this.paginator.pageSize);
+  //   if (this.stockState.selection.selected.length === pagedData.length) {
+  //     this.stockState.selection.clear();
+  //   } else {
+  //     pagedData.forEach((row) => this.stockState.selection.select(row));
+  //   }
+  // }
 
   editStock(element: StockModel): void {
     this.router
