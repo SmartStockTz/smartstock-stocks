@@ -42,8 +42,8 @@ export class EditPageComponent implements OnInit {
         if (value && value.id) {
           return this.stockState.getStock(value.id).then(async value1 => {
             if (value1) {
-              const a = await this.stockService.getProductQuantityObject(value1.id);
-              value1.quantity = getStockQuantity(a);
+              // const a = await this.stockService.getProductQuantityObject(value1.id);
+              // value1.quantity = getStockQuantity(a);
               this.stock = value1;
             } else {
               throw new Error('no product');

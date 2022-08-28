@@ -93,23 +93,29 @@ export class StockService {
     return st;
   }
 
-  async addStock(stock: StockModel): Promise<StockModel> {
-    stock.id = stock.product.replace(new RegExp('\\s+', 'ig'), '_');
+  async addStock(stock: StockModel, cacheStock: StockModel): Promise<StockModel> {
+    stock.id = stock.product.trim().replace(new RegExp('\\s+', 'ig'), '_');
+    cacheStock.id = stock.product.trim().replace(new RegExp('\\s+', 'ig'), '_');
     stock.product = stock.product.trim();
+    cacheStock.product = stock.product.trim();
     stock.createdAt = new Date().toISOString();
     stock.updatedAt = new Date().toISOString();
     stock.wholesaleQuantity = stock.wholesaleQuantity ? stock.wholesaleQuantity : 1;
     stock.images = Array.isArray(stock.images) ? stock.images : [];
     stock.image = Array.isArray(stock.image) ? stock.image : [];
     stock.expire = stock.expire ? new Date(stock.expire).toISOString() : null;
-    if (typeof stock.expire !== 'string') { delete stock.expire; }
-    if (stock.barcode.toString().trim() === '') { delete stock.barcode; }
+    if (typeof stock.expire !== 'string') {
+      delete stock.expire;
+    }
+    if (stock.barcode.toString().trim() === '') {
+      delete stock.barcode;
+    }
     const shop = await this.userService.getCurrentShop();
     await functions(shop.projectId).request(
       `${this.getBaseShopUrl(shop)}/stock/products`
     ).put(stock);
     cache({database: shop.projectId, collection: 'stocks'})
-      .set(stock.id, stock)
+      .set(cacheStock.id, cacheStock)
       .catch(console.log);
     return stock;
   }
@@ -194,14 +200,17 @@ export class StockService {
 
   async getProduct(id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return cache({database: shop.projectId, collection: 'stocks'})
-      .get(id)
-      .then((stock) => {
-        if (stock) {
-          return stock;
-        }
-        return database(shop.projectId).table('stocks').get(id);
-      });
+    // return cache({database: shop.projectId, collection: 'stocks'})
+    //   .get(id)
+    //   .then((stock) => {
+    // if (stock) {
+    //   return stock;
+    // }
+    return functions()
+      .request(`https://smartstock-faas.bfast.fahamutech.com/shop/${shop.projectId}/${shop.applicationId}/stock/products/${id}`)
+      .get();
+    // database(shop.projectId).table('stocks').get(id);
+    // });
   }
 
   async positiveStockValue(): Promise<number> {
