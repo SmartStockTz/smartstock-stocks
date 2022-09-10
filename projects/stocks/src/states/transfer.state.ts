@@ -1,14 +1,14 @@
-import { Injectable } from "@angular/core";
-import { BehaviorSubject } from "rxjs";
-import { TransferService } from "../services/transfer.service";
-import { MessageService } from "smartstock-core";
-import { TransferModel } from "../models/transfer.model";
-import { Router } from "@angular/router";
-import { TransferHeader } from "../models/transfer-header";
-import { MatSnackBar } from "@angular/material/snack-bar";
+import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { TransferService } from '../services/transfer.service';
+import { MessageService } from 'smartstock-core';
+import { TransferModel } from '../models/transfer.model';
+import { Router } from '@angular/router';
+import { TransferHeader } from '../models/transfer-header';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root'
 })
 export class TransferState {
   totalTransfersItems = new BehaviorSubject<number>(0);
@@ -47,7 +47,7 @@ export class TransferState {
       .catch((reason) => {
         this.snack.open(
           reason && reason.message ? reason.message : reason.toString(),
-          "Ok",
+          'Ok',
           {
             duration: 2000
           }
@@ -64,12 +64,12 @@ export class TransferState {
       .save(transfer)
       .then((_87) => {
         this.transfers.value.unshift(transfer);
-        this.router.navigateByUrl("/stock/transfers").catch();
+        this.router.navigateByUrl('/stock/transfers').catch();
       })
       .catch((reason) => {
         this.snack.open(
           reason && reason.message ? reason.message : reason.toString(),
-          "Ok",
+          'Ok',
           {
             duration: 2000
           }
@@ -99,7 +99,7 @@ export class TransferState {
       .catch((reason) => {
         this.snack.open(
           reason && reason.message ? reason.message : reason.toString(),
-          "Ok",
+          'Ok',
           {
             duration: 2000
           }

@@ -1,11 +1,11 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { SecurityUtil, UserService } from "smartstock-core";
-import { SupplierModel } from "../models/supplier.model";
-import { cache, database } from "bfast";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { SecurityUtil, UserService } from 'smartstock-core';
+import { SupplierModel } from '../models/supplier.model';
+import { cache, database } from 'bfast';
 
 @Injectable({
-  providedIn: "root"
+  providedIn: 'root'
 })
 export class SupplierService {
   constructor(
@@ -15,11 +15,11 @@ export class SupplierService {
 
   async addSupplier(supplier: SupplierModel, id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    const sCache = cache({ database: shop.projectId, collection: "suppliers" });
+    const sCache = cache({ database: shop.projectId, collection: 'suppliers' });
     if (id) {
       supplier.updatedAt = new Date().toISOString();
       await database(shop.projectId)
-        .table("suppliers")
+        .table('suppliers')
         .query()
         .byId(id)
         .updateBuilder()
@@ -32,7 +32,7 @@ export class SupplierService {
       supplier.createdAt = new Date().toISOString();
       supplier.updatedAt = new Date().toISOString();
       await database(shop.projectId)
-        .table("suppliers")
+        .table('suppliers')
         .query()
         .byId(supplier.id)
         .updateBuilder()
@@ -45,8 +45,8 @@ export class SupplierService {
 
   async deleteSupplier(id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    await database(shop.projectId).table("suppliers").query().byId(id).delete();
-    cache({ database: shop.projectId, collection: "suppliers" })
+    await database(shop.projectId).table('suppliers').query().byId(id).delete();
+    cache({ database: shop.projectId, collection: 'suppliers' })
       .remove(id)
       .catch(console.log);
     return { id };
@@ -54,7 +54,7 @@ export class SupplierService {
 
   async getAllSupplier(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return cache({ database: shop.projectId, collection: "suppliers" })
+    return cache({ database: shop.projectId, collection: 'suppliers' })
       .getAll()
       .then((suppliers) => {
         if (Array.isArray(suppliers) && suppliers.length > 0) {
@@ -63,7 +63,7 @@ export class SupplierService {
         return this.getAllSupplierRemotely();
       })
       .then((s) => {
-        cache({ database: shop.projectId, collection: "suppliers" })
+        cache({ database: shop.projectId, collection: 'suppliers' })
           .setBulk(
             s.map((x) => x.id),
             s
@@ -75,6 +75,6 @@ export class SupplierService {
 
   async getAllSupplierRemotely(): Promise<SupplierModel[]> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId).table("suppliers").getAll();
+    return database(shop.projectId).table('suppliers').getAll();
   }
 }

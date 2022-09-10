@@ -13,8 +13,8 @@ import {StockService} from '../services/stock.service';
     <div *ngIf="stock" style="margin-bottom: 100px">
       <div *ngIf="loadQuantity === false && quantityError===false">
         <app-stock-quantity-head [stock]="stock"></app-stock-quantity-head>
-        <app-stock-quantity-histogram [stock]="stock"></app-stock-quantity-histogram>
-        <app-stock-quantity-tracking-table [stock]="stock"></app-stock-quantity-tracking-table>
+        <app-stock-quantity-histogram [data]="data"></app-stock-quantity-histogram>
+        <app-stock-quantity-tracking-table [data]="data"></app-stock-quantity-tracking-table>
       </div>
       <span *ngIf="loadQuantity===true && quantityError === false" class="d-flex-center">
         Loading...
@@ -29,6 +29,7 @@ import {StockService} from '../services/stock.service';
 })
 
 export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
+  data = [];
   stock: StockModel;
   destroyer = new Subject();
   loadQuantity = false;
@@ -69,7 +70,7 @@ export class StockQuantityTrackingComponent implements OnInit, OnDestroy {
     this.loadQuantity = true;
     this.quantityError = false;
     this.stockService.getProductQuantityObject(this.stock.id).then(value => {
-      this.stock.quantity = value.quantity;
+      this.data = value;
     }).catch(_ => {
       this.quantityError = true;
     }).finally(() => {

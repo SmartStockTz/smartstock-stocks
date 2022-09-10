@@ -31,7 +31,7 @@ export class StockQuantityComponent implements OnInit {
   loadQuantity = false;
   quantityError = false;
 
-  constructor(private readonly stockService: StockService) {
+  constructor() {
   }
 
   ngOnInit(): void {
@@ -39,16 +39,7 @@ export class StockQuantityComponent implements OnInit {
   }
 
   fetchQuantity(): void {
-    this.loadQuantity = true;
-    this.quantityError = false;
-    this.stockService.getProductQuantityObject(this.stock.id).then(value => {
-      this.stock.quantity = value.quantity;
-      this.quantity = getStockQuantity(this.stock);
-    }).catch(_ => {
-      this.quantityError = true;
-    }).finally(() => {
-      this.loadQuantity = false;
-    });
+    this.quantity = getStockQuantity(this.stock);
   }
 
   refreshQuantity($event: MouseEvent): void {

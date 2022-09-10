@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {SecurityUtil, UserService} from 'smartstock-core';
+import {SecurityUtil, toSqlDate, UserService} from 'smartstock-core';
 import {cache, database, functions} from 'bfast';
 import {StockModel} from '../models/stock.model';
 import {StockWorker} from '../workers/stock.worker';
@@ -85,7 +85,8 @@ export class StockService {
       return stockWorker.prepareStockForImportFromCsv(csv);
     });
     st = st.map((x) => this.mapStockQuantityFromNumberToObject(x));
-    await database(shop.projectId).table('stocks').save(st);
+    const url = `${this.getBaseShopUrl(shop)}/stock/products`;
+    await functions().request(url).put(st);
     await cache({database: shop.projectId, collection: 'stocks'}).setBulk(
       st.map((z) => z.id),
       st
@@ -200,17 +201,9 @@ export class StockService {
 
   async getProduct(id: string): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    // return cache({database: shop.projectId, collection: 'stocks'})
-    //   .get(id)
-    //   .then((stock) => {
-    // if (stock) {
-    //   return stock;
-    // }
     return functions()
-      .request(`https://smartstock-faas.bfast.fahamutech.com/shop/${shop.projectId}/${shop.applicationId}/stock/products/${id}`)
+      .request(`${this.getBaseShopUrl(shop)}/stock/products/${id}`)
       .get();
-    // database(shop.projectId).table('stocks').get(id);
-    // });
   }
 
   async positiveStockValue(): Promise<number> {
@@ -241,13 +234,11 @@ export class StockService {
     });
   }
 
-
   async getProductQuantityObject(stockId): Promise<any> {
     const shop = await this.userService.getCurrentShop();
-    return database(shop.projectId)
-      .table('stocks')
-      .get(stockId, {
-        returnFields: ['quantity']
-      });
+    const today = toSqlDate(new Date());
+    return functions()
+      .request(`${this.getBaseShopUrl(shop)}/stock/products/${stockId}/quantity?from=2022-08-01&to=${today}`)
+      .get();
   }
 }

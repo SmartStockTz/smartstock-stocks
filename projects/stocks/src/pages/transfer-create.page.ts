@@ -1,15 +1,15 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { DeviceState } from "smartstock-core";
-import { CartState } from "../states/cart.state";
-import { StockState } from "../states/stock.state";
-import { ActivatedRoute, Router } from "@angular/router";
-import { firstValueFrom } from "rxjs";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { TransferHeader } from "../models/transfer-header";
-import { TransferState } from "../states/transfer.state";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { DeviceState } from 'smartstock-core';
+import { CartState } from '../states/cart.state';
+import { StockState } from '../states/stock.state';
+import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TransferHeader } from '../models/transfer-header';
+import { TransferState } from '../states/transfer.state';
 
 @Component({
-  selector: "app-stock-transfer-create-page",
+  selector: 'app-stock-transfer-create-page',
   template: `
     <app-layout-sidenav
       [body]="body"
@@ -71,24 +71,24 @@ export class TransferCreatePage implements OnInit, OnDestroy {
     private readonly snack: MatSnackBar,
     public readonly cartState: CartState
   ) {
-    document.title = "SmartStock - Stock Transfers Create";
+    document.title = 'SmartStock - Stock Transfers Create';
   }
 
   ngOnInit(): void {
     firstValueFrom(this.activateRoute.queryParams)
       .then((q) => {
-        const value = JSON.parse(q.data ? q.data : "{}");
+        const value = JSON.parse(q.data ? q.data : '{}');
         if (value && value.to_shop && value.note && value.date) {
           this.headerData = value;
         } else {
-          this.router.navigateByUrl("/stock/transfers").catch(console.log);
+          this.router.navigateByUrl('/stock/transfers').catch(console.log);
         }
       })
       .catch((_89) => {
-        this.snack.open("Fail to get transfer details", "Ok", {
+        this.snack.open('Fail to get transfer details', 'Ok', {
           duration: 2000
         });
-        this.router.navigateByUrl("/stock/transfers").catch(console.log);
+        this.router.navigateByUrl('/stock/transfers').catch(console.log);
       });
   }
 

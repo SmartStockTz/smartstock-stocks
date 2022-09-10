@@ -81,8 +81,8 @@ export class AppModule {
       applicationId: 'smartstock_lb',
       projectId: 'smartstock'
     });
-    setInterval(() => {
-      stockService.maybeRefreshStocks().catch(console.log);
-    }, 10000);
+    // setInterval(() => {
+    //   stockService.maybeRefreshStocks().catch(console.log);
+    // }, 10000);
   }
 }

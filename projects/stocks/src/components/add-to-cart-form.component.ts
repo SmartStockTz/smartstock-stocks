@@ -65,7 +65,7 @@ export class AddToCartFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.addToCartForm = this.formBuilder.group({
-      to_product: [this.product.product, [Validators.required, Validators.nullValidator]],
+      to_product: ['', [Validators.required, Validators.nullValidator]],
       quantity: [1, [Validators.required, Validators.nullValidator, Validators.min(1)]],
     });
     this.transferState.searchToShopProduct(this.transferHeader, this.product.product);

@@ -1,17 +1,17 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { MatTableDataSource } from "@angular/material/table";
-import { TransferState } from "../states/transfer.state";
-import { Subject } from "rxjs";
-import { takeUntil } from "rxjs/operators";
-import { TransferModel } from "../models/transfer.model";
-import { PageEvent } from "@angular/material/paginator";
-import { MatBottomSheet } from "@angular/material/bottom-sheet";
-import { TransfersItemsViewComponent } from "./transfers-items-view.component";
-import { TransfersExportOptionsComponent } from "./transfers-export-options.component";
-import { DeviceState } from "smartstock-core";
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { MatTableDataSource } from '@angular/material/table';
+import { TransferState } from '../states/transfer.state';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { TransferModel } from '../models/transfer.model';
+import { PageEvent } from '@angular/material/paginator';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
+import { TransfersItemsViewComponent } from './transfers-items-view.component';
+import { TransfersExportOptionsComponent } from './transfers-export-options.component';
+import { DeviceState } from 'smartstock-core';
 
 @Component({
-  selector: "app-stock-transfers-table",
+  selector: 'app-stock-transfers-table',
   template: `
     <div class="smartstock-table">
       <table mat-table [dataSource]="transfersDatasource">
@@ -89,23 +89,23 @@ import { DeviceState } from "smartstock-core";
       </mat-paginator>
     </div>
   `,
-  styleUrls: ["../styles/index.style.scss"]
+  styleUrls: ['../styles/index.style.scss']
 })
 export class TransfersTableComponent implements OnInit, OnDestroy {
   onDestroy: Subject<any> = new Subject<any>();
   transfersTableColumn = [
-    "date",
-    "from",
-    "to",
-    "user",
-    "amount",
-    "note",
-    "action"
+    'date',
+    'from',
+    'to',
+    'user',
+    'amount',
+    'note',
+    'action'
   ];
   transfersDatasource: MatTableDataSource<
     TransferModel
   > = new MatTableDataSource<TransferModel>([]);
-  size = 50;
+  size = 20;
   skip = 0;
 
   constructor(
@@ -126,7 +126,7 @@ export class TransfersTableComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.onDestroy.next("done");
+    this.onDestroy.next('done');
   }
 
   loadPage($event: PageEvent): void {

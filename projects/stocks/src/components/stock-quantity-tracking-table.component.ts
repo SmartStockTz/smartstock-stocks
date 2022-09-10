@@ -3,7 +3,6 @@ import {StockModel} from '../models/stock.model';
 import {MatTableDataSource} from '@angular/material/table';
 import {getStockQuantity} from '../utils/util';
 import {MatPaginator} from '@angular/material/paginator';
-import {StockService} from '../services/stock.service';
 
 @Component({
   selector: 'app-stock-quantity-tracking-table',
@@ -12,27 +11,32 @@ import {StockService} from '../services/stock.service';
       <table mat-table [dataSource]="tableDataSource">
         <ng-container cdkColumnDef="date">
           <th class="title" mat-header-cell *cdkHeaderCellDef>Date</th>
-          <td mat-cell *cdkCellDef="let element">{{element.d  | date:'short'}}</td>
-          <td mat-footer-cell *cdkFooterCellDef><b>Current Quantity</b></td>
+          <td mat-cell *cdkCellDef="let element">{{element[0]  | date:'short'}}</td>
+          <!--          <td mat-footer-cell *cdkFooterCellDef><b>Current Quantity</b></td>-->
         </ng-container>
         <ng-container cdkColumnDef="source">
           <th class="title" mat-header-cell *cdkHeaderCellDef>Source</th>
-          <td mat-cell *cdkCellDef="let element">{{element.s}}</td>
-          <td mat-footer-cell *cdkFooterCellDef></td>
-        </ng-container>
-        <ng-container cdkColumnDef="in">
-          <th class="title" mat-header-cell *cdkHeaderCellDef>In</th>
-          <td mat-cell *cdkCellDef="let element">{{element.q > 0 ? element.q : ''}}</td>
-          <td mat-footer-cell *cdkFooterCellDef></td>
+          <td mat-cell *cdkCellDef="let element">{{element[5]}}</td>
+          <!--          <td mat-footer-cell *cdkFooterCellDef></td>-->
         </ng-container>
         <ng-container cdkColumnDef="out">
-          <th class="title" mat-header-cell *cdkHeaderCellDef>Out</th>
-          <td mat-cell *cdkCellDef="let element">{{element.q < 0 ? element.q : ''}}</td>
-          <td mat-footer-cell *cdkFooterCellDef><b>{{total}}</b></td>
+          <th class="title" mat-header-cell *cdkHeaderCellDef>Close</th>
+          <td mat-cell *cdkCellDef="let element">{{element[4]}}</td>
+          <!--          <td mat-footer-cell *cdkFooterCellDef><b>{{total}}</b></td>-->
+        </ng-container>
+        <ng-container cdkColumnDef="in">
+          <th class="title" mat-header-cell *cdkHeaderCellDef>Open</th>
+          <td mat-cell *cdkCellDef="let element">{{element[1]}}</td>
+          <!--          <td mat-footer-cell *cdkFooterCellDef></td>-->
+        </ng-container>
+        <ng-container cdkColumnDef="move">
+          <th class="title" mat-header-cell *cdkHeaderCellDef>Move</th>
+          <td mat-cell *cdkCellDef="let element">{{element[4] - element[1]}}</td>
+          <!--          <td mat-footer-cell *cdkFooterCellDef></td>-->
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="columns"></tr>
         <tr mat-row *matRowDef="let row; columns: columns;"></tr>
-        <tr mat-footer-row *matFooterRowDef="columns"></tr>
+        <!--        <tr mat-footer-row *matFooterRowDef="columns"></tr>-->
       </table>
       <mat-paginator [pageSize]="50" showFirstLastButtons></mat-paginator>
     </div>
@@ -41,8 +45,9 @@ import {StockService} from '../services/stock.service';
 })
 
 export class StockQuantityTrackingTableComponent implements OnInit, AfterViewInit {
-  columns = ['date', 'source', 'in', 'out'];
+  columns = ['date', 'source', 'out', 'in', 'move'];
   @Input() stock: StockModel;
+  @Input() data: any[];
   @ViewChild(MatPaginator) paginator: MatPaginator;
   tableDataSource = new MatTableDataSource([]);
   total = 0;
@@ -55,6 +60,9 @@ export class StockQuantityTrackingTableComponent implements OnInit, AfterViewIni
   }
 
   ngAfterViewInit(): void {
-    this.tableDataSource.paginator = this.paginator;
+    setTimeout(() => {
+      this.tableDataSource.paginator = this.paginator;
+      this.tableDataSource.data = this.data.reverse();
+    }, 500);
   }
 }

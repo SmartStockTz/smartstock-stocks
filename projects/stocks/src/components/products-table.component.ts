@@ -94,7 +94,8 @@ import { getStockQuantity } from "../utils/util";
             Quantity
           </th>
           <td mat-cell *matCellDef="let stock">
-            {{stock.quantity}}
+<!--            {{stock.quantity}}-->
+            <app-stock-quantity [stock]="stock"></app-stock-quantity>
 <!--            <app-stock-quantity [stock]="stock"></app-stock-quantity>-->
           </td>
 <!--          <td mat-footer-cell *matFooterCellDef>-->
